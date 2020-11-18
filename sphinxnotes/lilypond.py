@@ -167,14 +167,6 @@ def cleanup_tempdir_lily(app, exc):
     except Exception:
         pass
 
-def latex_visit_lily(self, node):
-    self.body.append('{' + node['music'] + '}')
-    raise nodes.SkipNode
-
-def latex_visit_displaylily(self, node):
-    self.body.append(node['music'])
-    raise nodes.SkipNode
-
 def html_visit_lily(self, node):
     music = Inline_HEAD % self.builder.config.pnglily_fontsize[0]
     music += node['music'] + Inline_BACK
@@ -227,12 +219,8 @@ def html_visit_displaylily(self, node):
 
 
 def setup(app):
-    app.add_node(lily,
-                 latex=(latex_visit_lily, None),
-                 html=(html_visit_lily, None))
-    app.add_node(displaylily,
-                 latex=(latex_visit_displaylily, None),
-                 html=(html_visit_displaylily, None))
+    app.add_node(lily, html=(html_visit_lily, None))
+    app.add_node(displaylily, html=(html_visit_displaylily, None))
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_config_value('pnglily_preamble', '', False)
