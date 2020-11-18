@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-    Sphinx Extension lilypond
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    Sphinx Extension for LilyPond
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Allow Lilypond music notes to be included in Sphinx-generated documents
-    inline and outline. 
+    inline and outline.
 
+    :copyright: Copyright ©2020 by Shengyu Zhang.
     :copyright: Copyright ©2009 by Wei-Wei Guo.
     :license: BSD, see LICENSE for details.
 
-    The extension is modified from mathbase.py and pngmath.py by Sphinx team. 
+    The extension is modified from mathbase.py and pngmath.py by Sphinx team.
 
     Note: The extension has only very basic support for LaTeX builder.
 """
