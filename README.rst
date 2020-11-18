@@ -4,7 +4,7 @@
 Sphinx extension LilyPond
 =========================
 
-It's a fork of `sphinx-contrib/lilypond < >`_ ,
+It's a fork of `sphinx-contrib/lilypond`_ ,
 provides richer features but drop LaTeX supports.
 
-.. _sphinx-contrib/lilypond:: 
+.. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
