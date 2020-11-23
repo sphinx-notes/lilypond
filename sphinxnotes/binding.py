@@ -1,19 +1,67 @@
 from __future__ import annotations
+from typing import Optional   
+import os
 import subprocess
+import tempfile
+import shutil
 
 from ly import pitch
 from ly import document
 from ly import docinfo
 from ly import music
-from ly import lex
 from ly.pitch import transpose
-from ly.music import read
 from ly.music import items
 
 # from sphinxnotes.base import LilyPondExtensionError
 
 class LilyPondDocumentError(Exception):
     pass
+
+class LilyPondOutput(object):
+
+    _score_format:str = ''
+    _audio_format:str = ''
+    _tmpdir:str = ''
+    _basename:str = 'music.ly'
+
+    def __init__(self, score_format:str, audio_format:str):
+        self._score_format = score_format
+        self._audio_format = audio_format
+        self._tempdir = tempfile.mkdtemp(prefix='sphinxnotes-lilypond')
+
+    def base_path(self) -> str:
+        return os.path.join(self._tempdir, self._basename)
+
+    def score_preview(self) -> Optional[str]:
+        f = os.path.join(self._tempdir, self._basename + '.preview.' + self._score_format)
+        if os.path.isfile(f):
+            return f
+
+    def score(self) -> str:
+        f = os.path.join(self._tempdir, self._basename + '.' + self._score_format)
+        if os.path.isfile(f):
+            return f
+
+    def paged_scores(self) -> list[str]:
+        raise NotImplementedError()
+
+    def midi(self) -> list[str]:
+        f = os.path.join(self._tempdir, self._basename + '.midi')
+        if os.path.isfile(f):
+            return f
+
+    def audio(self) -> list[str]:
+        f = os.path.join(self._tempdir, self._basename + '.' + self._audio_format)
+        if os.path.isfile(f):
+            return f
+
+    def cleanup(self):
+        try:
+            shutil.rmtree(self._tempdir)
+        except Exception:
+            pass
+
+
 
 class LilyPondDocument(object):
 
@@ -62,7 +110,11 @@ class LilyPondDocument(object):
         if trim_border:
             doc = music.document(self._document)
             paper = list(doc.find_children(items.Paper))[-1]
-            self._set_value(paper, 'indent', '0\mm')
+            self._set_value(paper, 'indent', '0')
+            self._set_value(paper, 'top-margin', '1')
+            self._set_value(paper, 'bottom-margin', '1')
+            self._set_value(paper, 'left-margin', '1')
+            self._set_value(paper, 'right-margin', '1')
 
         if trim_header:
             doc = music.document(self._document)
@@ -94,8 +146,11 @@ class LilyPondDocument(object):
             raise LilyPondDocumentError('Unknown output format: {}' %
                     self._score_format)
 
-        args += ['-dno-gs-load-fonts']
-        args += ['-o', base_name]
+        out = LilyPondOutput(score_format=self._score_format, audio_format=self._audio_format)
+
+        args += ['-dbackend=eps']
+        args += ['-dpreview=#t'] # Enable preview
+        args += ['-o', out.base_path()]
         args += ['-'] # Read lilypond source from STDIN
 
         encoding = self._document.encoding or 'utf-8'
@@ -146,32 +201,212 @@ if __name__ == '__main__':
     doc = LilyPondDocument(r'''
 \version "2.20.0"
 \header {
-  title = "《魔女之泉 1》开场音乐"
-  composer = "Kiwi Walks"
-  arranger = "SilverRainZ"
+  title = "Alice"
+  composer = "古川本舖"
+  arranger = "Osamuraisan"
+  copyright = "SilverRainZ"
+}
+
+prelude = \repeat unfold 2 {
+    e,4 c g d
+    f, c g d
+    g, c g d
+    g,8(a,8\6) c4 g d
+}
+
+interlude = \repeat unfold 2 {
+  <e, g>4 c' d' g'
+  <f, g>4 c' d' g'
+  <g, g>4 c' d' g'
+  <f, g>4 c' d' g'
+}
+
+pieceA = {
+  <a, c'>4 e' <e, g'> g
+}
+
+pieceAi = {
+  <f, c'>4 g' <c g'> g
+}
+
+pieceB = {
+  <c a'>4 g8 c'8 <f, c'>4 d
+}
+
+pieceBi = {
+  <d g'>4 (c'') <a c''> g
+}
+
+pieceBii = {
+  <c c'>4 d <g, d'> d'
+}
+
+pieceBiii = {
+  <c c'>4 d <g, d'> f'
+}
+
+pieceC = {
+  <c a>4 c' <g, e'> d
+}
+
+pieceCi = {
+  <d c'>4 g <g, e'> g
+}
+
+pieceCii = {
+  <c c'>4 d' <a, e'> g8 e'8
+}
+
+pieceCiii = {
+  <d e'>4 c' <a, c'> g8 e'8
+}
+
+pieceCiv = {
+  <c c'>4 d' <a, e'> g
+}
+
+pieceD = {
+  <g, d'>4 c' <a, c'> g
+}
+
+pieceDi = {
+  <g, d'>4 f' <a, e'> d
+}
+
+pieceDii = {
+  <g, d'>4 d8 c'8 <a, c'>4 d8 e'8
+}
+
+pieceDiii = {
+  <g, d'>4 c' <f, c'> g
+}
+
+pieceDiv = {
+  <g, d'>4 d8 c'8 <a, c'>2
 }
 
 symbols =  {
   \time 4/4
-  \tempo  "Allegretto" 4 = 110
+  \tempo  "Allegro" 4 = 150
 
   % 1
-  c'4 c' c' c'8 b8
-  c'4 g' c' c'8 b8
-  c'4 g' (c'') c''8 b'8
-  c''2 r2
+  \prelude
 
-  %14
-  e'4 g c'2
-  a8 c'8 c'8 d'8 c'2
+  %9
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
 
-  e'4 g' c'2
-  c'4 d'8 e'8 c'4 g
+  %13
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
 
-  e'4 g c'2
-  a8 c'8 c'8 d'8 e'4 c'
+  %17
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
 
-  g4 f e f8 g8
+  %21
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceD
+
+  %25
+  \pieceA
+  \pieceB
+  <c a>4 c' <g, e'> <d f'>
+  \pieceD
+
+  %29
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %33
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %37
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar "||"
+
+  %41
+  \pieceDiii
+
+  %42
+  \pieceAi
+  \pieceBii
+  \pieceCii
+  \pieceDiii
+
+  %46
+  \pieceAi
+  \pieceBiii
+  \pieceCiii
+  \pieceDiii
+
+  %50
+  \pieceAi
+  \pieceBiii
+  \pieceCiv
+
+  %53
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar "||"
+
+  %57
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %61
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %65
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %69
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDiv
+
+  \bar "||"
+
+  %73
+  \prelude
+
+  %81
+  \interlude
+
+  \bar "||"
+
+  %89
+  r1
+  r1
 
   \bar "|."
 }
@@ -191,6 +426,7 @@ symbols =  {
   \midi { }
   \layout { }
 }''')
+    doc.trim()
     print(doc._document.plaintext())
-    # doc.trim()
+    doc.set_score_format('png')
     doc.output('test')
