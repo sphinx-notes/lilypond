@@ -11,19 +11,13 @@
     :license: BSD, see LICENSE for details.
 
     The extension is modified from mathbase.py and pngmath.py by Sphinx team.
-
-    Note: The extension has only very basic support for LaTeX builder.
 """
 
 import shutil
 import tempfile
 import posixpath
 from os import path
-from subprocess import Popen, PIPE
-try:
-    from hashlib import sha1 as sha
-except ImportError:
-    from sha import sha
+from hashlib import sha1 as sha
 
 from docutils import nodes, utils
 from docutils.parsers.rst import directives
@@ -32,88 +26,45 @@ from sphinx.util.compat import Directive
 from sphinx.errors import SphinxError
 from sphinx.util import ensuredir
 
-class LilyExtError(SphinxError):
-    category = 'Lilypond extension error'
+from sphinxnotes import binding
 
-DOC_HEAD = r'''
-\paper{
-  indent=0\mm
-  line-width=120\mm
-  oddFooterMarkup=##f
-  oddHeaderMarkup=##f
-  bookTitleMarkup = ##f
-  scoreTitleMarkup = ##f
-}
-'''
+class lilypond_inline_node(nodes.Inline, nodes.TextElement): pass
 
-Inline_HEAD = r'''
-\markup \abs-fontsize #%s { 
-'''
+''' What is PART '''
+class lilypond_outline_node(nodes.Part, nodes.Element): pass
 
-# Inline_HEAD = r'''
-# \markup \abs-fontsize #%s { \musicglyph 
-# '''
-
-Inline_BACK = r'''
-}
-'''
-
-Directive_HEAD = r"""
-\new Score \with {
-  fontSize = #%s
-  \override StaffSymbol #'staff-space = #(magstep %s)
-}{ <<
-"""
-
-Directive_BACK = r"""
->> }
-"""
-
-class lily(nodes.Inline, nodes.TextElement):
-    pass
-
-class displaylily(nodes.Part, nodes.Element):
-    pass
-
-def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+def lilypond_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     music = utils.unescape(text, restore_backslashes=True)
-    return [lily(music=music)], []
+    return [lilypond_inline_node(music=music)], []
 
-class LilyDirective(Directive):
+class LilyPondDirective(Directive):
 
     has_content = True
     required_arguments = 0
     optional_arguments = 1
     final_argument_whitespace = True
     option_spec = {
-        'nowrap': directives.flag,
+        'trim': directives.flag,
+        'format': directives.unchanged,
+        'audio-format': directives.unchanged,
     }
 
     def run(self):
         music = '\n'.join(self.content)
-        node = displaylily()
+        node = lilypond_outline_node()
         node['music'] = music
         node['docname'] = self.state.document.settings.env.docname
-        node['nowrap'] = 'nowrap' in self.options
         return [node]
 
-def render_lily(self, lily):
+def render_lilypond_document(self, doc:str):
     """
     Render the Lilypond music expression *lily* using lilypond.
     """
-    shasum = "%s.png" % sha(lily.encode('utf-8')).hexdigest()
+    shasum = "%s.%s" % sha(lily.encode('utf-8')).hexdigest()
     relfn = posixpath.join(self.builder.imgpath, 'lily', shasum)
     outfn = path.join(self.builder.outdir, '_images', 'lily', shasum)
     if path.isfile(outfn):
         return relfn
-
-    if hasattr(self.builder, '_lilypng_warned'):
-        return None, None
-
-    music = DOC_HEAD + self.builder.config.pnglily_preamble + lily
-    if isinstance(music, unicode):
-        music = music.encode('utf-8')
-
     # use only one tempdir per build -- the use of a directory is cleaner
     # than using temporary files, since we can clean up everything at once
     # just removing the whole directory (see cleanup_tempdir_lily)
@@ -122,21 +73,9 @@ def render_lily(self, lily):
     else:
         tempdir = self.builder._lilypng_tempdir
 
-    tf = open(path.join(tempdir, 'music.ly'), 'w')
-    tf.write(music)
-    tf.close()
-
+    doc
     ensuredir(path.dirname(outfn))
     # use some standard lilypond arguments
-    lilypond_args = [self.builder.config.pnglily_lilypond]
-    #lilypond_args += ['-o', tempdir, '--png']
-    lilypond_args += ['-dbackend=eps', '-dno-gs-load-fonts', '-dinclude-eps-fonts',
-                      '-o', tempdir, '--png']
-    # add custom ones from config value
-    lilypond_args.extend(self.builder.config.pnglily_lilypond_args)
-
-    # last, the input file name
-    lilypond_args.append(path.join(tempdir, 'music.ly'))
     try:
         p = Popen(lilypond_args, stdout=PIPE, stderr=PIPE)
     except OSError, err:
@@ -172,7 +111,7 @@ def html_visit_lily(self, node):
     music += node['music'] + Inline_BACK
     #music += '#"' + node['music'] + '"' + Inline_BACK
     try:
-        fname = render_lily(self, music)
+        fname = render_lilypond_document(self, music)
     except LilyExtError, exc:
         sm = nodes.system_message(unicode(exc), type='WARNING', level=2,
                                   backrefs=[], source=node['music'])
@@ -190,15 +129,10 @@ def html_visit_lily(self, node):
     raise nodes.SkipNode
 
 
-def html_visit_displaylily(self, node):
-    if node['nowrap']:
-        music = node['music']
-    else:
-        music = Directive_HEAD % (self.builder.config.pnglily_fontsize[1],
-                                  self.builder.config.pnglily_fontsize[1])
-        music += node['music'] + Directive_BACK
+def html_visit_lilypond_outline_node(self, node):
+    music = node['music']
     try:
-        fname = render_lily(self, music)
+        fname = render_lilypond_document(self, music)
     except LilyExtError, exc:
         sm = nodes.system_message(unicode(exc), type='WARNING', level=2,
                                   backrefs=[], source=node['music'])
@@ -208,7 +142,7 @@ def html_visit_displaylily(self, node):
     self.body.append(self.starttag(node, 'div', CLASS='lily'))
     self.body.append('<p>')
     if fname is None:
-        # something failed -- use text-only as a bad substitute
+        # Something failed -- use text-only as a bad substitute
         self.body.append('<span class="lily">%s</span>' %
                          self.encode(node['music']).strip())
     else:
@@ -220,7 +154,7 @@ def html_visit_displaylily(self, node):
 
 def setup(app):
     app.add_node(lily, html=(html_visit_lily, None))
-    app.add_node(displaylily, html=(html_visit_displaylily, None))
+    app.add_node(lilypond_outline_node, html=(html_visit_lilypond_outline_node, None))
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_config_value('pnglily_preamble', '', False)
