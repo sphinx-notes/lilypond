@@ -11,53 +11,69 @@ from ly import docinfo
 from ly import music
 from ly.pitch import transpose
 from ly.music import items
-
-# from sphinxnotes.base import LilyPondExtensionError
+from wand import image
 
 class LilyPondDocumentError(Exception):
     pass
 
 class LilyPondOutput(object):
+    '''LilyPondOutput holds a set of files that output by LilyPond
+    '''
 
     _score_format:str = ''
     _audio_format:str = ''
-    _tmpdir:str = ''
-    _basename:str = 'music.ly'
+    _output_path:str = ''
+    _basename:str = 'music'
+    _is_tempdir:bool = True
 
-    def __init__(self, score_format:str, audio_format:str):
+    def __init__(self, score_format:str, audio_format:str, output_path:Optional[str]=None):
         self._score_format = score_format
         self._audio_format = audio_format
-        self._tempdir = tempfile.mkdtemp(prefix='sphinxnotes-lilypond')
+        if output_path:
+            self._output_path = output_path    
+        else:
+            self._output_path = tempfile.mkdtemp(prefix='sphinxnotes-lilypond-')
+            self._is_tempdir = True
+
 
     def base_path(self) -> str:
-        return os.path.join(self._tempdir, self._basename)
+        return os.path.join(self._output_path, self._basename)
+
 
     def score_preview(self) -> Optional[str]:
-        f = os.path.join(self._tempdir, self._basename + '.preview.' + self._score_format)
+        f = os.path.join(self._output_path, self._basename + '.preview.' + self._score_format)
         if os.path.isfile(f):
             return f
 
-    def score(self) -> str:
-        f = os.path.join(self._tempdir, self._basename + '.' + self._score_format)
+
+    def score(self) -> Optional[str]:
+        f = os.path.join(self._output_path, self._basename + '.' + self._score_format)
         if os.path.isfile(f):
             return f
+
 
     def paged_scores(self) -> list[str]:
-        raise NotImplementedError()
+        ''' TODO '''
+        return []
 
-    def midi(self) -> list[str]:
-        f = os.path.join(self._tempdir, self._basename + '.midi')
+
+    def midi(self) -> Optional[str]:
+        f = os.path.join(self._output_path, self._basename + '.midi')
         if os.path.isfile(f):
             return f
 
-    def audio(self) -> list[str]:
-        f = os.path.join(self._tempdir, self._basename + '.' + self._audio_format)
+
+    def audio(self) -> Optional[str]:
+        f = os.path.join(self._output_path, self._basename + '.' + self._audio_format)
         if os.path.isfile(f):
             return f
+
 
     def cleanup(self):
+        if self._is_tempdir:
+            return
         try:
-            shutil.rmtree(self._tempdir)
+            shutil.rmtree(self._output_path)
         except Exception:
             pass
 
@@ -66,13 +82,13 @@ class LilyPondOutput(object):
 class LilyPondDocument(object):
 
     _document:document.Document = None
-    _lilypond_path:str = ''
+    _lilypond_args:str = ''
     _score_format:str = 'png'
-    _audio_format:str = ''
+    _audio_format:str = 'ogg'
 
-    def __init__(self, doc:str, lilypond_path:str='lilypond'):
+    def __init__(self, doc:str, lilypond_args:list[str]=['lilypond']):
         self._document = document.Document(doc)
-        self._lilypond_path = lilypond_path
+        self._lilypond_args = lilypond_args.copy()
 
     def transpose(self, from_pitch:str, to_pitch:str) -> LilyPondDocument:
         fp = pitch.Pitch(
@@ -92,31 +108,27 @@ class LilyPondDocument(object):
                     'Pitch names not available in "{}", skipping file: {}' %
                     (language, cursor.document.filename))
 
-    def trim(self, trim_border=True, trim_header=True, trim_footer=True):
-        # Find \paper block, if not found, we create one
-        if True:
-            doc = music.document(self._document)
-            if not doc.find_child(items.Paper):
-                self._document[0:0] = '''\paper {\n}'''
-
+    def crop(self):
+        doc = music.document(self._document)
         # If more than one ``\paper`` is entered at the top level
         # the definitions are combined, but in conflicting situations
-        # the later definitions take precedence [#]_
-        #
-        # .. [#] https://lilypond.org/doc/v2.20/Documentation/notation/file-structure
-        #
+        # the later definitions take precedence,
         # So we only edit the last paper block
+        paper = list(doc.find_children(items.Paper))[-1]
+        self._set_value(paper, 'indent', '0')
+        self._set_value(paper, 'top-margin', '1')
+        self._set_value(paper, 'bottom-margin', '1')
+        self._set_value(paper, 'left-margin', '1')
+        self._set_value(paper, 'right-margin', '1')
 
-        if trim_border:
-            doc = music.document(self._document)
-            paper = list(doc.find_children(items.Paper))[-1]
-            self._set_value(paper, 'indent', '0')
-            self._set_value(paper, 'top-margin', '1')
-            self._set_value(paper, 'bottom-margin', '1')
-            self._set_value(paper, 'left-margin', '1')
-            self._set_value(paper, 'right-margin', '1')
+    def strip_header_footer(self, strip_header=True, strip_footer=True):
+        '''Strip header and footer from outputed scores
+        '''
+        # Find \paper block, if not found, we create one
+        if not music.document(self._document).find_child(items.Paper):
+            self._document[0:0] = '''\paper {\n}'''
 
-        if trim_header:
+        if strip_header:
             doc = music.document(self._document)
             paper = list(doc.find_children(items.Paper))[-1]
             self._set_value(paper, 'oddHeaderMarkup', '##f')
@@ -124,48 +136,86 @@ class LilyPondDocument(object):
             self._set_value(paper, 'bookTitleMarkup', '##f')
             self._set_value(paper, 'scoreTitleMarkup', '##f')
 
-        if trim_footer:
+        if strip_footer:
             doc = music.document(self._document)
             paper = list(doc.find_children(items.Paper))[-1]
             self._set_value(paper, 'oddFooterMarkup', '##f')
             self._set_value(paper, 'evenFooterMarkup', '##f')
 
-    def set_audio_format(self, fmt:str):
-        self._audio_format = fmt
 
-    def set_score_format(self, fmt:str):
-        self._score_format = fmt
+    def enable_audio_output(self):
+        '''Enable audio output for this document.
+        In other words, insert ``\midi{}`` to every ``\score{}`` block
+        '''
+        no_score_found = True
+        doc = music.document(self._document)
+        for score in doc.find_children(items.Score): # \score
+            no_score_found = False
+            if not score.find_child(items.Midi):
+                self._insert_item(score, '\midi {}')
+        if no_score_found:
+            self._insert_item(doc, '\midi {}')
 
-    def output(self, base_name:str):
-        args = [self._lilypond_path]
-        if self._score_format in ['png', 'pdf', 'ps', 'eps']:
-            args += ['--formats', self._score_format]
-        elif self._score_format == 'svg':
+
+    def output(self,
+            score_format:str='png',
+            enable_preview:bool=False,
+            crop_blank:bool=True,
+            output_path:Optional[str]=None) -> LilyPondOutput:
+        '''Output scores from LilyPond Document
+        '''
+        args = self._lilypond_args.copy()
+
+        if score_format in ['png', 'pdf', 'ps', 'eps']:
+            args += ['--formats', score_format]
+        elif score_format == 'svg':
             args += ['-dbackend=svg']
         else:
-            raise LilyPondDocumentError('Unknown output format: {}' %
-                    self._score_format)
+            raise LilyPondDocumentError('Unknown score format: {}' % score_format )
 
-        out = LilyPondOutput(score_format=self._score_format, audio_format=self._audio_format)
+        if enable_preview:
+            args += ['-dpreview=#t']
 
-        args += ['-dbackend=eps']
-        args += ['-dpreview=#t'] # Enable preview
+        out = LilyPondOutput(
+                score_format=score_format,
+                audio_format='ogg',
+                output_path=output_path) # Only ogg for now
+
         args += ['-o', out.base_path()]
         args += ['-'] # Read lilypond source from STDIN
 
-        encoding = self._document.encoding or 'utf-8'
         try:
             p = subprocess.run(args,
                     input=self._document.plaintext(),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    encoding=encoding)
+                    encoding=self._document.encoding or 'utf-8')
         except OSError:
+            out.cleanup()
             raise
         if p.returncode != 0:
+            out.cleanup()
             raise LilyPondDocumentError(
                     'LilyPond exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
+
+        if crop_blank:
+            score_file = out.score()
+            if score_file:
+                self._crop_blank(score_file)
+            for s in out.paged_scores():
+                self._crop_blank(s)
+
+        midi_file = out.midi()
+        if midi_file:
+            try:
+                self._midi_to_audio(midi_file)
+            except Exception as e:
+                out.cleanup()
+                raise e
+
+        return out
+
 
     def _replace_item(self, item:items.Item, new_item:str):
         '''Replace the text at position of given item to new_item.
@@ -175,6 +225,7 @@ class LilyPondDocument(object):
         with self._document as d:
             d[item.position:item.end_position()] = new_item
 
+
     def _insert_item(self, container:items.Container, item:str):
         '''Insert the text into position of given container.
         Note that the position of other music items on same tree may be influenced
@@ -182,6 +233,7 @@ class LilyPondDocument(object):
         '''
         with self._document as d:
             d[container.end_position()-1:container.end_position()-1] = item + '\n'
+
 
     def _set_value(self, container:items.Container, name:str, val:str):
         found = False
@@ -196,237 +248,26 @@ class LilyPondDocument(object):
             # Insert a assignment expression directly when nothing found
             self._insert_item(container, name + '=' + val)
 
-            
-if __name__ == '__main__':
-    doc = LilyPondDocument(r'''
-\version "2.20.0"
-\header {
-  title = "Alice"
-  composer = "古川本舖"
-  arranger = "Osamuraisan"
-  copyright = "SilverRainZ"
-}
 
-prelude = \repeat unfold 2 {
-    e,4 c g d
-    f, c g d
-    g, c g d
-    g,8(a,8\6) c4 g d
-}
+    def _crop_blank(self, score_file:str):
+        with image.Image(filename=score_file) as i:
+            i.trim()
+            i.save(filename=score_file)
 
-interlude = \repeat unfold 2 {
-  <e, g>4 c' d' g'
-  <f, g>4 c' d' g'
-  <g, g>4 c' d' g'
-  <f, g>4 c' d' g'
-}
 
-pieceA = {
-  <a, c'>4 e' <e, g'> g
-}
+    def _midi_to_audio(self, midi_file:str):
+        try:
+            p = subprocess.run(['timidity', '-Ov', midi_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+        except OSError:
+            raise
+        if p.returncode != 0:
+            raise LilyPondDocumentError(
+                    'TiMidity++ exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
+                    (p.stderr, p.stdout))
 
-pieceAi = {
-  <f, c'>4 g' <c g'> g
-}
 
-pieceB = {
-  <c a'>4 g8 c'8 <f, c'>4 d
-}
-
-pieceBi = {
-  <d g'>4 (c'') <a c''> g
-}
-
-pieceBii = {
-  <c c'>4 d <g, d'> d'
-}
-
-pieceBiii = {
-  <c c'>4 d <g, d'> f'
-}
-
-pieceC = {
-  <c a>4 c' <g, e'> d
-}
-
-pieceCi = {
-  <d c'>4 g <g, e'> g
-}
-
-pieceCii = {
-  <c c'>4 d' <a, e'> g8 e'8
-}
-
-pieceCiii = {
-  <d e'>4 c' <a, c'> g8 e'8
-}
-
-pieceCiv = {
-  <c c'>4 d' <a, e'> g
-}
-
-pieceD = {
-  <g, d'>4 c' <a, c'> g
-}
-
-pieceDi = {
-  <g, d'>4 f' <a, e'> d
-}
-
-pieceDii = {
-  <g, d'>4 d8 c'8 <a, c'>4 d8 e'8
-}
-
-pieceDiii = {
-  <g, d'>4 c' <f, c'> g
-}
-
-pieceDiv = {
-  <g, d'>4 d8 c'8 <a, c'>2
-}
-
-symbols =  {
-  \time 4/4
-  \tempo  "Allegro" 4 = 150
-
-  % 1
-  \prelude
-
-  %9
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceD
-
-  %13
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceDi
-
-  %17
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceD
-
-  %21
-  \pieceA
-  \pieceBi
-  \pieceCi
-  \pieceD
-
-  %25
-  \pieceA
-  \pieceB
-  <c a>4 c' <g, e'> <d f'>
-  \pieceD
-
-  %29
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceDi
-
-  %33
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceD
-
-  %37
-  \pieceA
-  \pieceBi
-  \pieceCi
-  \pieceDii
-
-  \bar "||"
-
-  %41
-  \pieceDiii
-
-  %42
-  \pieceAi
-  \pieceBii
-  \pieceCii
-  \pieceDiii
-
-  %46
-  \pieceAi
-  \pieceBiii
-  \pieceCiii
-  \pieceDiii
-
-  %50
-  \pieceAi
-  \pieceBiii
-  \pieceCiv
-
-  %53
-  \pieceA
-  \pieceBi
-  \pieceCi
-  \pieceDii
-
-  \bar "||"
-
-  %57
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceD
-
-  %61
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceDi
-
-  %65
-  \pieceA
-  \pieceB
-  \pieceC
-  \pieceD
-
-  %69
-  \pieceA
-  \pieceBi
-  \pieceCi
-  \pieceDiv
-
-  \bar "||"
-
-  %73
-  \prelude
-
-  %81
-  \interlude
-
-  \bar "||"
-
-  %89
-  r1
-  r1
-
-  \bar "|."
-}
-
-\score {
-  <<
-    \new Staff {
-      \clef "G_8"
-      \symbols
-    }
-    \new TabStaff {
-      \tabFullNotation
-      \symbols
-    }
-  >>
-
-  \midi { }
-  \layout { }
-}''')
-    doc.trim()
-    print(doc._document.plaintext())
-    doc.set_score_format('png')
-    doc.output('test')
+    def _merge_pages(self, score_files:list[str]):
+        ''' TODO '''
+        pass
