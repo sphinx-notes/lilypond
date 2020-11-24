@@ -16,6 +16,7 @@ from wand import image
 class LilyPondDocumentError(Exception):
     pass
 
+
 class LilyPondOutput(object):
     '''LilyPondOutput holds a set of files that output by LilyPond
     '''
@@ -90,6 +91,9 @@ class LilyPondDocument(object):
         self._document = document.Document(doc)
         self._lilypond_args = lilypond_args.copy()
 
+    def plaintext(self):
+        return self._document.plaintext()
+
     def transpose(self, from_pitch:str, to_pitch:str) -> LilyPondDocument:
         fp = pitch.Pitch(
                 *pitch.pitchReader("nederlands")(from_pitch[0]),
@@ -114,12 +118,12 @@ class LilyPondDocument(object):
         # the definitions are combined, but in conflicting situations
         # the later definitions take precedence,
         # So we only edit the last paper block
-        paper = list(doc.find_children(items.Paper))[-1]
-        self._set_value(paper, 'indent', '0')
-        self._set_value(paper, 'top-margin', '1')
-        self._set_value(paper, 'bottom-margin', '1')
-        self._set_value(paper, 'left-margin', '1')
-        self._set_value(paper, 'right-margin', '1')
+        # paper = list(doc.find_children(items.Paper))[-1]
+        # self._set_value(paper, 'indent', '0')
+        # self._set_value(paper, 'top-margin', '1')
+        # self._set_value(paper, 'bottom-margin', '1')
+        # self._set_value(paper, 'left-margin', '1')
+        # self._set_value(paper, 'right-margin', '1')
 
     def strip_header_footer(self, strip_header=True, strip_footer=True):
         '''Strip header and footer from outputed scores
@@ -145,17 +149,20 @@ class LilyPondDocument(object):
 
     def enable_audio_output(self):
         '''Enable audio output for this document.
-        In other words, insert ``\midi{}`` to every ``\score{}`` block
+        In other words, insert ``\midi{}`` to every ``\score{}`` block.
+        If no ``\score{}`` found, find music list under root node, pack it
+        in ``\socre{}``, then call this function again.
         '''
         no_score_found = True
         doc = music.document(self._document)
         for score in doc.find_children(items.Score): # \score
             no_score_found = False
             if not score.find_child(items.Midi):
-                self._insert_item(score, '\midi {}')
+                self._insert_into(score, '\midi {}')
+                self._insert_into(score, '\layout {}') # FIXME
         if no_score_found:
-            self._insert_item(doc, '\midi {}')
-
+            if self._pack_music_list():
+                self.enable_audio_output()
 
     def output(self,
             score_format:str='png',
@@ -164,6 +171,7 @@ class LilyPondDocument(object):
             output_path:Optional[str]=None) -> LilyPondOutput:
         '''Output scores from LilyPond Document
         '''
+        print(self.plaintext())
         args = self._lilypond_args.copy()
 
         if score_format in ['png', 'pdf', 'ps', 'eps']:
@@ -207,6 +215,9 @@ class LilyPondDocument(object):
                 self._crop_blank(s)
 
         midi_file = out.midi()
+        print('==========')
+        print(midi_file)
+        print('==========')
         if midi_file:
             try:
                 self._midi_to_audio(midi_file)
@@ -226,14 +237,31 @@ class LilyPondDocument(object):
             d[item.position:item.end_position()] = new_item
 
 
-    def _insert_item(self, container:items.Container, item:str):
+    def _insert_into(self, container:items.Container, item:str):
         '''Insert the text into position of given container.
         Note that the position of other music items on same tree may be influenced
         after insertion.
         '''
         with self._document as d:
-            d[container.end_position()-1:container.end_position()-1] = item + '\n'
+            d[container.end_position()-1:container.end_position()-1] = '\n' + item + '\n'
 
+
+    def _insert_before(self, container:items.Container, item:str):
+        '''Insert the text before position of given container.
+        Note that the position of other music items on same tree may be influenced
+        after insertion.
+        '''
+        with self._document as d:
+            d[container.position:container.position] = '\n' + item + '\n'
+
+
+    def _insert_after(self, container:items.Container, item:str):
+        '''Insert the text after position of given container.
+        Note that the position of other music items on same tree may be influenced
+        after insertion.
+        '''
+        with self._document as d:
+            d[container.end_position():container.end_position()] = '\n' + item + '\n'
 
     def _set_value(self, container:items.Container, name:str, val:str):
         found = False
@@ -246,7 +274,7 @@ class LilyPondDocument(object):
                     found = True
         if not found:
             # Insert a assignment expression directly when nothing found
-            self._insert_item(container, name + '=' + val)
+            self._insert_into(container, name + '=' + val)
 
 
     def _crop_blank(self, score_file:str):
@@ -268,6 +296,26 @@ class LilyPondDocument(object):
                     (p.stderr, p.stdout))
 
 
+    def _pack_music_list(self) -> bool:
+        '''Find music list under root node, pack it in ``\socre{}``.
+        Return turn when at least one music list is packed.
+        '''
+        packed = False
+        doc = music.document(self._document)
+        print(doc.dump())
+        for mit in doc.find_children(items.MusicList):
+            if mit.parent() == doc:
+                self._insert_after(mit, r'}')
+                self._insert_before(mit, r'\score {')
+                packed = True
+            elif isinstance(mit.parent(), (items.Relative, items.Absolute)) \
+                    and mit.parent().parent() == doc:
+                self._insert_after(mit.parent(), r'}')
+                self._insert_before(mit.parent(), r'\score {')
+                packed = True
+        return packed
+
+
     def _merge_pages(self, score_files:list[str]):
-        ''' TODO '''
+        # TODO 
         pass
