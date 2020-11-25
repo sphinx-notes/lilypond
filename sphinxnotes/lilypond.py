@@ -21,7 +21,7 @@ from hashlib import sha1 as sha
 from docutils import nodes
 from docutils.utils import unescape
 from docutils.parsers.rst import directives, Directive
-from sphinx.util import ensuredir
+from sphinx.util import ensuredir, relative_uri
 
 from sphinxnotes import binding
 
@@ -60,28 +60,30 @@ class LilyPondDirective(Directive):
         node['docname'] = self.state.document.settings.env.docname
         return [node]
 
-def copy_image_file(self, doc:binding.LilyPondDocument, form:str) ->str:
-    shasum = "%s" % sha(doc.plaintext().encode('utf-8')).hexdigest()
-    relfn = posixpath.join('_images', 'lilypond', shasum)
-    outfn = path.join(self.builder.outdir, '_images', 'lilypond', shasum)
+def copy_file(builder, node, srcfn:str, destdir: str) ->str:
+    '''Copy file srcfn to builder's outdir, return a relative path to current
+    document. If the file already exists in destdir, just return the relative path.
+    '''
+    _, ext = path.splitext(srcfn)
+    shasum = sha(node[_LILYPOND_DOC].encode('utf-8')).hexdigest() + ext
+    outfn = path.join(builder.outdir, destdir, 'lilypond', shasum)
+    reluri = relative_uri(builder.get_target_uri(node['docname']), destdir)
+    relfn = posixpath.join(reluri, 'lilypond', shasum)
     if path.isfile(outfn):
         return relfn
     ensuredir(path.dirname(outfn))
-    shutil.copyfile(form, outfn)
+    shutil.copyfile(srcfn, outfn)
     return relfn
 
 
-def copy_audio_file(self, doc:binding.LilyPondDocument, form:str) ->str:
-    shasum = "%s" % sha(doc.plaintext().encode('utf-8')).hexdigest()
-    relfn = posixpath.join('_audio', 'lilypond', shasum)
-    outfn = path.join(self.builder.outdir, '_audio', 'lilypond', shasum)
-    if path.isfile(outfn):
-        return relfn
-    ensuredir(path.dirname(outfn))
-    shutil.copyfile(form, outfn)
+def copy_image_file(builder, node, imgfn:str) -> str:
+    return copy_file(builder, node, imgfn, '_images')
 
 
-    return relfn
+def copy_audio_file(builder, node, audfn:str) -> str:
+    return copy_file(builder, node, audfn, '_audio')
+
+
 def html_visit_lilypond_inline_node(self, node):
     doc = binding.LilyPondDocument(node[_LILYPOND_DOC])
     try:
@@ -94,7 +96,7 @@ def html_visit_lilypond_inline_node(self, node):
 
     imgfn = out.score_preview()
     if imgfn:
-        imgfn = copy_image_file(self, doc, imgfn)
+        imgfn = copy_image_file(self.builder, node, imgfn)
         self.body.append(
             '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
             (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
@@ -125,12 +127,12 @@ def html_visit_lilypond_outline_node(self, node):
         if out.audio():
             self.body.append('<figure>\n')
 
-        imgfn = copy_image_file(self, doc, out.score())
+        imgfn = copy_image_file(self.builder, node, out.score())
         self.body.append('<img class="%s" src="%s" alt="%s" />\n' %
                 (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
 
         if out.audio():
-            audfn = copy_audio_file(self, doc, out.audio())
+            audfn = copy_audio_file(self.builder, node, out.audio())
             self.body.append('<figcaption>\n')
             self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
                     ('controls', _SCORE_CLASS, 'width:100%;', audfn))
