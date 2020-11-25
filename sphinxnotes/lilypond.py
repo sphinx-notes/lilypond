@@ -125,15 +125,15 @@ def html_visit_lilypond_outline_node(self, node):
 
     if out.score():
         if out.audio():
-            self.body.append('<figure>\n')
+            self.body.append('<figure style="display:table;">\n')
 
         imgfn = copy_image_file(self.builder, node, out.score())
-        self.body.append('<img class="%s" src="%s" alt="%s" />\n' %
+        self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
                 (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
 
         if out.audio():
             audfn = copy_audio_file(self.builder, node, out.audio())
-            self.body.append('<figcaption>\n')
+            self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
             self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
                     ('controls', _SCORE_CLASS, 'width:100%;', audfn))
             self.body.append('</figcaption>\n')
