@@ -121,15 +121,25 @@ def html_visit_lilypond_outline_node(self, node):
     self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
     self.body.append('<p>')
 
-    imgfn = out.score()
-    if imgfn:
-        imgfn = copy_image_file(self, doc, imgfn)
-        audfn = copy_audio_file(self, doc, out.audio())
+    if out.score():
+        if out.audio():
+            self.body.append('<figure>\n')
+
+        imgfn = copy_image_file(self, doc, out.score())
         self.body.append('<img class="%s" src="%s" alt="%s" />\n' %
                 (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
-        self.body.append('<audio %s class="%s" src="%s" />\n' %
-                ('controls', _SCORE_CLASS, audfn))
-        self.body.append('</div>')
+
+        if out.audio():
+            audfn = copy_audio_file(self, doc, out.audio())
+            self.body.append('<figcaption>\n')
+            self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
+                    ('controls', _SCORE_CLASS, 'width:100%;', audfn))
+            self.body.append('</figcaption>\n')
+            self.body.append('</figure>\n')
+            self.body.append('</div>')
+
+        if out.audio():
+            self.body.append('</figure>\n')
     else:
         # Something failed -- use text-only as a bad substitute
         self.body.append('<span class="%s">%s</span>' %
