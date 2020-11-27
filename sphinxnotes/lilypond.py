@@ -15,57 +15,93 @@
 
 import shutil
 import posixpath
+import tempfile
 from os import path
 from hashlib import sha1 as sha
-
+from abc import abstractmethod
+ 
 from docutils import nodes
 from docutils.utils import unescape
 from docutils.parsers.rst import directives, Directive
 from sphinx.util import ensuredir, relative_uri
+from sphinx.config import Config
+from sphinx.errors import SphinxError
 
-from sphinxnotes import binding
+from sphinxnotes import lilyport
 
-_SCORE_CLASS = 'lilypond-score'
-_AUDIO_CLASS = 'lilypond-audio'
-_LILYPOND_DOC = 'lilypond-doc'
+_DIVCLS = 'lilypond'
+_SCORECLS = 'lilypond-score'
+_AUDIOCLS = 'lilypond-audio'
 
-class lilypond_node(nodes.Inline, nodes.TextElement): pass
+class LilyError(SphinxError):
+    category = 'LilyPond extension error'
 
-class lilypond_inline_node(nodes.Inline, nodes.TextElement): pass
+class lily_inline_node(nodes.Inline, nodes.TextElement): pass
 
-class lilypond_outline_node(nodes.Part, nodes.Element): pass
+class lily_outline_node(nodes.Part, nodes.Element): pass
 
-def lilypond_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    node = lilypond_inline_node()
-    node[_LILYPOND_DOC] = unescape(text, restore_backslashes=True)
+def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    node = lily_inline_node()
+    node['lilysrc'] = unescape(text, restore_backslashes=True)
     return [node], []
 
-class LilyPondDirective(Directive):
+class BaseLilyDirective(Directive):
 
-    has_content = True
-    required_arguments = 0
     optional_arguments = 5
-    final_argument_whitespace = True
     option_spec = {
-        'format': directives.unchanged,
         'crop': directives.flag,
-        'no-audio': directives.flag,
-        'no-header': directives.flag,
-        'no-footer': directives.flag,
+        'audio': directives.unchanged, # control, autoplay,
+        'transpose': directives.unchanged,
+        'noheader': directives.flag,
+        'nofooter': directives.flag,
     }
 
+
+    @abstractmethod
+    def read_lily_source(self, node: nodes.Node):
+        raise NotImplementedError()
+
+
     def run(self):
-        node = lilypond_outline_node()
-        node[_LILYPOND_DOC] = '\n'.join(self.content)
+        node = lily_outline_node()
         node['docname'] = self.state.document.settings.env.docname
+        node['crop'] = 'crop' in self.options
+        node['audio'] = self.options.get('audio')
+        node['transpose'] = self.options.get('transpose')
+        node['noheader'] = 'noheader' in self.options
+        node['nofooter'] = 'nofooter' in self.options
+        node['lilysrc'] = self.read_lily_source()
         return [node]
 
-def copy_file(builder, node, srcfn:str, destdir: str) ->str:
+class LilyDirective(BaseLilyDirective):
+
+    has_content = True
+
+    def read_lily_source(self) -> str:
+        return '\n'.join(self.content)
+
+
+class LilyIncludeDirective(BaseLilyDirective):
+
+    required_arguments = 1
+    final_argument_whitespace = True
+
+    def read_lily_source(self) -> str:
+        lilyfn = self.arguments[0]
+        if not path.isabs(lilyfn):
+            # Rel to abs
+            env = self.state.document.settings.env
+            lilyfn = path.join(path.dirname(env.doc2path(env.docname)), lilyfn)
+        with open(lilyfn, 'r') as f:
+            return f.read()
+
+
+def copy_file(builder, node, srcfn:str, destdir:str) ->str:
     '''Copy file srcfn to builder's outdir, return a relative path to current
     document. If the file already exists in destdir, just return the relative path.
     '''
     _, ext = path.splitext(srcfn)
-    shasum = sha(node[_LILYPOND_DOC].encode('utf-8')).hexdigest() + ext
+    shasum = sha(node['lilysrc'].encode('utf-8')).hexdigest() + ext
     outfn = path.join(builder.outdir, destdir, 'lilypond', shasum)
     reluri = relative_uri(builder.get_target_uri(node['docname']), destdir)
     relfn = posixpath.join(reluri, 'lilypond', shasum)
@@ -84,78 +120,90 @@ def copy_audio_file(builder, node, audfn:str) -> str:
     return copy_file(builder, node, audfn, '_audio')
 
 
-def html_visit_lilypond_inline_node(self, node):
-    doc = binding.LilyPondDocument(node[_LILYPOND_DOC])
+def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
+    return lilyport.Document(node['lilysrc'],
+            lilypond_args = config.lilypond_lilypond_args,
+            timidity_args = config.lilypond_timidity_args,
+            magick_home = config.lilypond_magick_home)
+
+
+def html_visit_lily_inline_node(self, node: lily_inline_node):
+    doc = create_document(self.builder.config, node)
+    outdir = self.builder.config.lilypond_builddir or tempfile.mkdtemp()
+    out:lilyport.Output = None
     try:
-        out = doc.output(enable_preview=True)
-    except binding.LilyPondDocumentError as e:
+        out = doc.output(outdir, enable_preview=True)
+    except lilyport.Error as e:
         sm = nodes.system_message(e, type='WARNING', level=2,
-                                  backrefs=[], source=node[_LILYPOND_DOC])
+                                  backrefs=[], source=node['lilysrc'])
         sm.walkabout(self)
         raise nodes.SkipNode
 
-    imgfn = out.score_preview()
-    if imgfn:
-        imgfn = copy_image_file(self.builder, node, imgfn)
+    if out.preview:
+        imgfn = copy_image_file(self.builder, node, out.preview)
         self.body.append(
             '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
-            (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
+            (_SCORECLS, imgfn, self.encode(out.source).strip()))
     else:
         # Something failed -- use text-only as a bad substitute
         self.body.append('<span class="%s">%s</span>' %
-                (_SCORE_CLASS, self.encode(node[_LILYPOND_DOC]).strip()))
+                (_SCORECLS, self.encode(out.source).strip()))
     out.cleanup()
     raise nodes.SkipNode
 
 
-def html_visit_lilypond_outline_node(self, node):
-    doc = binding.LilyPondDocument(node[_LILYPOND_DOC])
+def html_visit_lily_outline_node(self, node:lily_outline_node):
+    doc = create_document(self.builder.config, node)
+    outdir = self.builder.config.lilypond_builddir or tempfile.mkdtemp()
+    out:lilyport.Output = None
     try:
-        doc.enable_audio_output()
-        doc.strip_header_footer()
-        out = doc.output(crop_blank=True)
-    except binding.LilyPondDocumentError as e:
+        if node.get('transpose'):
+            from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
+            doc.transpose(from_pitch, to_pitch)
+        if node.get('audio'): # TODO
+            doc.enable_audio_output()
+        doc.strip_header_footer(
+                strip_header=node.get('noheader'),
+                strip_footer=node.get('nofooter'))
+        out = doc.output(outdir, crop=node.get('crop'))
+    except lilyport.Error as e:
         sm = nodes.system_message(e, type='WARNING', level=2,
-                                  backrefs=[], source=node[_LILYPOND_DOC])
+                                  backrefs=[], source=node['lilysrc'])
         sm.walkabout(self)
-        raise e
         raise nodes.SkipNode
     self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
     self.body.append('<p>')
 
-    if out.score():
-        if out.audio():
-            self.body.append('<figure style="display:table;">\n')
+    if out.audio:
+        self.body.append('<figure style="display:table;">\n')
 
-        imgfn = copy_image_file(self.builder, node, out.score())
-        self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                (_SCORE_CLASS, imgfn, self.encode(node[_LILYPOND_DOC]).strip()))
+    imgfn = copy_image_file(self.builder, node, out.score)
+    self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
+            (_SCORECLS, imgfn, self.encode(out.source).strip()))
 
-        if out.audio():
-            audfn = copy_audio_file(self.builder, node, out.audio())
-            self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
-            self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
-                    ('controls', _SCORE_CLASS, 'width:100%;', audfn))
-            self.body.append('</figcaption>\n')
-            self.body.append('</figure>\n')
-            self.body.append('</div>')
+    if out.audio:
+        audfn = copy_audio_file(self.builder, node, out.audio)
+        self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
+        self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
+                ('controls', _SCORECLS, 'width:100%;', audfn))
+        self.body.append('</figcaption>\n')
+        self.body.append('</figure>\n')
+        self.body.append('</div>')
+        self.body.append('</figure>\n')
 
-        if out.audio():
-            self.body.append('</figure>\n')
-    else:
-        # Something failed -- use text-only as a bad substitute
-        self.body.append('<span class="%s">%s</span>' %
-                         (_SCORE_CLASS, self.encode(node[_LILYPOND_DOC]).strip()))
     self.body.append('</p>')
     raise nodes.SkipNode
 
 
 def setup(app):
-    app.add_node(lilypond_inline_node, html=(html_visit_lilypond_inline_node, None))
-    app.add_node(lilypond_outline_node, html=(html_visit_lilypond_outline_node, None))
-    app.add_role('lily', lilypond_role)
-    app.add_directive('lily', LilyPondDirective)
+    app.add_node(lily_inline_node, html=(html_visit_lily_inline_node, None))
+    app.add_node(lily_outline_node, html=(html_visit_lily_outline_node, None))
+    app.add_role('lily', lily_role)
+    app.add_directive('lily', LilyDirective)
+    app.add_directive('lilyinclude', LilyIncludeDirective)
 
     app.add_config_value('lilypond_lilypond_args', ['lilypond'], '')
     app.add_config_value('lilypond_timidity_args', ['timidity'], '')
-    app.add_config_value('lilypond_magick_home', '', '')
+    app.add_config_value('lilypond_magick_home', None, '')
+    app.add_config_value('lilypond_builddir', None, '')
+    # TODO: Font size

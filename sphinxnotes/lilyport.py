@@ -1,9 +1,22 @@
+# -*- coding: utf-8 -*-
+"""
+    Simple wrapper for LilyPond
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Allow Lilypond music notes to be transposed and converted to image, audio,
+    and so on.
+
+    :copyright: Copyright ©2020 by Shengyu Zhang.
+    :license: BSD, see LICENSE for details.
+"""
+
 from __future__ import annotations
 from typing import Optional   
 import os
+from os import path
 import subprocess
-import tempfile
-import shutil
+import random
+import string
 
 from ly import pitch
 from ly import document
@@ -13,88 +26,42 @@ from ly.pitch import transpose
 from ly.music import items
 from wand import image
 
-class LilyPondDocumentError(Exception):
-    pass
+
+def random_basename() -> str:
+    return 'music-' + ''.join(random.choice(string.ascii_lowercase) for i in range(5))
 
 
-class LilyPondOutput(object):
-    '''LilyPondOutput holds a set of files that output by LilyPond
-    '''
-
-    _score_format:str = ''
-    _audio_format:str = ''
-    _output_path:str = ''
-    _basename:str = 'music'
-    _is_tempdir:bool = True
-
-    def __init__(self, score_format:str, audio_format:str, output_path:Optional[str]=None):
-        self._score_format = score_format
-        self._audio_format = audio_format
-        if output_path:
-            self._output_path = output_path    
-        else:
-            self._output_path = tempfile.mkdtemp(prefix='sphinxnotes-lilypond-')
-            self._is_tempdir = True
+class Error(Exception): pass
 
 
-    def base_path(self) -> str:
-        return os.path.join(self._output_path, self._basename)
+class Output(object):
+    source:str
+    score:str
+    preview:Optional[str]
+    audio:Optional[str]
+    paged_scores:list[str]
 
 
-    def score_preview(self) -> Optional[str]:
-        f = os.path.join(self._output_path, self._basename + '.preview.' + self._score_format)
-        if os.path.isfile(f):
-            return f
-
-
-    def score(self) -> Optional[str]:
-        f = os.path.join(self._output_path, self._basename + '.' + self._score_format)
-        if os.path.isfile(f):
-            return f
-
-
-    def paged_scores(self) -> list[str]:
-        ''' TODO '''
-        return []
-
-
-    def midi(self) -> Optional[str]:
-        f = os.path.join(self._output_path, self._basename + '.midi')
-        if os.path.isfile(f):
-            return f
-
-
-    def audio(self) -> Optional[str]:
-        f = os.path.join(self._output_path, self._basename + '.' + self._audio_format)
-        if os.path.isfile(f):
-            return f
-
-
-    def cleanup(self):
-        if self._is_tempdir:
-            return
-        try:
-            shutil.rmtree(self._output_path)
-        except Exception:
-            pass
-
-
-
-class LilyPondDocument(object):
+class Document(object):
 
     _document:document.Document = None
-    _lilypond_args:str = ''
-    _score_format:str = 'png'
-    _audio_format:str = 'ogg'
+    _lilypond_args:list[str] = []
+    _timidity_args:list[str] = []
+    _magick_home:Optional[str] = None
 
-    def __init__(self, doc:str, lilypond_args:list[str]=['lilypond']):
-        self._document = document.Document(doc)
+    def __init__(self, src:str,
+            lilypond_args:list[str]=['lilypond'],
+            timidity_args:list[str]=['timidity'],
+            magick_home:Optional[str]=''):
+        self._document = document.Document(src)
         self._lilypond_args = lilypond_args.copy()
+        self._timidity_args = timidity_args.copy()
+        self._magick_home = magick_home
 
     def plaintext(self):
         return self._document.plaintext()
 
-    def transpose(self, from_pitch:str, to_pitch:str) -> LilyPondDocument:
+    def transpose(self, from_pitch:str, to_pitch:str):
         fp = pitch.Pitch(
                 *pitch.pitchReader("nederlands")(from_pitch[0]),
                 octave = pitch.octaveToNum(from_pitch[1:]))
@@ -108,22 +75,10 @@ class LilyPondDocument(object):
                     relative_first_pitch_absolute = True) # Only consider LilyPond >= 2.18 for now
         except pitch.PitchNameNotAvailable:
             language = docinfo.DocInfo(cursor.document).language()
-            raise LilyPondDocumentError(
+            raise Error(
                     'Pitch names not available in "{}", skipping file: {}' %
                     (language, cursor.document.filename))
 
-    def crop(self):
-        doc = music.document(self._document)
-        # If more than one ``\paper`` is entered at the top level
-        # the definitions are combined, but in conflicting situations
-        # the later definitions take precedence,
-        # So we only edit the last paper block
-        # paper = list(doc.find_children(items.Paper))[-1]
-        # self._set_value(paper, 'indent', '0')
-        # self._set_value(paper, 'top-margin', '1')
-        # self._set_value(paper, 'bottom-margin', '1')
-        # self._set_value(paper, 'left-margin', '1')
-        # self._set_value(paper, 'right-margin', '1')
 
     def strip_header_footer(self, strip_header=True, strip_footer=True):
         '''Strip header and footer from outputed scores
@@ -164,66 +119,62 @@ class LilyPondDocument(object):
             if self._pack_music_list():
                 self.enable_audio_output()
 
-    def output(self,
-            score_format:str='png',
-            enable_preview:bool=False,
-            crop_blank:bool=True,
-            output_path:Optional[str]=None) -> LilyPondOutput:
-        '''Output scores from LilyPond Document
-        '''
-        print(self.plaintext())
-        args = self._lilypond_args.copy()
 
+    def output(self, outdir,
+            score_format:str='png',
+            preview:bool=False,
+            crop:bool=True) -> Output:
+        '''Output scores and related files from LilyPond Document
+        '''
+        args = self._lilypond_args.copy()
         if score_format in ['png', 'pdf', 'ps', 'eps']:
             args += ['--formats', score_format]
         elif score_format == 'svg':
             args += ['-dbackend=svg']
         else:
-            raise LilyPondDocumentError('Unknown score format: {}' % score_format )
+            raise Error('Unknown score format: {}' % score_format )
 
-        if enable_preview:
+        if preview:
             args += ['-dpreview=#t']
 
-        out = LilyPondOutput(
-                score_format=score_format,
-                audio_format='ogg',
-                output_path=output_path) # Only ogg for now
 
-        args += ['-o', out.base_path()]
-        args += ['-'] # Read lilypond source from STDIN
+        basefn = path.join(outdir, random_basename())
+        srcfn = basefn + '.ly'
+        with open(srcfn, 'w') as f:
+            f.write(self.plaintext())
+        args += [srcfn, '-o', outdir]
+        out = Output()
+        out.source = srcfn
 
         try:
             p = subprocess.run(args,
-                    input=self._document.plaintext(),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     encoding=self._document.encoding or 'utf-8')
-        except OSError:
-            out.cleanup()
-            raise
+        except OSError as e:
+            raise Error('LilyPond can not be run') from e
         if p.returncode != 0:
-            out.cleanup()
-            raise LilyPondDocumentError(
-                    'LilyPond exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
+            raise Error('LilyPond exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
 
-        if crop_blank:
-            score_file = out.score()
-            if score_file:
-                self._crop_blank(score_file)
-            for s in out.paged_scores():
-                self._crop_blank(s)
+        scorefn = basefn + '.' + score_format
+        if not path.isfile(scorefn):
+            raise Error('No score file generated, please check "%s"' % basefn)
+        out.score = scorefn
 
-        midi_file = out.midi()
-        print('==========')
-        print(midi_file)
-        print('==========')
-        if midi_file:
-            try:
-                self._midi_to_audio(midi_file)
-            except Exception as e:
-                out.cleanup()
-                raise e
+        if crop:
+            self._crop(scorefn)
+
+        if preview:
+            previewfn = basefn + '.preview.' + score_format
+            if not path.isfile(previewfn):
+                raise Error('No score previewd generated, please check "%s"' % basefn)
+            out.preview = previewfn
+
+        midifn = basefn + '.midi'
+        if path.isfile(midifn):
+            self._midi_to_audio(midifn)
+            out.audio = basefn + '.ogg'
 
         return out
 
@@ -263,6 +214,7 @@ class LilyPondDocument(object):
         with self._document as d:
             d[container.end_position():container.end_position()] = '\n' + item + '\n'
 
+
     def _set_value(self, container:items.Container, name:str, val:str):
         found = False
         children = list(container.find_children(items.Assignment))
@@ -277,21 +229,29 @@ class LilyPondDocument(object):
             self._insert_into(container, name + '=' + val)
 
 
-    def _crop_blank(self, score_file:str):
-        with image.Image(filename=score_file) as i:
+    def _crop(self, scorefn:str):
+        if self._magick_home:
+            old_magick_home = os.environ["MAGICK_HOME"] 
+            os.environ["DEBUSSY"] = self._magick_home
+        with image.Image(filename=scorefn) as i:
             i.trim()
-            i.save(filename=score_file)
+            i.save(filename=scorefn)
+        if self._magick_home:
+            if old_magick_home:
+                os.environ["MAGICK_HOME"] = old_magick_home
+            else:
+                del os.environ["MAGICK_HOME"]
 
 
-    def _midi_to_audio(self, midi_file:str):
+    def _midi_to_audio(self, midifn:str):
         try:
-            p = subprocess.run(['timidity', '-Ov', midi_file],
+            p = subprocess.run(self._timidity_args + ['-Ov', midifn],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         except OSError:
-            raise
+            raise Error('TiMidity++ can not be run') from e
         if p.returncode != 0:
-            raise LilyPondDocumentError(
+            raise Error(
                     'TiMidity++ exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
 
@@ -316,6 +276,6 @@ class LilyPondDocument(object):
         return packed
 
 
-    def _merge_pages(self, score_files:list[str]):
+    def _merge_pages(self, scorefns:list[str]):
         # TODO 
         pass
