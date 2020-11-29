@@ -43,18 +43,21 @@ class lily_outline_node(nodes.Part, nodes.Element): pass
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node = lily_inline_node()
     node['docname'] = inliner.document.settings.env.docname
+    node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
+    node['preview'] = True
     return [node], []
 
 class BaseLilyDirective(Directive):
 
-    optional_arguments = 5
+    optional_arguments = 6
     option_spec = {
         'crop': directives.flag,
         'audio': directives.unchanged, # control, autoplay,
         'transpose': directives.unchanged,
         'noheader': directives.flag,
         'nofooter': directives.flag,
+        'preview': directives.flag,
     }
 
 
@@ -66,12 +69,14 @@ class BaseLilyDirective(Directive):
     def run(self):
         node = lily_outline_node()
         node['docname'] = self.state.document.settings.env.docname
+        node['rawtext'] = self.block_text
         node['lilysrc'] = self.read_lily_source()
         node['crop'] = 'crop' in self.options
         node['audio'] = self.options.get('audio')
         node['transpose'] = self.options.get('transpose')
         node['noheader'] = 'noheader' in self.options
         node['nofooter'] = 'nofooter' in self.options
+        node['preview'] = 'preview' in self.options
         return [node]
 
 class LilyDirective(BaseLilyDirective):
@@ -96,16 +101,18 @@ class LilyIncludeDirective(BaseLilyDirective):
         with open(lilyfn, 'r') as f:
             return f.read()
 
+def hash_node(node) -> str:
+    return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
-def copy_file(builder, node, srcfn:str, destdir:str) ->str:
+def copy_file(builder, node, srcfn:str, destdir:str) -> str:
     '''Copy file srcfn to builder's outdir, return a relative path to current
     document. If the file already exists in destdir, just return the relative path.
     '''
     _, ext = path.splitext(srcfn)
-    shasum = sha(node['lilysrc'].encode('utf-8')).hexdigest() + ext
-    outfn = path.join(builder.outdir, destdir, 'lilypond', shasum)
+    sig = hash_node(node) + ext
+    outfn = path.join(builder.outdir, destdir, 'lilypond', sig)
     reluri = relative_uri(builder.get_target_uri(node['docname']), destdir)
-    relfn = posixpath.join(reluri, 'lilypond', shasum)
+    relfn = posixpath.join(reluri, 'lilypond', sig)
     if path.isfile(outfn):
         return relfn
     ensuredir(path.dirname(outfn))
@@ -128,34 +135,11 @@ def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
             magick_home = config.lilypond_magick_home)
 
 
-def html_visit_lily_inline_node(self, node: lily_inline_node):
+# TODO: two type
+def html_visit_lily_node(self, node:lily_outline_node):
     doc = create_document(self.builder.config, node)
     outdir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
             prefix='sphinxnotes-lilypond')
-    out:lilyport.Output = None
-    try:
-        out = doc.output(outdir, preview=True)
-    except lilyport.Error as e:
-        sm = nodes.system_message(e, type='WARNING', level=2,
-                                  backrefs=[], source=node['lilysrc'])
-        sm.walkabout(self)
-        raise nodes.SkipNode
-
-    if out.preview:
-        imgfn = copy_image_file(self.builder, node, out.preview)
-        self.body.append(
-            '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
-            (_SCORECLS, imgfn, self.encode(out.source).strip()))
-    else:
-        # Something failed -- use text-only as a bad substitute
-        self.body.append('<span class="%s">%s</span>' %
-                (_SCORECLS, self.encode(out.source).strip()))
-    raise nodes.SkipNode
-
-
-def html_visit_lily_outline_node(self, node:lily_outline_node):
-    doc = create_document(self.builder.config, node)
-    outdir = self.builder.config.lilypond_builddir or tempfile.mkdtemp()
     out:lilyport.Output = None
     try:
         if node.get('transpose'):
@@ -166,19 +150,30 @@ def html_visit_lily_outline_node(self, node:lily_outline_node):
         doc.strip_header_footer(
                 strip_header=node.get('noheader'),
                 strip_footer=node.get('nofooter'))
-        out = doc.output(outdir, crop=node.get('crop'))
+        out = doc.output(outdir,
+                crop=node.get('crop'),
+                preview=node.get('preview'))
     except lilyport.Error as e:
         sm = nodes.system_message(e, type='WARNING', level=2,
                                   backrefs=[], source=node['lilysrc'])
         sm.walkabout(self)
         raise nodes.SkipNode
-    self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
-    self.body.append('<p>')
+
+    # Create div for block level element
+    if isinstance(node, lily_outline_node):
+        self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
+        self.body.append('<p>')
 
     if out.audio:
         self.body.append('<figure style="display:table;">\n')
 
-    if out.score:
+    # TODO: standalone css
+    if out.preview:
+        imgfn = copy_image_file(self.builder, node, out.preview)
+        self.body.append(
+            '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
+            (_SCORECLS, imgfn, self.encode(out.source).strip()))
+    elif out.score:
         imgfn = copy_image_file(self.builder, node, out.score)
         self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
                 (_SCORECLS, imgfn, self.encode(out.source).strip()))
@@ -201,16 +196,17 @@ def html_visit_lily_outline_node(self, node:lily_outline_node):
                 ('controls', _SCORECLS, 'width:100%;', audfn))
         self.body.append('</figcaption>\n')
         self.body.append('</figure>\n')
-        self.body.append('</div>')
-        self.body.append('</figure>\n')
 
-    self.body.append('</p>')
+    if isinstance(node, lily_outline_node):
+        self.body.append('</p>')
+        self.body.append('</div>')
+
     raise nodes.SkipNode
 
 
 def setup(app):
-    app.add_node(lily_inline_node, html=(html_visit_lily_inline_node, None))
-    app.add_node(lily_outline_node, html=(html_visit_lily_outline_node, None))
+    app.add_node(lily_inline_node, html=(html_visit_lily_node, None))
+    app.add_node(lily_outline_node, html=(html_visit_lily_node, None))
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
