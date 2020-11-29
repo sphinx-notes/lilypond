@@ -3,7 +3,7 @@
     Sphinx Extension for LilyPond
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Allow Lilypond music notes to be included in Sphinx-generated documents
+    Allow LilyPond music notes to be included in Sphinx-generated documents
     inline and outline.
 
     :copyright: Copyright ©2020 by Shengyu Zhang.
@@ -42,6 +42,7 @@ class lily_outline_node(nodes.Part, nodes.Element): pass
 
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node = lily_inline_node()
+    node['docname'] = inliner.document.settings.env.docname
     node['lilysrc'] = unescape(text, restore_backslashes=True)
     return [node], []
 
@@ -65,12 +66,12 @@ class BaseLilyDirective(Directive):
     def run(self):
         node = lily_outline_node()
         node['docname'] = self.state.document.settings.env.docname
+        node['lilysrc'] = self.read_lily_source()
         node['crop'] = 'crop' in self.options
         node['audio'] = self.options.get('audio')
         node['transpose'] = self.options.get('transpose')
         node['noheader'] = 'noheader' in self.options
         node['nofooter'] = 'nofooter' in self.options
-        node['lilysrc'] = self.read_lily_source()
         return [node]
 
 class LilyDirective(BaseLilyDirective):
@@ -133,7 +134,7 @@ def html_visit_lily_inline_node(self, node: lily_inline_node):
             prefix='sphinxnotes-lilypond')
     out:lilyport.Output = None
     try:
-        out = doc.output(outdir, enable_preview=True)
+        out = doc.output(outdir, preview=True)
     except lilyport.Error as e:
         sm = nodes.system_message(e, type='WARNING', level=2,
                                   backrefs=[], source=node['lilysrc'])
@@ -149,7 +150,6 @@ def html_visit_lily_inline_node(self, node: lily_inline_node):
         # Something failed -- use text-only as a bad substitute
         self.body.append('<span class="%s">%s</span>' %
                 (_SCORECLS, self.encode(out.source).strip()))
-    out.cleanup()
     raise nodes.SkipNode
 
 
