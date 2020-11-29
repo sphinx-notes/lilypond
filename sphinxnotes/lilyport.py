@@ -27,20 +27,73 @@ from ly.music import items
 from wand import image
 
 
-def random_basename() -> str:
+def randstr() -> str:
     return 'music-' + ''.join(random.choice(string.ascii_lowercase) for i in range(5))
 
-
-class Error(Exception): pass
+class Error(Exception):
+    # TODO
+    pass
 
 
 class Output(object):
+    '''A helper for collecting LilyPond outputed files.
+    '''
+
     source:str
     score:Optional[str] = None
     preview:Optional[str] = None
-    audio:Optional[str] = None
     paged_scores:list[str] = []
+    midi:Optional[str] = None
+    audio:Optional[str] = None
 
+    def __init__(self, outdir:str, basefn:str,
+            score_format:str='png',
+            audio_format:str='ogg'):
+        prefix = path.join(outdir, basefn)
+
+        srcfn = prefix + '.ly'
+        if path.isfile(srcfn):
+            self.source = srcfn
+
+        pvfn = prefix + '.preview.' + score_format
+        if path.isfile(pvfn):
+            self.preview = pvfn
+
+        scorefn = prefix + '.' + score_format
+        if path.isfile(scorefn):
+            self.score = scorefn
+
+        # May multiple scores generated
+        if score_format in ['png', 'svg']:
+            if score_format == 'png':
+                pattern = prefix + '-page%d.png'
+            elif score_format == 'svg':
+                pattern = prefix + '-%d.svg'
+            i = 1
+            while path.isfile(pattern % i):
+                self.paged_scores.append(pattern % i)
+                i = i + 1
+
+        if not (self.preview or self.score or self.paged_scores):
+            raise Error('No score generated, please check "*.%s" files under "%s"' %
+                    (basefn, outdir))
+
+        midifn = prefix + '.midi'
+        if path.isfile(midifn):
+            self.midi = midifn
+
+        audiofn = prefix + '.' + audio_format
+        if path.isfile(audiofn):
+            self.audio = audiofn
+            
+    # TODO: pythonic name?
+    def num_files(self):
+        return 0 + self.source is None + \
+                self.score is None + \
+                self.preview is None + \
+                len(self.paged_score) + \
+                self.midi is None + \
+                self.audio is None
 
 class Document(object):
 
@@ -120,14 +173,14 @@ class Document(object):
                 self.enable_audio_output()
 
 
-    def output(self, outdir,
+    def output(self, outdir:str,
+            basefn:str=randstr(),
             score_format:str='png',
+            audio_format:str='png',
             preview:bool=False,
             crop:bool=True) -> Output:
         '''Output scores and related files from LilyPond Document
         '''
-        out = Output()
-
         args = self._lilypond_args.copy()
         args += ['-o', outdir]
 
@@ -136,17 +189,15 @@ class Document(object):
         elif score_format == 'svg':
             args += ['-dbackend=svg']
         else:
-            raise Error('Unknown score format: {}' % score_format )
+            raise Error('Unknown score format: %s' % score_format )
 
         if preview:
             args += ['-dpreview=#t']
 
-        basefn = path.join(outdir, random_basename())
-        srcfn = basefn + '.ly'
+        srcfn = path.join(outdir, basefn) + '.ly'
         with open(srcfn, 'w') as f:
             f.write(self.plaintext())
         args += [srcfn]
-        out.source = srcfn
 
         try:
             p = subprocess.run(args,
@@ -159,41 +210,21 @@ class Document(object):
             raise Error('LilyPond exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
 
+        # Generate audio
+        midifn = path.join(outdir, basefn) + '.midi'
+        if path.isfile(midifn):
+            self._midi_to_audio(midifn, audio_format=audio_format)
 
-        no_score_gen = True
-        scorefn = basefn + '.' + score_format
-        if path.isfile(scorefn):
-            out.score = scorefn
-            no_score_gen = False
-
-        # May multiple scores generated
-        if score_format in ['png', 'svg']:
-            if score_format == 'png':
-                pattern = basefn + '-page%d.png'
-            elif score_format == 'svg':
-                pattern = basefn + '-%d.svg'
-            i = 1
-            while path.isfile(pattern % i):
-                no_score_gen = False
-                out.paged_scores.append(pattern % i)
-                i = i + 1
-
-        if no_score_gen:
-            raise Error('No score file generated, please check "%s"' % basefn)
+        out = Output(score_format=score_format, audio_format=audio_format)
 
         if crop:
-            self._crop(scorefn)
+            if out.score:
+                self._crop(out.score)
+            for p in out.paged_scores:
+                self._crop(p)
 
-        if preview:
-            previewfn = basefn + '.preview.' + score_format
-            if not path.isfile(previewfn):
-                raise Error('No score previewd generated, please check "%s"' % basefn)
-            out.preview = previewfn
-
-        midifn = basefn + '.midi'
-        if path.isfile(midifn):
-            self._midi_to_audio(midifn)
-            out.audio = basefn + '.ogg'
+        if preview and not out.preview:
+            raise Error('No score preview file generated, please check "%s"' % basefn)
 
         return out
 
@@ -262,12 +293,15 @@ class Document(object):
                 del os.environ["MAGICK_HOME"]
 
 
-    def _midi_to_audio(self, midifn:str):
+    def _midi_to_audio(self, midifn:str, audio_format:str):
+        if not audio_format in ['ogg']:
+            raise Error('Unsupported audio format "%s"' % audio_format)
+
         try:
             p = subprocess.run(self._timidity_args + ['-Ov', midifn],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
-        except OSError:
+        except OSError as e:
             raise Error('TiMidity++ can not be run') from e
         if p.returncode != 0:
             raise Error(

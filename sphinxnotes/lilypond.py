@@ -23,18 +23,19 @@ from abc import abstractmethod
 from docutils import nodes
 from docutils.utils import unescape
 from docutils.parsers.rst import directives, Directive
-from sphinx.util import ensuredir, relative_uri
+
+from sphinx.util import ensuredir, relative_uri, logging
 from sphinx.config import Config
-from sphinx.errors import SphinxError
 
 from sphinxnotes import lilyport
+
+
+logger = logging.getLogger(__name__)
+
 
 _DIVCLS = 'lilypond'
 _SCORECLS = 'lilypond-score'
 _AUDIOCLS = 'lilypond-audio'
-
-class LilyError(SphinxError):
-    category = 'LilyPond extension error'
 
 class lily_inline_node(nodes.Inline, nodes.TextElement): pass
 
@@ -101,31 +102,37 @@ class LilyIncludeDirective(BaseLilyDirective):
         with open(lilyfn, 'r') as f:
             return f.read()
 
-def hash_node(node) -> str:
+
+def get_node_sig(node) -> str:
+    '''Return signture of given node.
+    '''
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
-def copy_file(builder, node, srcfn:str, destdir:str) -> str:
+
+def get_outdir_and_reldir(builder, node) -> tuple[str,str]:
+    '''Return the path of Sphinx builder's outdir and its corrsponding relative
+    path.
+    '''
+    outdir = path.join(builder.outdir, '_lilypond')
+    reluri = relative_uri(builder.get_target_uri(node['docname']))
+    reldir = posixpath.join(reluri, '_lilypond')
+    return (outdir, reldir)
+
+
+def copy_to_outdir(builder, node, srcfn:str) -> str:
     '''Copy file srcfn to builder's outdir, return a relative path to current
-    document. If the file already exists in destdir, just return the relative path.
+    document. If the file already exists, just return the relative path.
     '''
     _, ext = path.splitext(srcfn)
-    sig = hash_node(node) + ext
-    outfn = path.join(builder.outdir, destdir, 'lilypond', sig)
-    reluri = relative_uri(builder.get_target_uri(node['docname']), destdir)
-    relfn = posixpath.join(reluri, 'lilypond', sig)
+    fn = get_node_sig(node) + ext
+    outdir, reldir = get_outdir_and_reldir(builder, node)
+    outfn = path.join(outdir, fn)
+    relfn = posixpath.join(reldir, fn)
     if path.isfile(outfn):
         return relfn
     ensuredir(path.dirname(outfn))
     shutil.copyfile(srcfn, outfn)
     return relfn
-
-
-def copy_image_file(builder, node, imgfn:str) -> str:
-    return copy_file(builder, node, imgfn, '_images')
-
-
-def copy_audio_file(builder, node, audfn:str) -> str:
-    return copy_file(builder, node, audfn, '_audio')
 
 
 def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
@@ -137,27 +144,39 @@ def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
 
 # TODO: two type
 def html_visit_lily_node(self, node:lily_outline_node):
-    doc = create_document(self.builder.config, node)
-    outdir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
-            prefix='sphinxnotes-lilypond')
     out:lilyport.Output = None
+
+    outdir, _ = get_outdir_and_reldir(self.builder, node)
+    basefn = get_node_sig(node)
     try:
-        if node.get('transpose'):
-            from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
-            doc.transpose(from_pitch, to_pitch)
-        if node.get('audio'): # TODO
-            doc.enable_audio_output()
-        doc.strip_header_footer(
-                strip_header=node.get('noheader'),
-                strip_footer=node.get('nofooter'))
-        out = doc.output(outdir,
-                crop=node.get('crop'),
-                preview=node.get('preview'))
-    except lilyport.Error as e:
-        sm = nodes.system_message(e, type='WARNING', level=2,
-                                  backrefs=[], source=node['lilysrc'])
-        sm.walkabout(self)
-        raise nodes.SkipNode
+        out = lilyport.Output(outdir, basefn)
+    except lilyport.Error:
+        pass
+
+    cached = out.num_files() > 0
+    if cached:
+        logger.info('Created')
+    else:
+        doc = create_document(self.builder.config, node)
+        builddir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
+                prefix='sphinxnotes-lilypond')
+        try:
+            if node.get('transpose'):
+                from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
+                doc.transpose(from_pitch, to_pitch)
+            if node.get('audio'): # TODO
+                doc.enable_audio_output()
+            doc.strip_header_footer(
+                    strip_header=node.get('noheader'),
+                    strip_footer=node.get('nofooter'))
+            out = doc.output(builddir,
+                    crop=node.get('crop'),
+                    preview=node.get('preview'))
+        except lilyport.Error as e:
+            sm = nodes.system_message(e, type='WARNING', level=2,
+                                      backrefs=[], source=node['lilysrc'])
+            sm.walkabout(self)
+            raise nodes.SkipNode
 
     # Create div for block level element
     if isinstance(node, lily_outline_node):
@@ -169,17 +188,17 @@ def html_visit_lily_node(self, node:lily_outline_node):
 
     # TODO: standalone css
     if out.preview:
-        imgfn = copy_image_file(self.builder, node, out.preview)
+        imgfn = copy_to_outdir(self.builder, node, out.preview)
         self.body.append(
             '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
             (_SCORECLS, imgfn, self.encode(out.source).strip()))
     elif out.score:
-        imgfn = copy_image_file(self.builder, node, out.score)
+        imgfn = copy_to_outdir(self.builder, node, out.score)
         self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
                 (_SCORECLS, imgfn, self.encode(out.source).strip()))
     elif out.paged_scores:
         for p in out.paged_scores:
-            imgfn = copy_image_file(self.builder, node, p)
+            imgfn = copy_to_outdir(self.builder, node, p)
             self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
                     (_SCORECLS, imgfn, self.encode(out.source).strip()))
     else:
@@ -190,7 +209,7 @@ def html_visit_lily_node(self, node:lily_outline_node):
         raise nodes.SkipNode
 
     if out.audio:
-        audfn = copy_audio_file(self.builder, node, out.audio)
+        audfn = copy_to_outdir(self.builder, node, out.audio)
         self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
         self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
                 ('controls', _SCORECLS, 'width:100%;', audfn))
@@ -200,6 +219,8 @@ def html_visit_lily_node(self, node:lily_outline_node):
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
         self.body.append('</div>')
+
+    shutil.rmtree(builddir)
 
     raise nodes.SkipNode
 
