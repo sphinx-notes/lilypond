@@ -7,22 +7,41 @@
 Sphinx Extension for LilyPond |version|
 =======================================
 
-This extension is a fork of `sphinx-contrib/lilypond`_ ,
-allows `LilyPond`_ music notes to be included in Sphinx-generated documents
-inline and outline, provides richer features such as SVG format,
-scale transposing, audio output and so on.
+:copyright: Copyright ©2020 by Shengyu Zhang.
+:copyright: Copyright ©2009 by Wei-Wei Guo.
+:license: BSD, see LICENSE for details.
+
+The extension is fork of `sphinx-contrib/lilypond`_ , allows `LilyPond`_
+music notes to be included in Sphinx-generated documents inline and outline.
+Compared to its predecessor, the extension has many new features such as
+scale transposing, audio output, paper cropping, and so on.
 
 .. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
 .. _LilyPond: https://lilypond.org/
 
+.. contents::
+   :local:
+   :backlinks: none
+
 Installation
 ============
+
+Install the follwing runtime dependencies before using the extension:
+
+- `LilyPond`_
+- `TiMidity++`_
+- `ImageMagick`_
+
+.. _Timidity++: http://timidity.sourceforge.net/
+.. _ImageMagick: https://imagemagick.org/index.php
+
+Download it from official Python Package Index:
 
 .. code-block:: console
 
    $ pip install sphinxnotes-lilypond
 
-Add extension to :file:`conf.py` in your sphinx project.
+Add extension to :file:`conf.py` in your sphinx project:
 
 .. code-block:: python
 
@@ -48,18 +67,17 @@ element.
 
 For example:
 
-.. code-block:: rst
-
-    :lily:`\relative { c' }` is the first note of the C major scale.
+.. literalinclude:: ./lily-role-example.rst
+    :language: rst
 
 Will be rendered as:
 
-    :lily:`\relative { c' }` is the first note of the C major scale.
+    .. include:: ./lily-role-example.rst
 
 .. note::
 
-    Role ``lily`` produces a preview image of the music expression.
-    You can still write a long music expression as interpreted text,
+    Role ``lily`` produces a preview image of the music expression (using
+    ``-dpreview=#t``). You can still write a long music expression as interpreted text,
     but only the beginning can be shown.
 
 Directives
@@ -70,74 +88,67 @@ Directives
 The ``lily`` directive
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The ``lily`` directive is used to insert a complete lilypond document source.
+The ``lily`` directive is used to insert a complete LilyPond score as
+block level element.
 
-.. code-block:: rst
+.. literalinclude:: ./lily-directive-example.rst
+    :language: rst
 
-   .. lily::
-      :crop:
+Will be rendered as:
 
-      \version "2.20.0"
-      \header {
-        title = "翼をください, Excerpts"
-      }
+    .. include:: ./lily-directive-example.rst
 
-      \score {
-        <<
-          \new Staff \relative c' {
-              \time 4/4
-              \tempo  "Allegretto" 4 = 110
-              c4 d e e f e d
-        }
-        >>
-      }
+The directive supports the following options:
 
-.. lily::
-  :nofooter:
-  :audio:
+:noheader: (flag)
+    Whether to crop the header of score
+:nofooter: (flag)
+    Whether to crop the footer of score
+:noedge: (flag)
+    Whether to crop the blank edges of score
+:audio: (falg)
+    Whether to show a audio player for listen LilyPond-generated MIDI file
+:transpose: (text)
+    Transposing the pitches of score from one to another.
+    Pitches are written in `LilyPond Notation`_ and separated in whitespace.
+    For example: ``:transpose: c' d'``
 
-   \version "2.20.0"
-   \header {
-     title = "翼をください, Excerpts"
-   }
-
-   \score {
-     <<
-       \new Staff \relative c' {
-           \time 4/4
-           \tempo  "Allegretto" 4 = 110
-           c4 d e e f e d
-     }
-     >>
-   }
-
-All available options:
-
-:crop:
-    directives.flag,
-:audio:
-    directives.unchanged, # control, autoplay,
-:transpose:
-    directives.unchanged,
-:noheader:
-    directives.flag,
-:nofooter:
-    directives.flag,
-
+.. _LilyPond Notation: http://lilypond.org/doc/v2.18/Documentation/notation/writing-pitches
 
 The ``lilyinclude`` directives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. lilyinclude:: ./witch-spring.ly
-   :nofooter:
-   :crop:
+The ``lilyinclude`` directive is similar to :ref:`lily-directive`,
+except the source of LilyPond are read from file but not contents of directive.
 
-Options of ``lilyinclude`` directive are same to :ref:`lily-directive`.
+.. literalinclude:: ./lilyinclude-directive-example.rst
+   :language: rst
+
+Will be rendered as:
+
+   .. include:: ./lilyinclude-directive-example.rst
+
+Options of the directive are same to :ref:`lily-directive`.
+
+.. seealso::
+
+    You and download the example LilyPond documentation from here:
+    :download:`witch-spring.ly`.
+
+Examples
+========
+
+.. warning:: TODO
 
 Configuration
 =============
 
-:lilypond_lilypond_args: (Default: ``['lilypond']``)
-:lilypond_timidity_args: (Default: ``['timidity']``)
-:lilypond_magick_home: (Default: ``None``)
-:lilypond_builddir: (Default: ``None``)
+:lilypond_lilypond_args: (Type: ``list[str]``, Default: ``['lilypond']``)
+   Argument list for running `LilyPond`_. The first one is path to LilyPond binary.
+:lilypond_timidity_args: (Type: ``list[str]``, Default: ``['timidity']``)
+   Argument list for running `Timidity++`_. The first one is path to Timidity++ binary.
+:lilypond_magick_home: (Type: ``str``, Default: ``None``)
+   Path to `ImageMagick`_ library.
+:lilypond_builddir: (Type: ``str``, Default: ``None``)
+   Build directory of the extension, use temporary directory when not specified
+
