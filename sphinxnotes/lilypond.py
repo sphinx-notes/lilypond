@@ -3,14 +3,17 @@
     Sphinx Extension for LilyPond
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Allow LilyPond music notes to be included in Sphinx-generated documents
-    inline and outline.
-
     :copyright: Copyright ©2020 by Shengyu Zhang.
     :copyright: Copyright ©2009 by Wei-Wei Guo.
     :license: BSD, see LICENSE for details.
 
-    The extension is modified from mathbase.py and pngmath.py by Sphinx team.
+    The extension is fork of `sphinx-contrib/lilypond`_ , allows `LilyPond`_
+    music notes to be included in Sphinx-generated documents inline and outline.
+    Compared to its predecessor, the extension has many new features such as
+    scale transposing, audio output, paper cropping, and so on.
+
+    .. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
+    .. _LilyPond: https://lilypond.org/
 """
 
 import shutil
@@ -19,6 +22,7 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
+from typing import Tuple
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -46,6 +50,7 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['docname'] = inliner.document.settings.env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
+    node['noedge'] = True
     node['preview'] = True
     return [node], []
 
@@ -53,12 +58,12 @@ class BaseLilyDirective(Directive):
 
     optional_arguments = 6
     option_spec = {
-        'crop': directives.flag,
-        'audio': directives.unchanged, # control, autoplay,
-        'transpose': directives.unchanged,
         'noheader': directives.flag,
         'nofooter': directives.flag,
+        'noedge': directives.flag,
         'preview': directives.flag,
+        'audio': directives.flag,
+        'transpose': directives.unchanged,
     }
 
 
@@ -72,12 +77,12 @@ class BaseLilyDirective(Directive):
         node['docname'] = self.state.document.settings.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = self.read_lily_source()
-        node['crop'] = 'crop' in self.options
-        node['audio'] = self.options.get('audio')
-        node['transpose'] = self.options.get('transpose')
         node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options
+        node['nofooter'] = 'nofooter' in self.options or True
+        node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
+        node['audio'] = 'audio' in self.options
+        node['transpose'] = self.options.get('transpose')
         return [node]
 
 class LilyDirective(BaseLilyDirective):
@@ -109,12 +114,12 @@ def get_node_sig(node) -> str:
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_outdir_and_reldir(builder, node) -> tuple[str,str]:
+def get_outdir_and_reldir(builder, node) -> Tuple[str,str]:
     '''Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
     '''
     outdir = path.join(builder.outdir, '_lilypond')
-    reluri = relative_uri(builder.get_target_uri(node['docname']))
+    reluri = relative_uri(builder.get_target_uri(node['docname']), '.')
     reldir = posixpath.join(reluri, '_lilypond')
     return (outdir, reldir)
 
@@ -153,10 +158,11 @@ def html_visit_lily_node(self, node:lily_outline_node):
     except lilyport.Error:
         pass
 
-    cached = out.num_files() > 0
+    cached = not out is None
     if cached:
-        logger.info('Created')
+        logger.debug('using cached result', location=node)
     else:
+        logger.debug('creating a new lilypond document', location=node)
         doc = create_document(self.builder.config, node)
         builddir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
                 prefix='sphinxnotes-lilypond')
@@ -164,15 +170,16 @@ def html_visit_lily_node(self, node:lily_outline_node):
             if node.get('transpose'):
                 from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
                 doc.transpose(from_pitch, to_pitch)
-            if node.get('audio'): # TODO
+            if node.get('audio'):
                 doc.enable_audio_output()
             doc.strip_header_footer(
                     strip_header=node.get('noheader'),
                     strip_footer=node.get('nofooter'))
             out = doc.output(builddir,
-                    crop=node.get('crop'),
+                    crop=node.get('noedge'),
                     preview=node.get('preview'))
         except lilyport.Error as e:
+            logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
                                       backrefs=[], source=node['lilysrc'])
             sm.walkabout(self)
@@ -183,7 +190,7 @@ def html_visit_lily_node(self, node:lily_outline_node):
         self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
         self.body.append('<p>')
 
-    if out.audio:
+    if node.get('audio') and out.audio:
         self.body.append('<figure style="display:table;">\n')
 
     # TODO: standalone css
@@ -191,28 +198,28 @@ def html_visit_lily_node(self, node:lily_outline_node):
         imgfn = copy_to_outdir(self.builder, node, out.preview)
         self.body.append(
             '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
-            (_SCORECLS, imgfn, self.encode(out.source).strip()))
+            (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
     elif out.score:
         imgfn = copy_to_outdir(self.builder, node, out.score)
         self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                (_SCORECLS, imgfn, self.encode(out.source).strip()))
+                (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
     elif out.paged_scores:
         for p in out.paged_scores:
             imgfn = copy_to_outdir(self.builder, node, p)
             self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                    (_SCORECLS, imgfn, self.encode(out.source).strip()))
+                    (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
     else:
-        # TODO
-        sm = nodes.system_message('No score generated', type='WARNING', level=2,
+        logger.warning('no score generated from lilypond document', location=node)
+        sm = nodes.system_message('no score generated', type='WARNING', level=2,
                                   backrefs=[], source=node['lilysrc'])
         sm.walkabout(self)
         raise nodes.SkipNode
 
-    if out.audio:
+    if node.get('audio') and out.audio:
         audfn = copy_to_outdir(self.builder, node, out.audio)
         self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
-        self.body.append('<audio %s class="%s" style="%s" src="%s" />\n' %
-                ('controls', _SCORECLS, 'width:100%;', audfn))
+        self.body.append('<audio controls class="%s" style="%s" src="%s"/>\n' %
+                (_SCORECLS, 'width:100%;', audfn))
         self.body.append('</figcaption>\n')
         self.body.append('</figure>\n')
 
@@ -220,7 +227,8 @@ def html_visit_lily_node(self, node:lily_outline_node):
         self.body.append('</p>')
         self.body.append('</div>')
 
-    shutil.rmtree(builddir)
+    if not cached:
+        shutil.rmtree(builddir)
 
     raise nodes.SkipNode
 

@@ -86,14 +86,6 @@ class Output(object):
         if path.isfile(audiofn):
             self.audio = audiofn
             
-    # TODO: pythonic name?
-    def num_files(self):
-        return 0 + self.source is None + \
-                self.score is None + \
-                self.preview is None + \
-                len(self.paged_score) + \
-                self.midi is None + \
-                self.audio is None
 
 class Document(object):
 
@@ -176,7 +168,7 @@ class Document(object):
     def output(self, outdir:str,
             basefn:str=randstr(),
             score_format:str='png',
-            audio_format:str='png',
+            audio_format:str='ogg',
             preview:bool=False,
             crop:bool=True) -> Output:
         '''Output scores and related files from LilyPond Document
@@ -215,7 +207,9 @@ class Document(object):
         if path.isfile(midifn):
             self._midi_to_audio(midifn, audio_format=audio_format)
 
-        out = Output(score_format=score_format, audio_format=audio_format)
+        out = Output(outdir, basefn,
+                score_format=score_format,
+                audio_format=audio_format)
 
         if crop:
             if out.score:
@@ -315,7 +309,6 @@ class Document(object):
         '''
         packed = False
         doc = music.document(self._document)
-        print(doc.dump())
         for mit in doc.find_children(items.MusicList):
             if mit.parent() == doc:
                 self._insert_after(mit, r'}')
