@@ -3,21 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-=======================================
-Sphinx Extension for LilyPond |version|
-=======================================
+=============================
+Sphinx Extension for LilyPond
+=============================
 
-:copyright: Copyright ©2020 by Shengyu Zhang.
-:copyright: Copyright ©2009 by Wei-Wei Guo.
-:license: BSD, see LICENSE for details.
+:version: |version|
 
-The extension is fork of `sphinx-contrib/lilypond`_ , allows `LilyPond`_
-music notes to be included in Sphinx-generated documents inline and outline.
-Compared to its predecessor, the extension has many new features such as
-scale transposing, audio output, paper cropping, and so on.
-
-.. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
-.. _LilyPond: https://lilypond.org/
+.. include:: desc.rst
 
 .. contents::
    :local:
