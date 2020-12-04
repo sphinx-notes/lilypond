@@ -140,6 +140,83 @@ Configuration
 Examples
 ========
 
+The LilyPond documentation used in example can be downloaded here:
+:download:`/minuet-in-g.ly`.
+
+Original paper size
+-------------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+
+
+.. lilyinclude:: minuet-in-g.ly
+
+Paper without Footer and Edge
+-----------------------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :nofooter:
+      :noedge:
+
+.. lilyinclude:: minuet-in-g.ly
+   :nofooter:
+   :noedge:
+ 
+Smallest Paper Size
+-------------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :noheader:
+      :nofooter:
+      :noedge:
+
+.. lilyinclude:: minuet-in-g.ly
+   :noheader:
+   :nofooter:
+   :noedge:
+
+Audio Preview
+-------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :noheader:
+      :nofooter:
+      :noedge:
+      :audio:
+
+.. lilyinclude:: minuet-in-g.ly
+   :noheader:
+   :nofooter:
+   :noedge:
+   :audio:
+
+Transposing
+------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :noheader:
+      :nofooter:
+      :noedge:
+      :audio:
+      :transpose: g c
+
+.. lilyinclude:: minuet-in-g.ly
+   :noheader:
+   :nofooter:
+   :noedge:
+   :audio:
+   :transpose: g c
+
 Chang Log
 =========
 
@@ -148,6 +225,4 @@ Chang Log
 
  .. sectionauthor:: Shengyu Zhang
 
-The alpha version is out, please refer to :doc:`index` to see how it works.
-
-Enjoy~
+The alpha version is out, enjoy~
