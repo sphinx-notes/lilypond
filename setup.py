@@ -1,30 +1,27 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
+from doc import project
 
-long_desc = '''
-This package contains the lilypond Sphinx extension.
-
-.. add description here ..
-'''
-
-requires = ['Sphinx>=0.6']
+with open('doc/desc.rst') as f:
+    long_desc = f.read()
 
 setup(
-    name='lilypond',
-    version='0.1',
-    url='http://bitbucket.org/birkenfeld/sphinx-contrib',
-    download_url='http://pypi.python.org/pypi/lilypond',
-    license='BSD',
-    author='Wei-Wei Guo',
-    author_email='wwguocn@gmail.com',
-    description='Sphinx extension lilypond',
+    name=project.name,
+    version=project.version,
+    url=project.url,
+    download_url=project.download_url,
+    license=project.license,
+    author=project.author,
+    description=project.description,
     long_description=long_desc,
+    long_description_content_type='text/x-rst',
     zip_safe=False,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Environment :: Web Environment',
+        'Environment :: Plugins',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
@@ -32,9 +29,12 @@ setup(
         'Topic :: Documentation',
         'Topic :: Utilities',
     ],
+    keywords=project.keywords,
     platforms='any',
+    python_requires='>=3',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=requires,
-    namespace_packages=['sphinxcontrib'],
+    # sphinx.util.compat.Directive class is now deprecated in 1.6
+    install_requires= ['Sphinx>=1.6', 'python-ly', 'wand'],
+    namespace_packages=['sphinxnotes'],
 )
