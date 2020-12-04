@@ -1,0 +1,4 @@
+We have a soft link of requirements.txt here because we have to install
+such requirements when deploying documentation.
+
+This is required by github.com/sphinx-notes/pages.
