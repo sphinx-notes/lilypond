@@ -1,3 +1,4 @@
+:version: |version|
 :copyright: Copyright ©2020 by Shengyu Zhang.
 :copyright: Copyright ©2009 by Wei-Wei Guo.
 :license: BSD, see LICENSE for details.

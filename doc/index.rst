@@ -7,8 +7,6 @@
 Sphinx Extension for LilyPond
 =============================
 
-:version: |version|
-
 .. include:: desc.rst
 
 .. contents::
@@ -127,11 +125,6 @@ Options of the directive are same to :ref:`lily-directive`.
     You and download the example LilyPond documentation from here:
     :download:`witch-spring.ly`.
 
-Examples
-========
-
-.. warning:: TODO
-
 Configuration
 =============
 
@@ -144,3 +137,17 @@ Configuration
 :lilypond_builddir: (Type: ``str``, Default: ``None``)
    Build directory of the extension, use temporary directory when not specified
 
+Examples
+========
+
+Chang Log
+=========
+
+2020-12-04 1.0a
+---------------
+
+ .. sectionauthor:: Shengyu Zhang
+
+The alpha version is out, please refer to :doc:`index` to see how it works.
+
+Enjoy~

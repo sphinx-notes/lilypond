@@ -12,17 +12,22 @@
 #
 import os
 import sys
+from datetime import datetime
+
+sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
+# Import proj's meta info
+import project as proj
 
 # -- Project information -----------------------------------------------------
 
-project = 'sphinxnotes-lilypond'
-copyright = '2020, Shengyu Zhang'
-author = 'Shengyu Zhang'
+project = proj.name
+copyright = '%s, %s' % (datetime.now().year, proj.author)
+author = proj.author
 
 # The full version, including alpha/beta/rc tags
-version = release = '1.0'
+version = release = proj.version
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,6 +47,9 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# A boolean that decides whether codeauthor and sectionauthor directives
+# produce any output in the built files.
+show_authors = True
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -51,8 +59,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'alabaster'
 
 html_theme_options = {
-    'github_user': 'sphinxnotes',
-    'github_repo': 'lilypond',
+    'github_user': proj.github_user,
+    'github_repo': proj.github_repo,
     'nosidebar': True,
 }
 

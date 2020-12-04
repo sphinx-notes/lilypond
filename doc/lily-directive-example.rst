@@ -12,11 +12,10 @@
      <<
        \new Staff \relative c' {
            \time 4/4
-           \tempo  "Allegretto" 4 = 110
-           c4 d e e     f e d2
-           e4 d c c     d c b2
-           b4 g a2      c4 a g2
-           c2 d         d4 c b8 c4.
+           \tempo 4 = 80
+           r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
+           c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
+           d4 r r r
      }
      >>
    }
