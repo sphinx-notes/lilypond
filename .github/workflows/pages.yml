@@ -5,6 +5,10 @@ jobs:
     name: Publish Sphinx Pages
     runs-on: ubuntu-latest
     steps:
+    - name: Install the LilyPond
+      run: |
+        sudo apt-get update;
+        sudo apt-get install lilypond
     - uses: sphinx-notes/pages@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
