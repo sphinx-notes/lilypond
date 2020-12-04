@@ -125,12 +125,17 @@ class Document(object):
                     (language, cursor.document.filename))
 
 
-    def strip_header_footer(self, strip_header=True, strip_footer=True):
+    def strip_header_footer(self, strip_header=False, strip_footer=False):
         '''Strip header and footer from outputed scores
         '''
+
+        # Return when nothing todo
+        if strip_header or strip_footer:
+            return
+
         # Find \paper block, if not found, we create one
         if not music.document(self._document).find_child(items.Paper):
-            self._document[0:0] = '''\paper {\n}'''
+            self._document[0:0] = '''\paper {\n}\n'''
 
         if strip_header:
             doc = music.document(self._document)
