@@ -1,0 +1,506 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Sphinx Extension for LilyPond &#8212; sphinxnotes-lilypond 1.0a documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="sphinx-extension-for-lilypond">
+<h1>Sphinx Extension for LilyPond<a class="headerlink" href="#sphinx-extension-for-lilypond" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">version:</th><td class="field-body">1.0a</td>
+</tr>
+<tr class="field-even field"><th class="field-name">copyright:</th><td class="field-body">Copyright ©2020 by Shengyu Zhang.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright ©2009 by Wei-Wei Guo.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<p>The extension is fork of <a class="reference external" href="https://github.com/sphinx-contrib/lilypond">sphinx-contrib/lilypond</a> , allows <a class="reference external" href="https://lilypond.org/">LilyPond</a>
+music notes to be included in Sphinx-generated documents inline and outline.
+Compared to its predecessor, the extension has many new features such as
+scale transposing, audio output, paper cropping, and so on.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#installation" id="id1">Installation</a></li>
+<li><a class="reference internal" href="#functionalities" id="id2">Functionalities</a><ul>
+<li><a class="reference internal" href="#roles" id="id3">Roles</a><ul>
+<li><a class="reference internal" href="#the-lily-role" id="id4">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> role</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#directives" id="id5">Directives</a><ul>
+<li><a class="reference internal" href="#the-lily-directive" id="id6">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> directive</a></li>
+<li><a class="reference internal" href="#the-lilyinclude-directives" id="id7">The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directives</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration" id="id8">Configuration</a></li>
+<li><a class="reference internal" href="#examples" id="id9">Examples</a><ul>
+<li><a class="reference internal" href="#original-paper-size" id="id10">Original paper size</a></li>
+<li><a class="reference internal" href="#paper-without-footer-and-edge" id="id11">Paper without Footer and Edge</a></li>
+<li><a class="reference internal" href="#smallest-paper-size" id="id12">Smallest Paper Size</a></li>
+<li><a class="reference internal" href="#audio-preview" id="id13">Audio Preview</a></li>
+<li><a class="reference internal" href="#transposing" id="id14">Transposing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chang-log" id="id15">Chang Log</a><ul>
+<li><a class="reference internal" href="#a" id="id16">2020-12-04 1.0a</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Install the follwing runtime dependencies before using the extension:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://lilypond.org/">LilyPond</a></li>
+<li><a class="reference external" href="http://timidity.sourceforge.net/">TiMidity++</a></li>
+<li><a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a></li>
+</ul>
+<p>Download it from official Python Package Index:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install sphinxnotes-lilypond
+</pre></div>
+</div>
+<p>Add extension to <code class="file docutils literal notranslate"><span class="pre">conf.py</span></code> in your sphinx project:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="c1"># …</span>
+          <span class="s1">&#39;sphinxnotes.lilypond&#39;</span><span class="p">,</span>
+          <span class="c1"># …</span>
+          <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="functionalities">
+<h2>Functionalities<a class="headerlink" href="#functionalities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="roles">
+<h3>Roles<a class="headerlink" href="#roles" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-lily-role">
+<h4>The <code class="docutils literal notranslate"><span class="pre">lily</span></code> role<a class="headerlink" href="#the-lily-role" title="Permalink to this headline">¶</a></h4>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">lily</span></code> role to insert short <a class="reference external" href="http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained">LilyPond Music Expression</a> as inline
+element.</p>
+<p>For example:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="na">:lily:</span><span class="nv">`\relative { c&#39; }`</span> is the first note of the C major scale.
+</pre></div>
+</div>
+<p>Will be rendered as:</p>
+<blockquote>
+<div><img class="lilypond-score" src="./_lilypond/fe054cc0f6577b37cbee4644af6855a6ff620a5c.png" alt="\relative { c' }" align="absbottom"/> is the first note of the C major scale.</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Role <code class="docutils literal notranslate"><span class="pre">lily</span></code> produces a preview image of the music expression (using
+<code class="docutils literal notranslate"><span class="pre">-dpreview=#t</span></code>). You can still write a long music expression as interpreted text,
+but only the beginning can be shown.</p>
+</div>
+</div>
+</div>
+<div class="section" id="directives">
+<h3>Directives<a class="headerlink" href="#directives" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-lily-directive">
+<span id="lily-directive"></span><h4>The <code class="docutils literal notranslate"><span class="pre">lily</span></code> directive<a class="headerlink" href="#the-lily-directive" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">lily</span></code> directive is used to insert a complete LilyPond score as
+block level element.</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lily</span><span class="p">::</span>
+   <span class="nc">:noedge:</span>
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:audio:</span>
+
+   \version &quot;2.20.0&quot;
+   \header {
+     title = &quot;翼をください, Excerpts&quot;
+   }
+
+   \score {
+     &lt;&lt;
+       \new Staff \relative c&#39; {
+           \time 4/4
+           \tempo 4 = 70
+           r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
+           c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
+           d4 r r r
+     }
+     &gt;&gt;
+   }
+</pre></div>
+</div>
+<p>Will be rendered as:</p>
+<blockquote>
+<div><div class="lilypond">
+<p><figure style="display:table;">
+<img class="lilypond-score" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;翼をください, Excerpts&quot;
+}
+
+\score {
+  &lt;&lt;
+    \new Staff \relative c' {
+        \time 4/4
+        \tempo 4 = 70
+        r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
+        c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
+        d4 r r r
+  }
+  &gt;&gt;
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837.ogg"/>
+</figcaption>
+</figure>
+</p></div></div></blockquote>
+<p>The directive supports the following options:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">noheader:</th><td class="field-body">(flag)
+Whether to crop the header of score</td>
+</tr>
+<tr class="field-even field"><th class="field-name">nofooter:</th><td class="field-body">(flag)
+Whether to crop the footer of score</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">noedge:</th><td class="field-body">(flag)
+Whether to crop the blank edges of score</td>
+</tr>
+<tr class="field-even field"><th class="field-name">audio:</th><td class="field-body">(falg)
+Whether to show a audio player for listen LilyPond-generated MIDI file</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">transpose:</th><td class="field-body">(text)
+Transposing the pitches of score from one to another.
+Pitches are written in <a class="reference external" href="http://lilypond.org/doc/v2.18/Documentation/notation/writing-pitches">LilyPond Notation</a> and separated in whitespace.
+For example: <code class="docutils literal notranslate"><span class="pre">:transpose:</span> <span class="pre">c'</span> <span class="pre">d'</span></code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="the-lilyinclude-directives">
+<h4>The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directives<a class="headerlink" href="#the-lilyinclude-directives" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directive is similar to <a class="reference internal" href="#lily-directive"><span class="std std-ref">The lily directive</span></a>,
+except the source of LilyPond are read from file but not contents of directive.</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> ./witch-spring.ly
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:noedge:</span>
+   <span class="nc">:audio:</span>
+</pre></div>
+</div>
+<p>Will be rendered as:</p>
+<blockquote>
+<div><div class="lilypond">
+<p><figure style="display:table;">
+<img class="lilypond-score" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;《Witch Spring I》OP&quot;
+  composer = &quot;Kiwi Walks&quot;
+  arranger = &quot;SilverRainZ&quot;
+}
+
+symbols =  {
+  \time 4/4
+  \tempo  &quot;Allegretto&quot; 4 = 110
+
+  % 1
+  c'4 c' c' c'8 b8
+  c'4 g' c' c'8 b8
+  c'4 g' (ais') c''8 b'8
+  c''2 r2
+
+  %14
+  e'4 g c'2
+  a8 c'8 c'8 d'8 c'2
+
+  e'4 g' c'2
+  c'4 d'8 e'8 c'4 g
+
+  e'4 g c'2
+  a8 c'8 c'8 d'8 e'4 c'
+
+  g4 f e f8 g8
+
+  \bar &quot;|.&quot;
+}
+
+\score {
+  &lt;&lt;
+    \new Staff {
+      \clef &quot;G_8&quot;
+      \symbols
+    }
+    \new TabStaff {
+      \tabFullNotation
+      \symbols
+    }
+  &gt;&gt;
+
+  \midi { }
+  \layout { }
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61.ogg"/>
+</figcaption>
+</figure>
+</p></div></div></blockquote>
+<p>Options of the directive are same to <a class="reference internal" href="#lily-directive"><span class="std std-ref">The lily directive</span></a>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">You and download the example LilyPond documentation from here:
+<a class="reference download internal" download="" href="_downloads/919b3008a8b2d09238038af53bc3d700/witch-spring.ly"><code class="xref download docutils literal notranslate"><span class="pre">witch-spring.ly</span></code></a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">lilypond_lilypond_args:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['lilypond']</span></code>)
+Argument list for running <a class="reference external" href="https://lilypond.org/">LilyPond</a>. The first one is path to LilyPond binary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">lilypond_timidity_args:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['timidity']</span></code>)
+Argument list for running <a class="reference external" href="http://timidity.sourceforge.net/">Timidity++</a>. The first one is path to Timidity++ binary.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">lilypond_magick_home:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Path to <a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a> library.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">lilypond_builddir:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Build directory of the extension, use temporary directory when not specified</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>The LilyPond documentation used in example can be downloaded here:
+<a class="reference download internal" download="" href="_downloads/270bd1729b181bb69ddd0bf9c81a7f37/minuet-in-g.ly"><code class="xref download docutils literal notranslate"><span class="pre">/minuet-in-g.ly</span></code></a>.</p>
+<div class="section" id="original-paper-size">
+<h3>Original paper size<a class="headerlink" href="#original-paper-size" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
+</pre></div>
+</div>
+<div class="lilypond">
+<p><img class="lilypond-score" src="./_lilypond/37c2b8dad1ba372c95ea7381636b94434361b8c7.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Minuet in G major, BWV Anh. 114&quot;
+  composer = &quot;Christian Petzold&quot;
+}
+
+\relative c'' {
+  \time 3/4
+  \tempo 4 = 120
+  \key g \major
+
+  d4 g,8 a b c
+  d4 g, g
+  e'4 c8 d e fis
+  g4 g, g
+
+  c4 d8 c b a
+  b4 d8 c b a
+  fis4 g8 a b g
+  a2.
+}"/>
+</p></div></div>
+<div class="section" id="paper-without-footer-and-edge">
+<h3>Paper without Footer and Edge<a class="headerlink" href="#paper-without-footer-and-edge" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:noedge:</span>
+</pre></div>
+</div>
+<div class="lilypond">
+<p><img class="lilypond-score" src="./_lilypond/ee9cdeeef848317b74a1c18ae101373aa2235640.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Minuet in G major, BWV Anh. 114&quot;
+  composer = &quot;Christian Petzold&quot;
+}
+
+\relative c'' {
+  \time 3/4
+  \tempo 4 = 120
+  \key g \major
+
+  d4 g,8 a b c
+  d4 g, g
+  e'4 c8 d e fis
+  g4 g, g
+
+  c4 d8 c b a
+  b4 d8 c b a
+  fis4 g8 a b g
+  a2.
+}"/>
+</p></div></div>
+<div class="section" id="smallest-paper-size">
+<h3>Smallest Paper Size<a class="headerlink" href="#smallest-paper-size" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
+   <span class="nc">:noheader:</span>
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:noedge:</span>
+</pre></div>
+</div>
+<div class="lilypond">
+<p><img class="lilypond-score" src="./_lilypond/611dfbac27f5237ff4368ca997ac063a00a5e98f.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Minuet in G major, BWV Anh. 114&quot;
+  composer = &quot;Christian Petzold&quot;
+}
+
+\relative c'' {
+  \time 3/4
+  \tempo 4 = 120
+  \key g \major
+
+  d4 g,8 a b c
+  d4 g, g
+  e'4 c8 d e fis
+  g4 g, g
+
+  c4 d8 c b a
+  b4 d8 c b a
+  fis4 g8 a b g
+  a2.
+}"/>
+</p></div></div>
+<div class="section" id="audio-preview">
+<h3>Audio Preview<a class="headerlink" href="#audio-preview" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
+   <span class="nc">:noheader:</span>
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:noedge:</span>
+   <span class="nc">:audio:</span>
+</pre></div>
+</div>
+<div class="lilypond">
+<p><figure style="display:table;">
+<img class="lilypond-score" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Minuet in G major, BWV Anh. 114&quot;
+  composer = &quot;Christian Petzold&quot;
+}
+
+\relative c'' {
+  \time 3/4
+  \tempo 4 = 120
+  \key g \major
+
+  d4 g,8 a b c
+  d4 g, g
+  e'4 c8 d e fis
+  g4 g, g
+
+  c4 d8 c b a
+  b4 d8 c b a
+  fis4 g8 a b g
+  a2.
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96.ogg"/>
+</figcaption>
+</figure>
+</p></div></div>
+<div class="section" id="transposing">
+<h3>Transposing<a class="headerlink" href="#transposing" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
+   <span class="nc">:noheader:</span>
+   <span class="nc">:nofooter:</span>
+   <span class="nc">:noedge:</span>
+   <span class="nc">:audio:</span>
+   <span class="nc">:transpose:</span> <span class="nf">g c</span>
+</pre></div>
+</div>
+<div class="lilypond">
+<p><figure style="display:table;">
+<img class="lilypond-score" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Minuet in G major, BWV Anh. 114&quot;
+  composer = &quot;Christian Petzold&quot;
+}
+
+\relative c'' {
+  \time 3/4
+  \tempo 4 = 120
+  \key g \major
+
+  d4 g,8 a b c
+  d4 g, g
+  e'4 c8 d e fis
+  g4 g, g
+
+  c4 d8 c b a
+  b4 d8 c b a
+  fis4 g8 a b g
+  a2.
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf.ogg"/>
+</figcaption>
+</figure>
+</p></div></div>
+</div>
+<div class="section" id="chang-log">
+<h2>Chang Log<a class="headerlink" href="#chang-log" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="a">
+<h3>2020-12-04 1.0a<a class="headerlink" href="#a" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><em>Section author: Shengyu Zhang</em></p>
+</div></blockquote>
+<p>The alpha version is out, enjoy~</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Shengyu Zhang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
