@@ -1,16 +1,23 @@
-name: sphinx-pages
+name: Pages
 on: [push]
 jobs:
   build:
-    name: Publish Sphinx Pages
     runs-on: ubuntu-latest
     steps:
-    - name: Install the LilyPond
+    - name: Install dependencies
       run: |
         sudo apt-get update;
-        sudo apt-get install lilypond
-    - uses: sphinx-notes/pages@master
+        sudo apt-get install lilypond timidity imagemagick
+    - name: Checkout
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+    - name: Build and Commit
+      uses: sphinx-notes/pages@master
+      with:
+        documentation_path: doc
+    - name: Push changes
+      uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        create_readme: true
-        source_dir: doc
+        branch: gh-pages
