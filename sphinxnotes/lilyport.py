@@ -17,11 +17,13 @@ from os import path
 import subprocess
 import random
 import string
+from packaging import version
 
 from ly import pitch
 from ly import document
 from ly import docinfo
 from ly import music
+from ly import pkginfo
 from ly.pitch import transpose
 from ly.music import items
 from wand import image
@@ -116,8 +118,11 @@ class Document(object):
         transposer = transpose.Transposer(fp, tp)
         cursor = document.Cursor(self._document)
         try:
-            transpose.transpose(cursor, transposer,
-                    relative_first_pitch_absolute = True) # Only consider LilyPond >= 2.18 for now
+            if version.parse(pkginfo.version) > version.parse("0.9"):
+                transpose.transpose(cursor, transposer,
+                        relative_first_pitch_absolute = True) # only consider lilypond >= 2.18 for now
+            else:
+                transpose.transpose(cursor, transposer)
         except pitch.PitchNameNotAvailable:
             language = docinfo.DocInfo(cursor.document).language()
             raise Error(
