@@ -7,6 +7,9 @@
 Sphinx Extension for LilyPond
 =============================
 
+.. image:: https://img.shields.io/github/stars/sphinx-notes/lilypond.svg?style=social&label=Star&maxAge=2592000
+   :target: https://github.com/sphinx-notes/lilypond
+
 :version: |version|
 :copyright: Copyright ©2020 by Shengyu Zhang.
 :copyright: Copyright ©2009 by Wei-Wei Guo.
