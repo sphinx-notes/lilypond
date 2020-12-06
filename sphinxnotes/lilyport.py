@@ -135,7 +135,7 @@ class Document(object):
         '''
 
         # Return when nothing todo
-        if strip_header or strip_footer:
+        if not strip_header and not strip_footer:
             return
 
         # Find \paper block, if not found, we create one
@@ -144,17 +144,17 @@ class Document(object):
 
         if strip_header:
             doc = music.document(self._document)
-            paper = list(doc.find_children(items.Paper))[-1]
-            self._set_value(paper, 'oddHeaderMarkup', '##f')
-            self._set_value(paper, 'evenHeaderMarkup', '##f')
-            self._set_value(paper, 'bookTitleMarkup', '##f')
-            self._set_value(paper, 'scoreTitleMarkup', '##f')
+            for paper in doc.find_children(items.Paper):
+                self._set_value(paper, 'oddHeaderMarkup', '##f')
+                self._set_value(paper, 'evenHeaderMarkup', '##f')
+                self._set_value(paper, 'bookTitleMarkup', '##f')
+                self._set_value(paper, 'scoreTitleMarkup', '##f')
 
         if strip_footer:
             doc = music.document(self._document)
-            paper = list(doc.find_children(items.Paper))[-1]
-            self._set_value(paper, 'oddFooterMarkup', '##f')
-            self._set_value(paper, 'evenFooterMarkup', '##f')
+            for paper in doc.find_children(items.Paper):
+                self._set_value(paper, 'oddFooterMarkup', '##f')
+                self._set_value(paper, 'evenFooterMarkup', '##f')
 
 
     def enable_audio_output(self):
