@@ -15,7 +15,6 @@ setup(
     author=project.author,
     description=project.description,
     long_description=long_desc,
-    long_description_content_type='text/x-rst',
     zip_safe=False,
     classifiers=[
         'Development Status :: 3 - Alpha',
