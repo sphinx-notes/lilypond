@@ -1,10 +1,5 @@
-.. -*- restructuredtext -*-
-
 =========================
-Sphinx extension LilyPond
+Sphinx extension for LilyPond
 =========================
 
-It's a fork of `sphinx-contrib/lilypond`_ ,
-provides richer features but drop LaTeX supports.
-
-.. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
+Please refer to https://sphinx-notes.github.io/lilypond/ for documentation.
