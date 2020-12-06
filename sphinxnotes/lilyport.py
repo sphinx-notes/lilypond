@@ -32,6 +32,7 @@ from wand import image
 def randstr() -> str:
     return 'music-' + ''.join(random.choice(string.ascii_lowercase) for i in range(5))
 
+
 class Error(Exception):
     # TODO
     pass
@@ -155,6 +156,12 @@ class Document(object):
             for paper in doc.find_children(items.Paper):
                 self._set_value(paper, 'oddFooterMarkup', '##f')
                 self._set_value(paper, 'evenFooterMarkup', '##f')
+
+            no_header_found = True
+            for header in doc.find_children(items.Header):
+                self._set_value(header, 'tagline', '##f')
+                no_header_found = False
+            self._document[0:0] = r'\header { tagline = ##f }'
 
 
     def enable_audio_output(self):
@@ -280,7 +287,7 @@ class Document(object):
                     found = True
         if not found:
             # Insert a assignment expression directly when nothing found
-            self._insert_into(container, name + '=' + val)
+            self._insert_into(container, name + ' = ' + val)
 
 
     def _crop(self, scorefn:str):
