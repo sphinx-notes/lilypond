@@ -36,7 +36,8 @@ version = release = proj.version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxnotes.lilypond'
+    'sphinx.ext.githubpages',
+    'sphinxnotes.lilypond',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -74,3 +75,7 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# The URL which points to the root of the HTML documentation.
+# It is used to indicate the location of document like canonical_url
+html_baseurl = 'https://sphinx-notes.github.io/lilypond'
