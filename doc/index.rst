@@ -91,11 +91,11 @@ Will be rendered as:
 The directive supports the following options:
 
 :noheader: (flag)
-    Whether to crop the header of score
+    Whether to remove the header of score
 :nofooter: (flag)
-    Whether to crop the footer of score
+    Whether to remove the footer of score
 :noedge: (flag)
-    Whether to crop the blank edges of score
+    Whether to remove the blank edges of score
 :audio: (falg)
     Whether to show a audio player for listen LilyPond-generated MIDI file
 :transpose: (text)
