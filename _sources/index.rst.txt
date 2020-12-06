@@ -7,6 +7,11 @@
 Sphinx Extension for LilyPond
 =============================
 
+:version: |version|
+:copyright: Copyright ©2020 by Shengyu Zhang.
+:copyright: Copyright ©2009 by Wei-Wei Guo.
+:license: BSD, see LICENSE for details.
+
 .. include:: desc.rst
 
 .. contents::
@@ -220,8 +225,8 @@ Transposing
 Chang Log
 =========
 
-2020-12-04 1.0a
----------------
+2020-12-06 1.0a1
+----------------
 
  .. sectionauthor:: Shengyu Zhang
 
