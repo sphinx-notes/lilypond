@@ -1,25 +1,25 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sphinx Extension for LilyPond &#8212; sphinxnotes-lilypond 1.0a0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="canonical" href="https://sphinx-notes.github.io/lilypond/index.html" />
     <link rel="shortcut icon" href="_static/sphinx-notes.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
@@ -28,55 +28,62 @@
 
     <div class="document">
       <div class="documentwrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="sphinx-extension-for-lilypond">
 <h1>Sphinx Extension for LilyPond<a class="headerlink" href="#sphinx-extension-for-lilypond" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://github.com/sphinx-notes/lilypond"><img alt="https://img.shields.io/github/stars/sphinx-notes/lilypond.svg?style=social&amp;label=Star&amp;maxAge=2592000" src="https://img.shields.io/github/stars/sphinx-notes/lilypond.svg?style=social&amp;label=Star&amp;maxAge=2592000" /></a>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">version:</th><td class="field-body">1.0a0</td>
-</tr>
-<tr class="field-even field"><th class="field-name">copyright:</th><td class="field-body">Copyright ©2020 by Shengyu Zhang.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">copyright:</th><td class="field-body">Copyright ©2009 by Wei-Wei Guo.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">version</dt>
+<dd class="field-odd"><p>1.0a0</p>
+</dd>
+<dt class="field-even">copyright</dt>
+<dd class="field-even"><p>Copyright ©2020 by Shengyu Zhang.</p>
+</dd>
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>Copyright ©2009 by Wei-Wei Guo.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>BSD, see LICENSE for details.</p>
+</dd>
+</dl>
 <p>The extension is originated from <a class="reference external" href="https://github.com/sphinx-contrib/lilypond">sphinx-contrib/lilypond</a> , allows <a class="reference external" href="https://lilypond.org/">LilyPond</a>
 music notes to be included in Sphinx-generated documents inline and outline.
 Compared to its predecessor, the extension has many new features such as
 scale transposing, audio output, layout controlling, and so on.</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#installation" id="id1">Installation</a></li>
-<li><a class="reference internal" href="#functionalities" id="id2">Functionalities</a><ul>
-<li><a class="reference internal" href="#roles" id="id3">Roles</a><ul>
-<li><a class="reference internal" href="#the-lily-role" id="id4">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> role</a></li>
+<li><p><a class="reference internal" href="#installation" id="id1">Installation</a></p></li>
+<li><p><a class="reference internal" href="#functionalities" id="id2">Functionalities</a></p>
+<ul>
+<li><p><a class="reference internal" href="#roles" id="id3">Roles</a></p>
+<ul>
+<li><p><a class="reference internal" href="#the-lily-role" id="id4">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> role</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#directives" id="id5">Directives</a><ul>
-<li><a class="reference internal" href="#the-lily-directive" id="id6">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> directive</a></li>
-<li><a class="reference internal" href="#the-lilyinclude-directives" id="id7">The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directives</a></li>
+<li><p><a class="reference internal" href="#directives" id="id5">Directives</a></p>
+<ul>
+<li><p><a class="reference internal" href="#the-lily-directive" id="id6">The <code class="docutils literal notranslate"><span class="pre">lily</span></code> directive</a></p></li>
+<li><p><a class="reference internal" href="#the-lilyinclude-directives" id="id7">The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directives</a></p></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#configuration" id="id8">Configuration</a></li>
-<li><a class="reference internal" href="#examples" id="id9">Examples</a><ul>
-<li><a class="reference internal" href="#original-paper-size" id="id10">Original paper size</a></li>
-<li><a class="reference internal" href="#paper-without-footer-and-edge" id="id11">Paper without Footer and Edge</a></li>
-<li><a class="reference internal" href="#smallest-paper-size" id="id12">Smallest Paper Size</a></li>
-<li><a class="reference internal" href="#audio-preview" id="id13">Audio Preview</a></li>
-<li><a class="reference internal" href="#transposing" id="id14">Transposing</a></li>
+<li><p><a class="reference internal" href="#configuration" id="id8">Configuration</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id9">Examples</a></p>
+<ul>
+<li><p><a class="reference internal" href="#original-paper-size" id="id10">Original paper size</a></p></li>
+<li><p><a class="reference internal" href="#paper-without-footer-and-edge" id="id11">Paper without Footer and Edge</a></p></li>
+<li><p><a class="reference internal" href="#smallest-paper-size" id="id12">Smallest Paper Size</a></p></li>
+<li><p><a class="reference internal" href="#audio-preview" id="id13">Audio Preview</a></p></li>
+<li><p><a class="reference internal" href="#transposing" id="id14">Transposing</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#chang-log" id="id15">Chang Log</a><ul>
-<li><a class="reference internal" href="#a1" id="id16">2020-12-06 1.0a1</a></li>
+<li><p><a class="reference internal" href="#chang-log" id="id15">Chang Log</a></p>
+<ul>
+<li><p><a class="reference internal" href="#a1" id="id16">2020-12-06 1.0a1</a></p></li>
 </ul>
 </li>
 </ul>
@@ -85,9 +92,9 @@ scale transposing, audio output, layout controlling, and so on.</p>
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Install the follwing runtime dependencies before using the extension:</p>
 <ul class="simple">
-<li><a class="reference external" href="https://lilypond.org/">LilyPond</a></li>
-<li><a class="reference external" href="http://timidity.sourceforge.net/">TiMidity++</a></li>
-<li><a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a></li>
+<li><p><a class="reference external" href="https://lilypond.org/">LilyPond</a></p></li>
+<li><p><a class="reference external" href="http://timidity.sourceforge.net/">TiMidity++</a></p></li>
+<li><p><a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a></p></li>
 </ul>
 <p>Download it from official Python Package Index:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install sphinxnotes-lilypond
@@ -116,10 +123,11 @@ element.</p>
 </div>
 <p>Will be rendered as:</p>
 <blockquote>
-<div><img class="lilypond-score" src="./_lilypond/fe054cc0f6577b37cbee4644af6855a6ff620a5c.png" alt="\relative { c' }" align="absbottom"/> is the first note of the C major scale.</div></blockquote>
+<div><p><img class="lilypond-score" src="./_lilypond/fe054cc0f6577b37cbee4644af6855a6ff620a5c.png" alt="\relative { c' }" align="absbottom"/> is the first note of the C major scale.</p>
+</div></blockquote>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Role <code class="docutils literal notranslate"><span class="pre">lily</span></code> produces a preview image of the music expression (using
+<p class="admonition-title">Note</p>
+<p>Role <code class="docutils literal notranslate"><span class="pre">lily</span></code> produces a preview image of the music expression (using
 <code class="docutils literal notranslate"><span class="pre">-dpreview=#t</span></code>). You can still write a long music expression as interpreted text,
 but only the beginning can be shown.</p>
 </div>
@@ -180,29 +188,30 @@ block level element.</p>
 </figure>
 </p></div></div></blockquote>
 <p>The directive supports the following options:</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">noheader:</th><td class="field-body">(flag)
-Whether to remove the header of score</td>
-</tr>
-<tr class="field-even field"><th class="field-name">nofooter:</th><td class="field-body">(flag)
-Whether to remove the footer of score</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">noedge:</th><td class="field-body">(flag)
-Whether to remove the blank edges of score</td>
-</tr>
-<tr class="field-even field"><th class="field-name">audio:</th><td class="field-body">(falg)
-Whether to show a audio player for listen LilyPond-generated MIDI file</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">transpose:</th><td class="field-body">(text)
+<dl class="field-list simple">
+<dt class="field-odd">noheader</dt>
+<dd class="field-odd"><p>(flag)
+Whether to remove the header of score</p>
+</dd>
+<dt class="field-even">nofooter</dt>
+<dd class="field-even"><p>(flag)
+Whether to remove the footer of score</p>
+</dd>
+<dt class="field-odd">noedge</dt>
+<dd class="field-odd"><p>(flag)
+Whether to remove the blank edges of score</p>
+</dd>
+<dt class="field-even">audio</dt>
+<dd class="field-even"><p>(falg)
+Whether to show a audio player for listen LilyPond-generated MIDI file</p>
+</dd>
+<dt class="field-odd">transpose</dt>
+<dd class="field-odd"><p>(text)
 Transposing the pitches of score from one to another.
 Pitches are written in <a class="reference external" href="http://lilypond.org/doc/v2.18/Documentation/notation/writing-pitches">LilyPond Notation</a> and separated in whitespace.
-For example: <code class="docutils literal notranslate"><span class="pre">:transpose:</span> <span class="pre">c'</span> <span class="pre">d'</span></code></td>
-</tr>
-</tbody>
-</table>
+For example: <code class="docutils literal notranslate"><span class="pre">:transpose:</span> <span class="pre">c'</span> <span class="pre">d'</span></code></p>
+</dd>
+</dl>
 </div>
 <div class="section" id="the-lilyinclude-directives">
 <h4>The <code class="docutils literal notranslate"><span class="pre">lilyinclude</span></code> directives<a class="headerlink" href="#the-lilyinclude-directives" title="Permalink to this headline">¶</a></h4>
@@ -272,8 +281,8 @@ symbols =  {
 </p></div></div></blockquote>
 <p>Options of the directive are same to <a class="reference internal" href="#lily-directive"><span class="std std-ref">The lily directive</span></a>.</p>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last">You and download the example LilyPond documentation from here:
+<p class="admonition-title">See also</p>
+<p>You and download the example LilyPond documentation from here:
 <a class="reference download internal" download="" href="_downloads/919b3008a8b2d09238038af53bc3d700/witch-spring.ly"><code class="xref download docutils literal notranslate"><span class="pre">witch-spring.ly</span></code></a>.</p>
 </div>
 </div>
@@ -281,28 +290,24 @@ symbols =  {
 </div>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">lilypond_lilypond_args:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['lilypond']</span></code>)
-Argument list for running <a class="reference external" href="https://lilypond.org/">LilyPond</a>. The first one is path to LilyPond binary.</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">lilypond_timidity_args:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['timidity']</span></code>)
-Argument list for running <a class="reference external" href="http://timidity.sourceforge.net/">Timidity++</a>. The first one is path to Timidity++ binary.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">lilypond_magick_home:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
-Path to <a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a> library.</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">lilypond_builddir:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
-Build directory of the extension, use temporary directory when not specified</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">lilypond_lilypond_args</dt>
+<dd class="field-odd"><p>(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['lilypond']</span></code>)
+Argument list for running <a class="reference external" href="https://lilypond.org/">LilyPond</a>. The first one is path to LilyPond binary.</p>
+</dd>
+<dt class="field-even">lilypond_timidity_args</dt>
+<dd class="field-even"><p>(Type: <code class="docutils literal notranslate"><span class="pre">list[str]</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">['timidity']</span></code>)
+Argument list for running <a class="reference external" href="http://timidity.sourceforge.net/">Timidity++</a>. The first one is path to Timidity++ binary.</p>
+</dd>
+<dt class="field-odd">lilypond_magick_home</dt>
+<dd class="field-odd"><p>(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Path to <a class="reference external" href="https://imagemagick.org/index.php">ImageMagick</a> library.</p>
+</dd>
+<dt class="field-even">lilypond_builddir</dt>
+<dd class="field-even"><p>(Type: <code class="docutils literal notranslate"><span class="pre">str</span></code>, Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Build directory of the extension, use temporary directory when not specified</p>
+</dd>
+</dl>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
@@ -487,6 +492,7 @@ Build directory of the extension, use temporary directory when not specified</td
 
 
           </div>
+          
       </div>
       <div class="clearer"></div>
     </div>
@@ -494,8 +500,8 @@ Build directory of the extension, use temporary directory when not specified</td
       &copy;2020, Shengyu Zhang.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/index.rst.txt"
