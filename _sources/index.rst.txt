@@ -143,7 +143,11 @@ Configuration
 :lilypond_magick_home: (Type: ``str``, Default: ``None``)
    Path to `ImageMagick`_ library.
 :lilypond_builddir: (Type: ``str``, Default: ``None``)
-   Build directory of the extension, use temporary directory when not specified
+   Build directory of the extension, use temporary directory when not specified.
+:lilypond_score_format: (Type: ``str``, Default: ``'png'``)
+   Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
+:lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
+   Format of outputed audio, available values: ``['wav', 'ogg']``.
 
 Examples
 ========
