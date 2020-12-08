@@ -155,11 +155,13 @@ class Document(object):
                 self._set_value(paper, 'oddFooterMarkup', '##f')
                 self._set_value(paper, 'evenFooterMarkup', '##f')
 
+            doc = music.document(self._document)
             no_header_found = True
             for header in doc.find_children(items.Header):
                 self._set_value(header, 'tagline', '##f')
                 no_header_found = False
-            self._document[0:0] = r'\header { tagline = ##f }'
+            if no_header_found:
+                self._document[0:0] = r'\header { tagline = ##f }'
 
 
     def enable_audio_output(self):
