@@ -144,7 +144,9 @@ def html_visit_lily_node(self, node:lily_outline_node):
     outdir, _ = get_outdir_and_reldir(self.builder, node)
     basefn = get_node_sig(node)
     try:
-        out = lilyport.Output(outdir, basefn)
+        out = lilyport.Output(outdir, basefn,
+                self.builder.config.lilypond_score_format,
+                self.builder.config.lilypond_audio_format)
     except lilyport.Error:
         pass
 
@@ -166,8 +168,10 @@ def html_visit_lily_node(self, node:lily_outline_node):
                     strip_header=node.get('noheader'),
                     strip_footer=node.get('nofooter'))
             out = doc.output(builddir,
-                    crop=node.get('noedge'),
-                    preview=node.get('preview'))
+                    node.get('noedge'),
+                    node.get('preview'),
+                    self.builder.config.lilypond_score_format,
+                    self.builder.config.lilypond_audio_format)
         except lilyport.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
@@ -234,4 +238,6 @@ def setup(app):
     app.add_config_value('lilypond_timidity_args', ['timidity'], '')
     app.add_config_value('lilypond_magick_home', None, '')
     app.add_config_value('lilypond_builddir', None, '')
+    app.add_config_value('lilypond_score_format', 'png', '')
+    app.add_config_value('lilypond_audio_format', 'wav', '')
     # TODO: Font size

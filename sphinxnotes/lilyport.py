@@ -49,9 +49,7 @@ class Output(object):
     midi:Optional[str] = None
     audio:Optional[str] = None
 
-    def __init__(self, outdir:str, basefn:str,
-            score_format:str='png',
-            audio_format:str='ogg'):
+    def __init__(self, outdir:str, basefn:str, score_format:str, audio_format:str):
         prefix = path.join(outdir, basefn)
 
         srcfn = prefix + '.ly'
@@ -88,7 +86,7 @@ class Output(object):
         audiofn = prefix + '.' + audio_format
         if path.isfile(audiofn):
             self.audio = audiofn
-            
+
 
 class Document(object):
 
@@ -182,17 +180,17 @@ class Document(object):
                 self.enable_audio_output()
 
 
-    def output(self, outdir:str,
-            basefn:str=randstr(),
-            score_format:str='png',
-            audio_format:str='ogg',
-            preview:bool=False,
-            crop:bool=True) -> Output:
+    def output(self,
+            outdir:str,
+            preview:bool,
+            crop:bool,
+            score_format:str,
+            audio_format:str) -> Output:
         '''Output scores and related files from LilyPond Document
         '''
+        basefn = randstr()
         args = self._lilypond_args.copy()
         args += ['-o', outdir]
-
         if score_format in ['png', 'pdf', 'ps', 'eps']:
             args += ['--formats', score_format]
         elif score_format == 'svg':
@@ -305,15 +303,22 @@ class Document(object):
 
 
     def _midi_to_audio(self, midifn:str, audio_format:str):
-        if not audio_format in ['ogg']:
-            raise Error('Unsupported audio format "%s"' % audio_format)
-
         try:
-            p = subprocess.run(self._timidity_args + ['-Ov', midifn],
+            timidity_args = self._timidity_args.copy()
+            if audio_format == 'ogg':
+                timidity_args += ['-Ov']
+            elif audio_format == 'wav':
+                timidity_args += ['-Ow']
+            else:
+                raise Error('Unsupported audio format "%s"' % audio_format)
+            timidity_args += [midifn]
+            p = subprocess.run(timidity_args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         except OSError as e:
             raise Error('TiMidity++ can not be run') from e
+        except Exception as e:
+            raise e
         if p.returncode != 0:
             raise Error(
                     'TiMidity++ exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
