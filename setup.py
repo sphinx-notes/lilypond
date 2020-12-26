@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from doc import project
 
-with open('doc/desc.rst') as f:
+with open('README.rst') as f:
     long_desc = f.read()
 
 setup(

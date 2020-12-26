@@ -3,7 +3,7 @@
     Sphinx Extension for LilyPond
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Please refer to :doc:`../doc/desc.rst`
+    Please refer to :doc:`../doc/index.rst`
 """
 
 import shutil
