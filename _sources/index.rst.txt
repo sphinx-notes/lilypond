@@ -251,7 +251,23 @@ Multiple Pages
 Chang Log
 =========
 
-2020-12-06 1.0a1
+2020-12-27 1.0a2
+----------------
+
+ .. sectionauthor:: Shengyu Zhang
+
+* Support multiple pages documents
+* Imporve  of lilypond outputs cache
+
+2020-12-26 1.0a1
+----------------
+
+ .. sectionauthor:: Shengyu Zhang
+
+* Fix invalid insertion of ``\header``
+* Set default audio format to wav
+
+2020-12-06 1.0a0
 ----------------
 
  .. sectionauthor:: Shengyu Zhang
