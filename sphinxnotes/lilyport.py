@@ -33,9 +33,9 @@ class Error(Exception):
 
 
 class Output(object):
-    '''
+    """
     Helper for collecting LilyPond outputed files outputed by :class:`Document`.
-    '''
+    """
     BASENAME:str = 'music'
 
     outdir:str = None
@@ -94,11 +94,11 @@ class Output(object):
             self.audio = audiofn
 
     def relocate(self, newdir:str):
-        '''
+        """
         Loocate files to a new directory.
 
         .. note:: This method does not actually move the files.
-        '''
+        """
         l = len(self.outdir)
         self.source = newdir + self.source[l:]
         if self.score:
@@ -154,8 +154,7 @@ class Document(object):
 
 
     def strip_header_footer(self, strip_header=False, strip_footer=False):
-        '''Strip header and footer from outputed scores
-        '''
+        """Strip header and footer from outputed scores. """
 
         # Return when nothing todo
         if not strip_header and not strip_footer:
@@ -163,7 +162,7 @@ class Document(object):
 
         # Find \paper block, if not found, we create one
         if not music.document(self._document).find_child(items.Paper):
-            self._document[0:0] = '''\paper {\n}\n'''
+            self._document[0:0] = """\paper {\n}\n"""
 
         if strip_header:
             doc = music.document(self._document)
@@ -189,11 +188,12 @@ class Document(object):
 
 
     def enable_audio_output(self):
-        '''Enable audio output for this document.
+        """
+        Enable audio output for this document.
         In other words, insert ``\midi{}`` to every ``\score{}`` block.
         If no ``\score{}`` found, find music list under root node, pack it
         in ``\socre{}``, then call this function again.
-        '''
+        """
         no_score_found = True
         doc = music.document(self._document)
         for score in doc.find_children(items.Score): # \score
@@ -212,8 +212,7 @@ class Document(object):
             crop:bool,
             score_format:str,
             audio_format:str) -> Output:
-        '''Output scores and related files from LilyPond Document
-        '''
+        """Output scores and related files from LilyPond Document. """
         args = self._lilypond_args.copy()
         args += ['-o', outdir]
         if score_format in ['png', 'pdf', 'ps', 'eps']:
@@ -263,37 +262,41 @@ class Document(object):
 
 
     def _replace_item(self, item:items.Item, new_item:str):
-        '''Replace the text at position of given item to new_item.
+        """
+        Replace the text at position of given item to new_item.
         Note that the position of other music items on same tree may be influenced
         after replacement.
-        '''
+        """
         with self._document as d:
             d[item.position:item.end_position()] = new_item
 
 
     def _insert_into(self, container:items.Container, item:str):
-        '''Insert the text into position of given container.
+        """
+        Insert the text into position of given container.
         Note that the position of other music items on same tree may be influenced
         after insertion.
-        '''
+        """
         with self._document as d:
             d[container.end_position()-1:container.end_position()-1] = '\n' + item + '\n'
 
 
     def _insert_before(self, container:items.Container, item:str):
-        '''Insert the text before position of given container.
+        """
+        Insert the text before position of given container.
         Note that the position of other music items on same tree may be influenced
         after insertion.
-        '''
+        """
         with self._document as d:
             d[container.position:container.position] = '\n' + item + '\n'
 
 
     def _insert_after(self, container:items.Container, item:str):
-        '''Insert the text after position of given container.
+        """
+        Insert the text after position of given container.
         Note that the position of other music items on same tree may be influenced
         after insertion.
-        '''
+        """
         with self._document as d:
             d[container.end_position():container.end_position()] = '\n' + item + '\n'
 
@@ -350,9 +353,10 @@ class Document(object):
 
 
     def _pack_music_list(self) -> bool:
-        '''Find music list under root node, pack it in ``\socre{}``.
+        """
+        Find music list under root node, pack it in ``\socre{}``.
         Return turn when at least one music list is packed.
-        '''
+        """
         packed = False
         doc = music.document(self._document)
         for mit in doc.find_children(items.MusicList):

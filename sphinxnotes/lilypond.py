@@ -32,10 +32,10 @@ _AUDIOCLS = 'lilypond-audio'
 _LILYDIR = '_lilypond'
 
 class lily_base_node(object):
-    '''
+    """
     Parent class of :class:`lily_inline_node` and :class:`lily_outline_node`,
     just created for type annotations.
-    '''
+    """
     pass
 
 class lily_inline_node(nodes.Inline, nodes.TextElement, lily_base_node): pass
@@ -106,15 +106,15 @@ class LilyIncludeDirective(BaseLilyDirective):
 
 
 def get_node_sig(node:lily_base_node) -> str:
-    '''Return signture of given node.
-    '''
+    """Return signture of given node. """
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
 def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
-    '''Return the path of Sphinx builder's outdir and its corrsponding relative
+    """
+    Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
-    '''
+    """
     builddir = path.join(builder.outdir, _LILYDIR)
     reluri = relative_uri(builder.get_target_uri(node['docname']), '.')
     reldir = posixpath.join(reluri, _LILYDIR)
@@ -122,9 +122,10 @@ def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
 
 
 def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
-    '''Try to pick the LilyPond outputted files (:class:`lilyport.Output`)
+    """
+    Try to pick the LilyPond outputted files (:class:`lilyport.Output`)
     already cached in builder's outdir.
-    '''
+    """
     sig = get_node_sig(node)
     builddir, reldir = get_builddir_and_reldir(builder, node)
     outfn = path.join(builddir, sig)
@@ -146,9 +147,10 @@ def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
 
 
 def move_to_builddir(builder, node:lily_base_node, out:lilyport.Output):
-    '''Move lilypond outputted files to builder's outdir, relocate the path of
+    """
+    Move lilypond outputted files to builder's outdir, relocate the path of
     :class:`lilyport.Output` to relative path.
-    '''
+    """
     sig = get_node_sig(node)
     builddir, reldir = get_builddir_and_reldir(builder, node)
     outfn = path.join(builddir, sig)
