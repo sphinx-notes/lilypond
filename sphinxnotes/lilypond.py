@@ -21,15 +21,15 @@ from docutils.parsers.rst import directives, Directive
 from sphinx.util import ensuredir, relative_uri, logging
 from sphinx.config import Config
 
-from sphinxnotes import lilyport
+from . import lilyport
 
 
 logger = logging.getLogger(__name__)
 
-
 _DIVCLS = 'lilypond'
 _SCORECLS = 'lilypond-score'
 _AUDIOCLS = 'lilypond-audio'
+_LILYDIR = '_lilypond'
 
 class lily_inline_node(nodes.Inline, nodes.TextElement): pass
 
@@ -104,30 +104,52 @@ def get_node_sig(node) -> str:
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_outdir_and_reldir(builder, node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node) -> Tuple[str,str]:
     '''Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
     '''
-    outdir = path.join(builder.outdir, '_lilypond')
+    builddir = path.join(builder.outdir, _LILYDIR)
     reluri = relative_uri(builder.get_target_uri(node['docname']), '.')
-    reldir = posixpath.join(reluri, '_lilypond')
-    return (outdir, reldir)
+    reldir = posixpath.join(reluri, _LILYDIR)
+    return (builddir, reldir)
 
 
-def copy_to_outdir(builder, node, srcfn:str) -> str:
-    '''Copy file srcfn to builder's outdir, return a relative path to current
-    document. If the file already exists, just return the relative path.
+def pick_from_builddir(builder, node) -> lilyport.Output:
+    '''Try to pick the LilyPond outputted files (:class:`lilyport.Output`)
+    already cached in builder's outdir.
     '''
-    _, ext = path.splitext(srcfn)
-    fn = get_node_sig(node) + ext
-    outdir, reldir = get_outdir_and_reldir(builder, node)
-    outfn = path.join(outdir, fn)
-    relfn = posixpath.join(reldir, fn)
-    if path.isfile(outfn):
-        return relfn
+    sig = get_node_sig(node)
+    builddir, reldir = get_builddir_and_reldir(builder, node)
+    outfn = path.join(builddir, sig)
+
+    if not path.isdir(outfn):
+        # Not in cache
+        return None
+    try:
+        out = lilyport.Output(outfn,
+                builder.config.lilypond_score_format,
+                builder.config.lilypond_audio_format)
+    except lilyport.Error:
+        logger.warning('invalid lilypond cache in %s' % outfn, location=node)
+        return None
+    else:
+        relfn = posixpath.join(reldir, sig)
+        out.relocate(relfn)
+        return out
+
+
+def move_to_builddir(builder, node, out:lilyport.Output):
+    '''Move lilypond outputted files to builder's outdir, relocate the path of
+    :class:`lilyport.Output` to relative path.
+    '''
+    sig = get_node_sig(node)
+    builddir, reldir = get_builddir_and_reldir(builder, node)
+    outfn = path.join(builddir, sig)
+    relfn = posixpath.join(reldir, sig)
     ensuredir(path.dirname(outfn))
-    shutil.copyfile(srcfn, outfn)
-    return relfn
+    shutil.move(out.outdir, outfn)
+    out.relocate(relfn)
+    return out
 
 
 def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
@@ -138,21 +160,12 @@ def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
 
 
 # TODO: two type
-def html_visit_lily_node(self, node:lily_outline_node):
-    out:lilyport.Output = None
+def html_visit_lily_node(self, node:nodes.Element):
+    out = pick_from_builddir(self.builder, node)
 
-    outdir, _ = get_outdir_and_reldir(self.builder, node)
-    basefn = get_node_sig(node)
-    try:
-        out = lilyport.Output(outdir, basefn,
-                self.builder.config.lilypond_score_format,
-                self.builder.config.lilypond_audio_format)
-    except lilyport.Error:
-        pass
-
-    cached = not out is None
+    cached = not (out is None)
     if cached:
-        logger.debug('using cached result', location=node)
+        logger.debug('using cached result %s' % out.outdir, location=node)
     else:
         logger.debug('creating a new lilypond document', location=node)
         doc = create_document(self.builder.config, node)
@@ -168,8 +181,8 @@ def html_visit_lily_node(self, node:lily_outline_node):
                     strip_header=node.get('noheader'),
                     strip_footer=node.get('nofooter'))
             out = doc.output(builddir,
-                    node.get('noedge'),
                     node.get('preview'),
+                    node.get('noedge'),
                     self.builder.config.lilypond_score_format,
                     self.builder.config.lilypond_audio_format)
         except lilyport.Error as e:
@@ -178,6 +191,11 @@ def html_visit_lily_node(self, node:lily_outline_node):
                                       backrefs=[], source=node['lilysrc'])
             sm.walkabout(self)
             raise nodes.SkipNode
+            # Cleanup lilypond builddir
+            shutil.rmtree(builddir)
+        else:
+            # Get relative path
+            move_to_builddir(self.builder, node, out)
 
     # Create div for block level element
     if isinstance(node, lily_outline_node):
@@ -188,20 +206,17 @@ def html_visit_lily_node(self, node:lily_outline_node):
         self.body.append('<figure style="display:table;">\n')
 
     # TODO: standalone css
-    if out.preview:
-        imgfn = copy_to_outdir(self.builder, node, out.preview)
+    if node.get('preview') and out.preview:
         self.body.append(
             '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
-            (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
+            (_SCORECLS, out.preview, self.encode(node['lilysrc']).strip()))
     elif out.score:
-        imgfn = copy_to_outdir(self.builder, node, out.score)
         self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
+                (_SCORECLS, out.score, self.encode(node['lilysrc']).strip()))
     elif out.paged_scores:
         for p in out.paged_scores:
-            imgfn = copy_to_outdir(self.builder, node, p)
             self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                    (_SCORECLS, imgfn, self.encode(node['lilysrc']).strip()))
+                    (_SCORECLS, p, self.encode(node['lilysrc']).strip()))
     else:
         logger.warning('no score generated from lilypond document', location=node)
         sm = nodes.system_message('no score generated', type='WARNING', level=2,
@@ -210,19 +225,15 @@ def html_visit_lily_node(self, node:lily_outline_node):
         raise nodes.SkipNode
 
     if node.get('audio') and out.audio:
-        audfn = copy_to_outdir(self.builder, node, out.audio)
         self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
         self.body.append('<audio controls class="%s" style="%s" src="%s"/>\n' %
-                (_SCORECLS, 'width:100%;', audfn))
+                (_SCORECLS, 'width:100%;', out.audio))
         self.body.append('</figcaption>\n')
         self.body.append('</figure>\n')
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
         self.body.append('</div>')
-
-    if not cached:
-        shutil.rmtree(builddir)
 
     raise nodes.SkipNode
 

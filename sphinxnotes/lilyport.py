@@ -15,8 +15,6 @@ from typing import Optional
 import os
 from os import path
 import subprocess
-import random
-import string
 from packaging import version
 
 from ly import pitch
@@ -29,28 +27,34 @@ from ly.music import items
 from wand import image
 
 
-def randstr() -> str:
-    return 'music-' + ''.join(random.choice(string.ascii_lowercase) for i in range(5))
-
-
 class Error(Exception):
     # TODO
     pass
 
 
 class Output(object):
-    '''A helper for collecting LilyPond outputed files.
     '''
+    Helper for collecting LilyPond outputed files outputed by :class:`Document`.
+    '''
+    BASENAME:str = 'music'
 
-    source:str
+    outdir:str = None
+    score_format:str = None
+    audio_format:str = None
+
+    source:str = None
     score:Optional[str] = None
     preview:Optional[str] = None
     paged_scores:list[str] = []
     midi:Optional[str] = None
     audio:Optional[str] = None
 
-    def __init__(self, outdir:str, basefn:str, score_format:str, audio_format:str):
-        prefix = path.join(outdir, basefn)
+    def __init__(self, outdir:str, score_format:str, audio_format:str):
+        self.outdir = outdir
+        self.score_format = score_format
+        self.audio_format = audio_format
+
+        prefix = path.join(outdir, self.BASENAME)
 
         srcfn = prefix + '.ly'
         if path.isfile(srcfn):
@@ -72,12 +76,14 @@ class Output(object):
                 pattern = prefix + '-%d.svg'
             i = 1
             while path.isfile(pattern % i):
-                self.paged_scores.append(pattern % i)
+                # NOTE: Dont use ``+=`` or ``append``
+                # See: https://github.com/satwikkansal/wtfpython#-class-attributes-and-instance-attributes
+                self.paged_scores = self.paged_scores + [pattern % i]
                 i = i + 1
 
         if not (self.preview or self.score or self.paged_scores):
             raise Error('No score generated, please check "*.%s" files under "%s"' %
-                    (basefn, outdir))
+                        (self.BASENAME, outdir))
 
         midifn = prefix + '.midi'
         if path.isfile(midifn):
@@ -87,6 +93,24 @@ class Output(object):
         if path.isfile(audiofn):
             self.audio = audiofn
 
+    def relocate(self, newdir:str):
+        '''
+        Loocate files to a new directory.
+
+        .. note:: This method does not actually move the files.
+        '''
+        l = len(self.outdir)
+        self.source = newdir + self.source[l:]
+        if self.score:
+            self.score = newdir + self.score[l:]
+        if self.preview:
+            self.preview = newdir + self.preview[l:]
+        for i, p in enumerate(self.paged_scores):
+            self.paged_scores[i] = newdir + p[l:]
+        if self.midi:
+            self.midi = newdir + self.midi[l:]
+        if self.audio:
+            self.audio = newdir + self.audio[l:]
 
 class Document(object):
 
@@ -190,7 +214,6 @@ class Document(object):
             audio_format:str) -> Output:
         '''Output scores and related files from LilyPond Document
         '''
-        basefn = randstr()
         args = self._lilypond_args.copy()
         args += ['-o', outdir]
         if score_format in ['png', 'pdf', 'ps', 'eps']:
@@ -203,7 +226,8 @@ class Document(object):
         if preview:
             args += ['-dpreview=#t']
 
-        srcfn = path.join(outdir, basefn) + '.ly'
+        prefix = path.join(outdir, Output.BASENAME)
+        srcfn = prefix + '.ly'
         with open(srcfn, 'w') as f:
             f.write(self.plaintext())
         args += [srcfn]
@@ -220,13 +244,11 @@ class Document(object):
                     (p.stderr, p.stdout))
 
         # Generate audio
-        midifn = path.join(outdir, basefn) + '.midi'
+        midifn = prefix + '.midi'
         if path.isfile(midifn):
             self._midi_to_audio(midifn, audio_format=audio_format)
 
-        out = Output(outdir, basefn,
-                score_format=score_format,
-                audio_format=audio_format)
+        out = Output(outdir, score_format=score_format, audio_format=audio_format)
 
         if crop:
             if out.score:
@@ -235,7 +257,7 @@ class Document(object):
                 self._crop(p)
 
         if preview and not out.preview:
-            raise Error('No score preview file generated, please check "%s"' % basefn)
+            raise Error('No score preview file generated, please check "%s"' % outdir)
 
         return out
 
