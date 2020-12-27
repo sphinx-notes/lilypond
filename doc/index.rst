@@ -235,6 +235,19 @@ Transposing
    :audio:
    :transpose: g c
 
+Multiple Pages
+--------------
+
+.. code-block:: rst
+
+   .. lilyinclude:: alice.ly
+      :noedge:
+      :audio:
+
+.. lilyinclude:: alice.ly
+   :noedge:
+   :audio:
+
 Chang Log
 =========
 
