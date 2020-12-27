@@ -78,11 +78,12 @@ scale transposing, audio output, layout controlling, and so on.</p>
 <li><p><a class="reference internal" href="#smallest-paper-size" id="id12">Smallest Paper Size</a></p></li>
 <li><p><a class="reference internal" href="#audio-preview" id="id13">Audio Preview</a></p></li>
 <li><p><a class="reference internal" href="#transposing" id="id14">Transposing</a></p></li>
+<li><p><a class="reference internal" href="#multiple-pages" id="id15">Multiple Pages</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#chang-log" id="id15">Chang Log</a></p>
+<li><p><a class="reference internal" href="#chang-log" id="id16">Chang Log</a></p>
 <ul>
-<li><p><a class="reference internal" href="#a1" id="id16">2020-12-06 1.0a1</a></p></li>
+<li><p><a class="reference internal" href="#a1" id="id17">2020-12-06 1.0a1</a></p></li>
 </ul>
 </li>
 </ul>
@@ -122,7 +123,7 @@ element.</p>
 </div>
 <p>Will be rendered as:</p>
 <blockquote>
-<div><p><img class="lilypond-score" src="./_lilypond/fe054cc0f6577b37cbee4644af6855a6ff620a5c.png" alt="\relative { c' }" align="absbottom"/> is the first note of the C major scale.</p>
+<div><p><img class="lilypond-score" src="./_lilypond/fe054cc0f6577b37cbee4644af6855a6ff620a5c/music.preview.png" alt="\relative { c' }" align="absbottom"/> is the first note of the C major scale.</p>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -165,7 +166,7 @@ block level element.</p>
 <blockquote>
 <div><div class="lilypond">
 <p><figure style="display:table;">
-<img class="lilypond-score" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837.png" alt="\version &quot;2.20.0&quot;
+<img class="lilypond-score" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;翼をください, Excerpts&quot;
 }
@@ -180,8 +181,9 @@ block level element.</p>
         d4 r r r
   }
   &gt;&gt;
-}" align="absbottom"/><figcaption style="display:table-caption; caption-side:bottom; padding:10px">
-<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837.wav"/>
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/cb9df2873e988fa19bfe45733c0bc55cb3084837/music.wav"/>
 </figcaption>
 </figure>
 </p></div></div></blockquote>
@@ -225,7 +227,7 @@ except the source of LilyPond are read from file but not contents of directive.<
 <blockquote>
 <div><div class="lilypond">
 <p><figure style="display:table;">
-<img class="lilypond-score" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61.png" alt="\version &quot;2.20.0&quot;
+<img class="lilypond-score" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;《Witch Spring I》OP&quot;
   composer = &quot;Kiwi Walks&quot;
@@ -271,8 +273,9 @@ symbols =  {
 
   \midi { }
   \layout { }
-}" align="absbottom"/><figcaption style="display:table-caption; caption-side:bottom; padding:10px">
-<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61.wav"/>
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/346813f8c933db34832cba2a42eb3c806049bd61/music.wav"/>
 </figcaption>
 </figure>
 </p></div></div></blockquote>
@@ -324,7 +327,7 @@ Format of outputed audio, available values: <code class="docutils literal notran
 </pre></div>
 </div>
 <div class="lilypond">
-<p><img class="lilypond-score" src="./_lilypond/37c2b8dad1ba372c95ea7381636b94434361b8c7.png" alt="\version &quot;2.20.0&quot;
+<p><img class="lilypond-score" src="./_lilypond/37c2b8dad1ba372c95ea7381636b94434361b8c7/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;Minuet in G major, BWV Anh. 114&quot;
   composer = &quot;Christian Petzold&quot;
@@ -354,7 +357,7 @@ Format of outputed audio, available values: <code class="docutils literal notran
 </pre></div>
 </div>
 <div class="lilypond">
-<p><img class="lilypond-score" src="./_lilypond/ee9cdeeef848317b74a1c18ae101373aa2235640.png" alt="\version &quot;2.20.0&quot;
+<p><img class="lilypond-score" src="./_lilypond/ee9cdeeef848317b74a1c18ae101373aa2235640/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;Minuet in G major, BWV Anh. 114&quot;
   composer = &quot;Christian Petzold&quot;
@@ -374,7 +377,8 @@ Format of outputed audio, available values: <code class="docutils literal notran
   b4 d8 c b a
   fis4 g8 a b g
   a2.
-}" align="absbottom"/></p></div></div>
+}"/>
+</p></div></div>
 <div class="section" id="smallest-paper-size">
 <h3>Smallest Paper Size<a class="headerlink" href="#smallest-paper-size" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
@@ -384,7 +388,7 @@ Format of outputed audio, available values: <code class="docutils literal notran
 </pre></div>
 </div>
 <div class="lilypond">
-<p><img class="lilypond-score" src="./_lilypond/611dfbac27f5237ff4368ca997ac063a00a5e98f.png" alt="\version &quot;2.20.0&quot;
+<p><img class="lilypond-score" src="./_lilypond/611dfbac27f5237ff4368ca997ac063a00a5e98f/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;Minuet in G major, BWV Anh. 114&quot;
   composer = &quot;Christian Petzold&quot;
@@ -404,7 +408,8 @@ Format of outputed audio, available values: <code class="docutils literal notran
   b4 d8 c b a
   fis4 g8 a b g
   a2.
-}" align="absbottom"/></p></div></div>
+}"/>
+</p></div></div>
 <div class="section" id="audio-preview">
 <h3>Audio Preview<a class="headerlink" href="#audio-preview" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> minuet-in-g.ly
@@ -416,7 +421,7 @@ Format of outputed audio, available values: <code class="docutils literal notran
 </div>
 <div class="lilypond">
 <p><figure style="display:table;">
-<img class="lilypond-score" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96.png" alt="\version &quot;2.20.0&quot;
+<img class="lilypond-score" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;Minuet in G major, BWV Anh. 114&quot;
   composer = &quot;Christian Petzold&quot;
@@ -436,8 +441,9 @@ Format of outputed audio, available values: <code class="docutils literal notran
   b4 d8 c b a
   fis4 g8 a b g
   a2.
-}" align="absbottom"/><figcaption style="display:table-caption; caption-side:bottom; padding:10px">
-<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96.wav"/>
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/243c554c7d2cf9b4f250700855be20bb92ef3d96/music.wav"/>
 </figcaption>
 </figure>
 </p></div></div>
@@ -453,7 +459,7 @@ Format of outputed audio, available values: <code class="docutils literal notran
 </div>
 <div class="lilypond">
 <p><figure style="display:table;">
-<img class="lilypond-score" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf.png" alt="\version &quot;2.20.0&quot;
+<img class="lilypond-score" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf/music.png" alt="\version &quot;2.20.0&quot;
 \header {
   title = &quot;Minuet in G major, BWV Anh. 114&quot;
   composer = &quot;Christian Petzold&quot;
@@ -473,8 +479,477 @@ Format of outputed audio, available values: <code class="docutils literal notran
   b4 d8 c b a
   fis4 g8 a b g
   a2.
-}" align="absbottom"/><figcaption style="display:table-caption; caption-side:bottom; padding:10px">
-<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf.wav"/>
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/7ceb7bb97bfc975f110c126c5508ceb69d6400bf/music.wav"/>
+</figcaption>
+</figure>
+</p></div></div>
+<div class="section" id="multiple-pages">
+<h3>Multiple Pages<a class="headerlink" href="#multiple-pages" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">lilyinclude</span><span class="p">::</span> alice.ly
+   <span class="nc">:noedge:</span>
+   <span class="nc">:audio:</span>
+</pre></div>
+</div>
+<div class="lilypond">
+<p><figure style="display:table;">
+<img class="lilypond-score" src="./_lilypond/06b1c2ac3f49053fbdc6600a7f12984be80ad6d3/music-page1.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Alice&quot;
+  composer = &quot;古川本舖&quot;
+  arranger = &quot;Osamuraisan&quot;
+  copyright = &quot;SilverRainZ&quot;
+}
+
+prelude = \repeat unfold 2 {
+    e,4 c g d
+    f, c g d
+    g, c g d
+    g,8(a,8\6) c4 g d
+}
+
+interlude = \repeat unfold 2 {
+  &lt;e, g&gt;4 c' d' g'
+  &lt;f, g&gt;4 c' d' g'
+  &lt;g, g&gt;4 c' d' g'
+  &lt;f, g&gt;4 c' d' g'
+}
+
+pieceA = {
+  &lt;a, c'&gt;4 e' &lt;e, g'&gt; g
+}
+
+pieceAi = {
+  &lt;f, c'&gt;4 g' &lt;c g'&gt; g
+}
+
+pieceB = {
+  &lt;c a'&gt;4 g8 c'8 &lt;f, c'&gt;4 d
+}
+
+pieceBi = {
+  &lt;d g'&gt;4 (c'') &lt;a c''&gt; g
+}
+
+pieceBii = {
+  &lt;c c'&gt;4 d &lt;g, d'&gt; d'
+}
+
+pieceBiii = {
+  &lt;c c'&gt;4 d &lt;g, d'&gt; f'
+}
+
+pieceC = {
+  &lt;c a&gt;4 c' &lt;g, e'&gt; d
+}
+
+pieceCi = {
+  &lt;d c'&gt;4 g &lt;g, e'&gt; g
+}
+
+pieceCii = {
+  &lt;c c'&gt;4 d' &lt;a, e'&gt; g8 e'8
+}
+
+pieceCiii = {
+  &lt;d e'&gt;4 c' &lt;a, c'&gt; g8 e'8
+}
+
+pieceCiv = {
+  &lt;c c'&gt;4 d' &lt;a, e'&gt; g
+}
+
+pieceD = {
+  &lt;g, d'&gt;4 c' &lt;a, c'&gt; g
+}
+
+pieceDi = {
+  &lt;g, d'&gt;4 f' &lt;a, e'&gt; d
+}
+
+pieceDii = {
+  &lt;g, d'&gt;4 d8 c'8 &lt;a, c'&gt;4 d8 e'8
+}
+
+pieceDiii = {
+  &lt;g, d'&gt;4 c' &lt;f, c'&gt; g
+}
+
+pieceDiv = {
+  &lt;g, d'&gt;4 d8 c'8 &lt;a, c'&gt;2
+}
+
+symbols =  {
+  \time 4/4
+  \tempo  &quot;Allegro&quot; 4 = 150
+
+  % 1
+  \prelude
+
+  %9
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %13
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %17
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %21
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceD
+
+  %25
+  \pieceA
+  \pieceB
+  &lt;c a&gt;4 c' &lt;g, e'&gt; &lt;d f'&gt;
+  \pieceD
+
+  %29
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %33
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %37
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar &quot;||&quot;
+
+  %41
+  \pieceDiii
+
+  %42
+  \pieceAi
+  \pieceBii
+  \pieceCii
+  \pieceDiii
+
+  %46
+  \pieceAi
+  \pieceBiii
+  \pieceCiii
+  \pieceDiii
+
+  %50
+  \pieceAi
+  \pieceBiii
+  \pieceCiv
+
+  %53
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar &quot;||&quot;
+
+  %57
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %61
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %65
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %69
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDiv
+
+  \bar &quot;||&quot;
+
+  %73
+  \prelude
+
+  %81
+  \interlude
+
+  \bar &quot;||&quot;
+
+  %89
+  r1
+  r1
+
+  \bar &quot;|.&quot;
+}
+
+\score {
+  &lt;&lt;
+    \new Staff {
+      \clef &quot;G_8&quot;
+      \symbols
+    }
+    \new TabStaff {
+      \tabFullNotation
+      \symbols
+    }
+  &gt;&gt;
+
+  \midi { }
+  \layout { }
+}"/>
+<img class="lilypond-score" src="./_lilypond/06b1c2ac3f49053fbdc6600a7f12984be80ad6d3/music-page2.png" alt="\version &quot;2.20.0&quot;
+\header {
+  title = &quot;Alice&quot;
+  composer = &quot;古川本舖&quot;
+  arranger = &quot;Osamuraisan&quot;
+  copyright = &quot;SilverRainZ&quot;
+}
+
+prelude = \repeat unfold 2 {
+    e,4 c g d
+    f, c g d
+    g, c g d
+    g,8(a,8\6) c4 g d
+}
+
+interlude = \repeat unfold 2 {
+  &lt;e, g&gt;4 c' d' g'
+  &lt;f, g&gt;4 c' d' g'
+  &lt;g, g&gt;4 c' d' g'
+  &lt;f, g&gt;4 c' d' g'
+}
+
+pieceA = {
+  &lt;a, c'&gt;4 e' &lt;e, g'&gt; g
+}
+
+pieceAi = {
+  &lt;f, c'&gt;4 g' &lt;c g'&gt; g
+}
+
+pieceB = {
+  &lt;c a'&gt;4 g8 c'8 &lt;f, c'&gt;4 d
+}
+
+pieceBi = {
+  &lt;d g'&gt;4 (c'') &lt;a c''&gt; g
+}
+
+pieceBii = {
+  &lt;c c'&gt;4 d &lt;g, d'&gt; d'
+}
+
+pieceBiii = {
+  &lt;c c'&gt;4 d &lt;g, d'&gt; f'
+}
+
+pieceC = {
+  &lt;c a&gt;4 c' &lt;g, e'&gt; d
+}
+
+pieceCi = {
+  &lt;d c'&gt;4 g &lt;g, e'&gt; g
+}
+
+pieceCii = {
+  &lt;c c'&gt;4 d' &lt;a, e'&gt; g8 e'8
+}
+
+pieceCiii = {
+  &lt;d e'&gt;4 c' &lt;a, c'&gt; g8 e'8
+}
+
+pieceCiv = {
+  &lt;c c'&gt;4 d' &lt;a, e'&gt; g
+}
+
+pieceD = {
+  &lt;g, d'&gt;4 c' &lt;a, c'&gt; g
+}
+
+pieceDi = {
+  &lt;g, d'&gt;4 f' &lt;a, e'&gt; d
+}
+
+pieceDii = {
+  &lt;g, d'&gt;4 d8 c'8 &lt;a, c'&gt;4 d8 e'8
+}
+
+pieceDiii = {
+  &lt;g, d'&gt;4 c' &lt;f, c'&gt; g
+}
+
+pieceDiv = {
+  &lt;g, d'&gt;4 d8 c'8 &lt;a, c'&gt;2
+}
+
+symbols =  {
+  \time 4/4
+  \tempo  &quot;Allegro&quot; 4 = 150
+
+  % 1
+  \prelude
+
+  %9
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %13
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %17
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %21
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceD
+
+  %25
+  \pieceA
+  \pieceB
+  &lt;c a&gt;4 c' &lt;g, e'&gt; &lt;d f'&gt;
+  \pieceD
+
+  %29
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %33
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %37
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar &quot;||&quot;
+
+  %41
+  \pieceDiii
+
+  %42
+  \pieceAi
+  \pieceBii
+  \pieceCii
+  \pieceDiii
+
+  %46
+  \pieceAi
+  \pieceBiii
+  \pieceCiii
+  \pieceDiii
+
+  %50
+  \pieceAi
+  \pieceBiii
+  \pieceCiv
+
+  %53
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDii
+
+  \bar &quot;||&quot;
+
+  %57
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %61
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceDi
+
+  %65
+  \pieceA
+  \pieceB
+  \pieceC
+  \pieceD
+
+  %69
+  \pieceA
+  \pieceBi
+  \pieceCi
+  \pieceDiv
+
+  \bar &quot;||&quot;
+
+  %73
+  \prelude
+
+  %81
+  \interlude
+
+  \bar &quot;||&quot;
+
+  %89
+  r1
+  r1
+
+  \bar &quot;|.&quot;
+}
+
+\score {
+  &lt;&lt;
+    \new Staff {
+      \clef &quot;G_8&quot;
+      \symbols
+    }
+    \new TabStaff {
+      \tabFullNotation
+      \symbols
+    }
+  &gt;&gt;
+
+  \midi { }
+  \layout { }
+}"/>
+<figcaption style="display:table-caption; caption-side:bottom; padding:10px">
+<audio controls class="lilypond-score" style="width:100%;" src="./_lilypond/06b1c2ac3f49053fbdc6600a7f12984be80ad6d3/music.wav"/>
 </figcaption>
 </figure>
 </p></div></div>
