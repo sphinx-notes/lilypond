@@ -71,12 +71,12 @@ element.
 
 For example:
 
-.. literalinclude:: ./lily-role-example.rst
+.. literalinclude:: ./lily-role-example.txt
     :language: rst
 
 Will be rendered as:
 
-    .. include:: ./lily-role-example.rst
+    .. include:: ./lily-role-example.txt
 
 .. note::
 
@@ -95,12 +95,12 @@ The ``lily`` directive
 The ``lily`` directive is used to insert a complete LilyPond score as
 block level element.
 
-.. literalinclude:: ./lily-directive-example.rst
+.. literalinclude:: ./lily-directive-example.txt
     :language: rst
 
 Will be rendered as:
 
-    .. include:: ./lily-directive-example.rst
+    .. include:: ./lily-directive-example.txt
 
 The directive supports the following options:
 
@@ -125,12 +125,12 @@ The ``lilyinclude`` directives
 The ``lilyinclude`` directive is similar to :ref:`lily-directive`,
 except the source of LilyPond are read from file but not contents of directive.
 
-.. literalinclude:: ./lilyinclude-directive-example.rst
+.. literalinclude:: ./lilyinclude-directive-example.txt
    :language: rst
 
 Will be rendered as:
 
-   .. include:: ./lilyinclude-directive-example.rst
+   .. include:: ./lilyinclude-directive-example.txt
 
 Options of the directive are same to :ref:`lily-directive`.
 
