@@ -31,9 +31,16 @@ _SCORECLS = 'lilypond-score'
 _AUDIOCLS = 'lilypond-audio'
 _LILYDIR = '_lilypond'
 
-class lily_inline_node(nodes.Inline, nodes.TextElement): pass
+class lily_base_node(object):
+    '''
+    Parent class of :class:`lily_inline_node` and :class:`lily_outline_node`,
+    just created for type annotations.
+    '''
+    pass
 
-class lily_outline_node(nodes.Part, nodes.Element): pass
+class lily_inline_node(nodes.Inline, nodes.TextElement, lily_base_node): pass
+
+class lily_outline_node(nodes.Part, nodes.Element, lily_base_node): pass
 
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node = lily_inline_node()
@@ -58,7 +65,7 @@ class BaseLilyDirective(Directive):
 
 
     @abstractmethod
-    def read_lily_source(self, node: nodes.Node):
+    def read_lily_source(self):
         raise NotImplementedError()
 
 
@@ -98,13 +105,13 @@ class LilyIncludeDirective(BaseLilyDirective):
             return f.read()
 
 
-def get_node_sig(node) -> str:
+def get_node_sig(node:lily_base_node) -> str:
     '''Return signture of given node.
     '''
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_builddir_and_reldir(builder, node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
     '''Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
     '''
@@ -114,7 +121,7 @@ def get_builddir_and_reldir(builder, node) -> Tuple[str,str]:
     return (builddir, reldir)
 
 
-def pick_from_builddir(builder, node) -> lilyport.Output:
+def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
     '''Try to pick the LilyPond outputted files (:class:`lilyport.Output`)
     already cached in builder's outdir.
     '''
@@ -138,7 +145,7 @@ def pick_from_builddir(builder, node) -> lilyport.Output:
         return out
 
 
-def move_to_builddir(builder, node, out:lilyport.Output):
+def move_to_builddir(builder, node:lily_base_node, out:lilyport.Output):
     '''Move lilypond outputted files to builder's outdir, relocate the path of
     :class:`lilyport.Output` to relative path.
     '''
@@ -152,7 +159,7 @@ def move_to_builddir(builder, node, out:lilyport.Output):
     return out
 
 
-def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
+def create_document(config: Config, node:lily_base_node) -> lilyport.Document:
     return lilyport.Document(node['lilysrc'],
             lilypond_args = config.lilypond_lilypond_args,
             timidity_args = config.lilypond_timidity_args,
@@ -160,7 +167,7 @@ def create_document(config: Config, node: nodes.Node) -> lilyport.Document:
 
 
 # TODO: two type
-def html_visit_lily_node(self, node:nodes.Element):
+def html_visit_lily_node(self, node:lily_base_node):
     out = pick_from_builddir(self.builder, node)
 
     cached = not (out is None)
