@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-    Simple wrapper for LilyPond
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    sphinxnotes.lilypond.binding
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Allow Lilypond music notes to be transposed and converted to image, audio,
-    and so on.
+    Lilypond binding.
 
     :copyright: Copyright ©2020 by Shengyu Zhang.
     :license: BSD, see LICENSE for details.

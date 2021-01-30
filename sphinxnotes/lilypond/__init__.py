@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    Sphinx Extension for LilyPond
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    sphinxnotes.lilypond
+    ~~~~~~~~~~~~~~~~~~~~
 
-    Please refer to :doc:`../doc/index.rst`
+    Sphinx extension for embedding LilyPond scores.
+
+    :copyright: Copyright 2021 by the Shengyu Zhang.
+    :license: BSD, see LICENSE for details.
 """
 
 import shutil
@@ -21,7 +24,7 @@ from docutils.parsers.rst import directives, Directive
 from sphinx.util import ensuredir, relative_uri, logging
 from sphinx.config import Config
 
-from . import lilyport
+from . import binding
 
 
 logger = logging.getLogger(__name__)
@@ -121,9 +124,9 @@ def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
     return (builddir, reldir)
 
 
-def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
+def pick_from_builddir(builder, node:lily_base_node) -> binding.Output:
     """
-    Try to pick the LilyPond outputted files (:class:`lilyport.Output`)
+    Try to pick the LilyPond outputted files (:class:`binding.Output`)
     already cached in builder's outdir.
     """
     sig = get_node_sig(node)
@@ -134,10 +137,10 @@ def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
         # Not in cache
         return None
     try:
-        out = lilyport.Output(outfn,
+        out = binding.Output(outfn,
                 builder.config.lilypond_score_format,
                 builder.config.lilypond_audio_format)
-    except lilyport.Error:
+    except binding.Error:
         logger.warning('invalid lilypond cache in %s' % outfn, location=node)
         return None
     else:
@@ -146,10 +149,10 @@ def pick_from_builddir(builder, node:lily_base_node) -> lilyport.Output:
         return out
 
 
-def move_to_builddir(builder, node:lily_base_node, out:lilyport.Output):
+def move_to_builddir(builder, node:lily_base_node, out:binding.Output):
     """
     Move lilypond outputted files to builder's outdir, relocate the path of
-    :class:`lilyport.Output` to relative path.
+    :class:`binding.Output` to relative path.
     """
     sig = get_node_sig(node)
     builddir, reldir = get_builddir_and_reldir(builder, node)
@@ -161,8 +164,8 @@ def move_to_builddir(builder, node:lily_base_node, out:lilyport.Output):
     return out
 
 
-def create_document(config: Config, node:lily_base_node) -> lilyport.Document:
-    return lilyport.Document(node['lilysrc'],
+def create_document(config: Config, node:lily_base_node) -> binding.Document:
+    return binding.Document(node['lilysrc'],
             lilypond_args = config.lilypond_lilypond_args,
             timidity_args = config.lilypond_timidity_args,
             magick_home = config.lilypond_magick_home)
@@ -194,7 +197,7 @@ def html_visit_lily_node(self, node:lily_base_node):
                     node.get('noedge'),
                     self.builder.config.lilypond_score_format,
                     self.builder.config.lilypond_audio_format)
-        except lilyport.Error as e:
+        except binding.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
                                       backrefs=[], source=node['lilysrc'])
