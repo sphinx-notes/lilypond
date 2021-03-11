@@ -56,7 +56,6 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 
 class BaseLilyDirective(Directive):
 
-    optional_arguments = 6
     option_spec = {
         'noheader': directives.flag,
         'nofooter': directives.flag,
