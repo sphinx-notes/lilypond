@@ -251,6 +251,14 @@ Multiple Pages
 Chang Log
 =========
 
+2020-06-26 1.0
+--------------
+
+ .. sectionauthor:: Shengyu Zhang
+
+* Rebuild env when configuration changed
+* Fix wrong license value
+
 2020-12-27 1.0a2
 ----------------
 
