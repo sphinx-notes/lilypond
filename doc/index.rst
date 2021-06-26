@@ -11,7 +11,7 @@ Sphinx Extension for LilyPond
    :target: https://github.com/sphinx-notes/lilypond
 
 :version: |version|
-:copyright: Copyright ©2020 by Shengyu Zhang.
+:copyright: Copyright ©2020-2021 by Shengyu Zhang.
 :copyright: Copyright ©2009 by Wei-Wei Guo.
 :license: BSD, see LICENSE for details.
 
