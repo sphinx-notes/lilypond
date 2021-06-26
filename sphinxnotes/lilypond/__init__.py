@@ -256,10 +256,10 @@ def setup(app):
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
 
-    app.add_config_value('lilypond_lilypond_args', ['lilypond'], '')
-    app.add_config_value('lilypond_timidity_args', ['timidity'], '')
-    app.add_config_value('lilypond_magick_home', None, '')
-    app.add_config_value('lilypond_builddir', None, '')
-    app.add_config_value('lilypond_score_format', 'png', '')
-    app.add_config_value('lilypond_audio_format', 'wav', '')
+    app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
+    app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
+    app.add_config_value('lilypond_magick_home', None, 'env')
+    app.add_config_value('lilypond_builddir', None, 'env')
+    app.add_config_value('lilypond_score_format', 'png', 'env')
+    app.add_config_value('lilypond_audio_format', 'wav', 'env')
     # TODO: Font size
