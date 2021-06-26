@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../sphinxnotes'))
 
 # Import proj's meta info
 import project as proj
@@ -37,7 +37,7 @@ version = release = proj.version
 # ones.
 extensions = [
     'sphinx.ext.githubpages',
-    'sphinxnotes.lilypond',
+    'lilypond',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
