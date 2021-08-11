@@ -148,7 +148,7 @@ class Document(object):
         except pitch.PitchNameNotAvailable:
             language = docinfo.DocInfo(cursor.document).language()
             raise Error(
-                    'Pitch names not available in "{}", skipping file: {}' %
+                    'Pitch names not available in "%s", skipping file: %s' %
                     (language, cursor.document.filename))
 
 
