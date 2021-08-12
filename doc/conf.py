@@ -13,21 +13,19 @@
 import os
 import sys
 from datetime import datetime
-
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../sphinxnotes'))
-
 # Import proj's meta info
-import project as proj
+sys.path.insert(0, os.path.abspath('../sphinxnotes'))
+# Import proj's meta info
+import lilypond as proj
 
 # -- Project information -----------------------------------------------------
 
-project = proj.name
-copyright = '%s, %s' % (datetime.now().year, proj.author)
-author = proj.author
+project = proj.__title__
+copyright = '%s, %s' % (datetime.now().year, proj.__author__)
+author = proj.__author__
 
 # The full version, including alpha/beta/rc tags
-version = release = proj.version
+version = release = proj.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -65,8 +63,6 @@ show_authors = True
 html_theme = 'alabaster'
 
 html_theme_options = {
-    'github_user': proj.github_user,
-    'github_repo': proj.github_repo,
     'nosidebar': True,
 }
 
@@ -78,6 +74,6 @@ html_static_path = ['_static']
 
 # The URL which points to the root of the HTML documentation.
 # It is used to indicate the location of document like canonical_url
-html_baseurl = 'https://sphinx-notes.github.io/lilypond'
+html_baseurl = proj.__url__
 
 html_logo = html_favicon = '_images/sphinx-notes.png'

@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-from doc import project
+import sys
+import os
+sys.path.insert(0, os.path.abspath('./sphinxnotes'))
+import lilypond as proj
 
 with open('README.rst') as f:
     long_desc = f.read()
 
 setup(
-    name=project.name,
-    version=project.version,
-    url=project.url,
-    download_url=project.download_url,
-    license=project.license,
-    author=project.author,
-    description=project.description,
+    name=proj.__title__,
+    version=proj.__version__,
+    url=proj.__url__,
+    download_url='http://pypi.python.org/pypi/' + proj.__title__,
+    license=proj.__license__,
+    author=proj.__author__,
+    description=proj.__description__,
     long_description=long_desc,
+    long_description_content_type = 'text/x-rst',
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -28,7 +32,7 @@ setup(
         'Topic :: Documentation',
         'Topic :: Utilities',
     ],
-    keywords=project.keywords,
+    keywords=proj.__keywords__,
     platforms='any',
     python_requires='>=3',
     packages=find_packages(),
