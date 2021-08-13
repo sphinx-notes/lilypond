@@ -251,7 +251,7 @@ Multiple Pages
 Chang Log
 =========
 
-2020-06-26 1.0
+2021-06-26 1.0
 --------------
 
  .. sectionauthor:: Shengyu Zhang
