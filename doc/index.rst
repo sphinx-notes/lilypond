@@ -112,8 +112,11 @@ The directive supports the following options:
     Whether to remove the footer of score
 :noedge: (flag)
     Whether to remove the blank edges of score
-:audio: (falg)
+:audio: (flag)
     Whether to show a audio player for listen LilyPond-generated MIDI file
+:loop: (flag)
+    Whethre audio player will automatically seek back to the start upon reaching the end of the audio.
+    This implies `audio`.
 :transpose: (text)
     Transposing the pitches of score from one to another.
     Pitches are written in `LilyPond Notation`_ and separated in whitespace.
@@ -256,8 +259,31 @@ Multiple Pages
    :noedge:
    :audio:
 
+Loop
+----
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :noheader:
+      :nofooter:
+      :noedge:
+      :loop:
+
+.. lilyinclude:: minuet-in-g.ly
+   :noheader:
+   :nofooter:
+   :noedge:
+   :loop:
+
 Chang Log
 =========
+
+2021-XX-XX 1.1
+--------------
+
+- Simplify argument passing between lilypond binding and sphinx extension
+- Add `loop` flag for directives
 
 2021-09-12 1.1
 --------------

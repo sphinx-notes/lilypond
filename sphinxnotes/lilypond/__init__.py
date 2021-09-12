@@ -69,6 +69,7 @@ class BaseLilyDirective(Directive):
         'noedge': directives.flag,
         'preview': directives.flag,
         'audio': directives.flag,
+        'loop': directives.flag,
         'transpose': directives.unchanged,
     }
 
@@ -87,7 +88,8 @@ class BaseLilyDirective(Directive):
         node['nofooter'] = 'nofooter' in self.options or True
         node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
-        node['audio'] = 'audio' in self.options
+        node['audio'] = 'audio' in self.options or 'loop' in self.options
+        node['loop'] = 'loop' in self.options
         node['transpose'] = self.options.get('transpose')
         return [node]
 
@@ -230,8 +232,8 @@ def html_visit_lily_node(self, node:lily_base_node):
         raise nodes.SkipNode
 
     if node.get('audio') and out.audio:
-        self.body.append('<audio controls class="%s" style="%s" src="%s"/>\n' %
-                (_SCORECLS, 'width:100%;', out.audio))
+        self.body.append('<audio controls class="%s" style="%s" src="%s" %s/>\n' %
+                (_SCORECLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
