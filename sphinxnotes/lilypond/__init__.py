@@ -24,7 +24,7 @@ from docutils.parsers.rst import directives, Directive
 from sphinx.util import ensuredir, relative_uri, logging
 from sphinx.config import Config
 
-from . import binding
+from . import lilypond
 
 __title__= 'sphinxnotes-lilypond'
 __license__ = 'BSD'
@@ -130,9 +130,9 @@ def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
     return (builddir, reldir)
 
 
-def pick_from_builddir(builder, node:lily_base_node) -> binding.Output:
+def pick_from_builddir(builder, node:lily_base_node) -> lilypond.Output:
     """
-    Try to pick the LilyPond outputted files (:class:`binding.Output`)
+    Try to pick the LilyPond outputted files (:class:`lilypond.Output`)
     already cached in builder's outdir.
     """
     sig = get_node_sig(node)
@@ -143,8 +143,8 @@ def pick_from_builddir(builder, node:lily_base_node) -> binding.Output:
         # Not in cache
         return None
     try:
-        out = binding.Output(outfn)
-    except binding.Error:
+        out = lilypond.Output(outfn)
+    except lilypond.Error:
         logger.warning('invalid lilypond cache in %s' % outfn, location=node)
         return None
     else:
@@ -153,10 +153,10 @@ def pick_from_builddir(builder, node:lily_base_node) -> binding.Output:
         return out
 
 
-def move_to_builddir(builder, node:lily_base_node, out:binding.Output):
+def move_to_builddir(builder, node:lily_base_node, out:lilypond.Output):
     """
     Move lilypond outputted files to builder's outdir, relocate the path of
-    :class:`binding.Output` to relative path.
+    :class:`lilypond.Output` to relative path.
     """
     sig = get_node_sig(node)
     builddir, reldir = get_builddir_and_reldir(builder, node)
@@ -177,7 +177,7 @@ def html_visit_lily_node(self, node:lily_base_node):
         logger.debug('using cached result %s' % out.outdir, location=node)
     else:
         logger.debug('creating a new lilypond document', location=node)
-        doc = binding.Document(node['lilysrc'])
+        doc = lilypond.Document(node['lilysrc'])
         builddir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
                 prefix='sphinxnotes-lilypond')
         try:
@@ -190,7 +190,7 @@ def html_visit_lily_node(self, node:lily_base_node):
                     strip_header=node.get('noheader'),
                     strip_footer=node.get('nofooter'))
             out = doc.output(builddir, node.get('preview'), node.get('noedge'))
-        except binding.Error as e:
+        except lilypond.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
                                       backrefs=[], source=node['lilysrc'])
@@ -240,12 +240,12 @@ def html_visit_lily_node(self, node:lily_base_node):
     raise nodes.SkipNode
 
 def _config_inited(app, config:Config) -> None:
-    binding.Config.lilypond_args = config.lilypond_lilypond_args
-    binding.Config.timidity_args = config.lilypond_timidity_args
-    binding.Config.magick_home  = config.lilypond_magick_home
-    binding.Config.score_format  = config.lilypond_score_format
-    binding.Config.audio_format  = config.lilypond_audio_format
-    binding.Config.png_resolution  = config.lilypond_png_resolution
+    lilypond.Config.lilypond_args = config.lilypond_lilypond_args
+    lilypond.Config.timidity_args = config.lilypond_timidity_args
+    lilypond.Config.magick_home  = config.lilypond_magick_home
+    lilypond.Config.score_format  = config.lilypond_score_format
+    lilypond.Config.audio_format  = config.lilypond_audio_format
+    lilypond.Config.png_resolution  = config.lilypond_png_resolution
 
 
 def setup(app):
