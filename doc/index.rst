@@ -61,6 +61,8 @@ Functionalities
 Roles
 -----
 
+.. _lily-role:
+
 The ``lily`` role
 ~~~~~~~~~~~~~~~~~
 
@@ -142,18 +144,24 @@ Options of the directive are same to :ref:`lily-directive`.
 Configuration
 =============
 
+.. hint:: Normally, extensions can work without any configuration
+
 :lilypond_lilypond_args: (Type: ``list[str]``, Default: ``['lilypond']``)
    Argument list for running `LilyPond`_. The first one is path to LilyPond binary.
 :lilypond_timidity_args: (Type: ``list[str]``, Default: ``['timidity']``)
    Argument list for running `Timidity++`_. The first one is path to Timidity++ binary.
 :lilypond_magick_home: (Type: ``str``, Default: ``None``)
    Path to `ImageMagick`_ library.
-:lilypond_builddir: (Type: ``str``, Default: ``None``)
-   Build directory of the extension, use temporary directory when not specified.
 :lilypond_score_format: (Type: ``str``, Default: ``'png'``)
    Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
 :lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
    Format of outputed audio, available values: ``['wav', 'ogg']``.
+:lilypond_png_resolution: (Type: ``int``, Default: ``300``)
+   Resolution(DPI) of score in PNG format.
+:lilypond_inline_score_size: (Type: ``str``, Default: ``2.5em``)
+   Line height of :ref:`inline socre <lily-role>`, refer to `CSS height`_ for value format.
+
+.. _CSS height: https://developer.mozilla.org/en-US/docs/Web/CSS/height
 
 Examples
 ========
@@ -251,10 +259,15 @@ Multiple Pages
 Chang Log
 =========
 
-2021-06-26 1.0
+2021-09-12 1.1
 --------------
 
- .. sectionauthor:: Shengyu Zhang
+* Add confval `lilypond_png_resolution` for customizing score resolution in PNG format
+* Add confval `lilypond_inline_score_size` for customizing height of :ref:`inline score <lily-role>`
+* Stop using ``<figure>`` as container of block-level score, which is buggy on Safari
+
+2021-06-26 1.0
+--------------
 
 * Rebuild env when configuration changed
 * Fix wrong license value
@@ -262,22 +275,16 @@ Chang Log
 2020-12-27 1.0a2
 ----------------
 
- .. sectionauthor:: Shengyu Zhang
-
 * Support multiple pages documents
 * Imporve  of lilypond outputs cache
 
 2020-12-26 1.0a1
 ----------------
 
- .. sectionauthor:: Shengyu Zhang
-
 * Fix invalid insertion of ``\header``
 * Set default audio format to wav
 
 2020-12-06 1.0a0
 ----------------
-
- .. sectionauthor:: Shengyu Zhang
 
 The alpha version is out, enjoy~
