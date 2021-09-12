@@ -3,7 +3,7 @@
     sphinxnotes.lilypond.binding
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Lilypond binding.
+    Lilypond binding for Sphinx extension.
 
     :copyright: Copyright ©2020 by Shengyu Zhang.
     :license: BSD, see LICENSE for details.
@@ -15,6 +15,7 @@ import os
 from os import path
 import subprocess
 from packaging import version
+from dataclasses import dataclass
 
 from ly import pitch
 from ly import document
@@ -24,6 +25,15 @@ from ly import pkginfo
 from ly.pitch import transpose
 from ly.music import items
 from wand import image
+
+# Golbal bining config
+class Config(object):
+    lilypond_args:List[str]
+    timidity_args:List[str]
+    magick_home:List[str]
+    score_format:str
+    audio_format:str
+    png_resolution:int
 
 
 class Error(Exception):
@@ -38,8 +48,6 @@ class Output(object):
     BASENAME:str = 'music'
 
     outdir:str = None
-    score_format:str = None
-    audio_format:str = None
 
     source:str = None
     score:Optional[str] = None
@@ -48,10 +56,8 @@ class Output(object):
     midi:Optional[str] = None
     audio:Optional[str] = None
 
-    def __init__(self, outdir:str, score_format:str, audio_format:str):
+    def __init__(self, outdir:str):
         self.outdir = outdir
-        self.score_format = score_format
-        self.audio_format = audio_format
 
         prefix = path.join(outdir, self.BASENAME)
 
@@ -59,19 +65,19 @@ class Output(object):
         if path.isfile(srcfn):
             self.source = srcfn
 
-        pvfn = prefix + '.preview.' + score_format
+        pvfn = prefix + '.preview.' + Config.score_format
         if path.isfile(pvfn):
             self.preview = pvfn
 
-        scorefn = prefix + '.' + score_format
+        scorefn = prefix + '.' + Config.score_format
         if path.isfile(scorefn):
             self.score = scorefn
 
         # May multiple scores generated
-        if score_format in ['png', 'svg']:
-            if score_format == 'png':
+        if Config.score_format in ['png', 'svg']:
+            if Config.score_format == 'png':
                 pattern = prefix + '-page%d.png'
-            elif score_format == 'svg':
+            elif Config.score_format == 'svg':
                 pattern = prefix + '-%d.svg'
             i = 1
             while path.isfile(pattern % i):
@@ -88,7 +94,7 @@ class Output(object):
         if path.isfile(midifn):
             self.midi = midifn
 
-        audiofn = prefix + '.' + audio_format
+        audiofn = prefix + '.' + Config.audio_format
         if path.isfile(audiofn):
             self.audio = audiofn
 
@@ -112,20 +118,10 @@ class Output(object):
             self.audio = newdir + self.audio[l:]
 
 class Document(object):
-
     _document:document.Document = None
-    _lilypond_args:list[str] = []
-    _timidity_args:list[str] = []
-    _magick_home:Optional[str] = None
 
-    def __init__(self, src:str,
-            lilypond_args:list[str]=['lilypond'],
-            timidity_args:list[str]=['timidity'],
-            magick_home:Optional[str]=''):
+    def __init__(self, src:str):
         self._document = document.Document(src)
-        self._lilypond_args = lilypond_args.copy()
-        self._timidity_args = timidity_args.copy()
-        self._magick_home = magick_home
 
     def plaintext(self):
         return self._document.plaintext()
@@ -208,21 +204,18 @@ class Document(object):
     def output(self,
             outdir:str,
             preview:bool,
-            crop:bool,
-            score_format:str,
-            audio_format:str,
-            png_resolution:int) -> Output:
+            crop:bool) -> Output:
         """Output scores and related files from LilyPond Document. """
-        args = self._lilypond_args.copy()
+        args = Config.lilypond_args.copy()
         args += ['-o', outdir]
-        if score_format in ['png', 'pdf', 'ps', 'eps']:
-            args += ['--formats', score_format]
-            if score_format == 'png':
-                args += ['-dresolution=%d' % png_resolution]
-        elif score_format == 'svg':
+        if Config.score_format in ['png', 'pdf', 'ps', 'eps']:
+            args += ['--formats', Config.score_format]
+            if Config.score_format == 'png':
+                args += ['-dresolution=%d' % Config.png_resolution]
+        elif Config.score_format == 'svg':
             args += ['-dbackend=svg']
         else:
-            raise Error('Unknown score format: %s' % score_format )
+            raise Error('Unknown score format: %s' % Config.score_format )
 
         if preview:
             args += ['-dpreview=#t']
@@ -247,9 +240,9 @@ class Document(object):
         # Generate audio
         midifn = prefix + '.midi'
         if path.isfile(midifn):
-            self._midi_to_audio(midifn, audio_format=audio_format)
+            self._midi_to_audio(midifn)
 
-        out = Output(outdir, score_format=score_format, audio_format=audio_format)
+        out = Output(outdir)
 
         if crop:
             if out.score:
@@ -318,28 +311,28 @@ class Document(object):
 
 
     def _crop(self, scorefn:str):
-        if self._magick_home:
+        if Config.magick_home:
             old_magick_home = os.environ["MAGICK_HOME"]
-            os.environ["DEBUSSY"] = self._magick_home
+            os.environ["DEBUSSY"] = Config.magick_home
         with image.Image(filename=scorefn) as i:
             i.trim()
             i.save(filename=scorefn)
-        if self._magick_home:
+        if Config.magick_home:
             if old_magick_home:
                 os.environ["MAGICK_HOME"] = old_magick_home
             else:
                 del os.environ["MAGICK_HOME"]
 
 
-    def _midi_to_audio(self, midifn:str, audio_format:str):
+    def _midi_to_audio(self, midifn:str):
         try:
-            timidity_args = self._timidity_args.copy()
-            if audio_format == 'ogg':
+            timidity_args = Config.timidity_args.copy()
+            if Config.audio_format == 'ogg':
                 timidity_args += ['-Ov']
-            elif audio_format == 'wav':
+            elif Config.audio_format == 'wav':
                 timidity_args += ['-Ow']
             else:
-                raise Error('Unsupported audio format "%s"' % audio_format)
+                raise Error('Unsupported audio format "%s"' % Config.audio_format)
             timidity_args += [midifn]
             p = subprocess.run(timidity_args,
                     stdout=subprocess.PIPE,

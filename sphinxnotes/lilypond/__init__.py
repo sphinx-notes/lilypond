@@ -143,9 +143,7 @@ def pick_from_builddir(builder, node:lily_base_node) -> binding.Output:
         # Not in cache
         return None
     try:
-        out = binding.Output(outfn,
-                builder.config.lilypond_score_format,
-                builder.config.lilypond_audio_format)
+        out = binding.Output(outfn)
     except binding.Error:
         logger.warning('invalid lilypond cache in %s' % outfn, location=node)
         return None
@@ -170,13 +168,6 @@ def move_to_builddir(builder, node:lily_base_node, out:binding.Output):
     return out
 
 
-def create_document(config: Config, node:lily_base_node) -> binding.Document:
-    return binding.Document(node['lilysrc'],
-            lilypond_args = config.lilypond_lilypond_args,
-            timidity_args = config.lilypond_timidity_args,
-            magick_home = config.lilypond_magick_home)
-
-
 # TODO: two type
 def html_visit_lily_node(self, node:lily_base_node):
     out = pick_from_builddir(self.builder, node)
@@ -186,7 +177,7 @@ def html_visit_lily_node(self, node:lily_base_node):
         logger.debug('using cached result %s' % out.outdir, location=node)
     else:
         logger.debug('creating a new lilypond document', location=node)
-        doc = create_document(self.builder.config, node)
+        doc = binding.Document(node['lilysrc'])
         builddir = self.builder.config.lilypond_builddir or tempfile.mkdtemp(
                 prefix='sphinxnotes-lilypond')
         try:
@@ -198,12 +189,7 @@ def html_visit_lily_node(self, node:lily_base_node):
             doc.strip_header_footer(
                     strip_header=node.get('noheader'),
                     strip_footer=node.get('nofooter'))
-            out = doc.output(builddir,
-                    node.get('preview'),
-                    node.get('noedge'),
-                    self.builder.config.lilypond_score_format,
-                    self.builder.config.lilypond_audio_format,
-                    self.builder.config.lilypond_png_resolution)
+            out = doc.output(builddir, node.get('preview'), node.get('noedge'))
         except binding.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
@@ -253,6 +239,14 @@ def html_visit_lily_node(self, node:lily_base_node):
 
     raise nodes.SkipNode
 
+def _config_inited(app, config:Config) -> None:
+    binding.Config.lilypond_args = config.lilypond_lilypond_args
+    binding.Config.timidity_args = config.lilypond_timidity_args
+    binding.Config.magick_home  = config.lilypond_magick_home
+    binding.Config.score_format  = config.lilypond_score_format
+    binding.Config.audio_format  = config.lilypond_audio_format
+    binding.Config.png_resolution  = config.lilypond_png_resolution
+
 
 def setup(app):
     app.add_node(lily_inline_node, html=(html_visit_lily_node, None))
@@ -269,4 +263,6 @@ def setup(app):
     app.add_config_value('lilypond_audio_format', 'wav', 'env')
     app.add_config_value('lilypond_png_resolution', 300, 'env')
     app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
+
+    app.connect('config-inited', _config_inited)
     # TODO: Font size
