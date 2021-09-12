@@ -221,9 +221,6 @@ def html_visit_lily_node(self, node:lily_base_node):
         self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
         self.body.append('<p>')
 
-    if node.get('audio') and out.audio:
-        self.body.append('<figure style="display:table;">\n')
-
     # TODO: standalone css
     if node.get('preview') and out.preview:
         self.body.append(
@@ -233,12 +230,12 @@ def html_visit_lily_node(self, node:lily_base_node):
              self.encode(node['lilysrc']).strip(),
              self.builder.config.lilypond_inline_score_size))
     elif out.score:
-        self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                (_SCORECLS, out.score, self.encode(node['lilysrc']).strip()))
+        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
+                (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
     elif out.paged_scores:
         for p in out.paged_scores:
-            self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
-                    (_SCORECLS, p, self.encode(node['lilysrc']).strip()))
+            self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
+                    (_SCORECLS, p, self.encode(node['lilysrc']).strip(), 'width:100%;'))
     else:
         logger.warning('no score generated from lilypond document', location=node)
         sm = nodes.system_message('no score generated', type='WARNING', level=2,
@@ -247,11 +244,8 @@ def html_visit_lily_node(self, node:lily_base_node):
         raise nodes.SkipNode
 
     if node.get('audio') and out.audio:
-        self.body.append('<figcaption style="display:table-caption; caption-side:bottom; padding:10px">\n')
         self.body.append('<audio controls class="%s" style="%s" src="%s"/>\n' %
                 (_SCORECLS, 'width:100%;', out.audio))
-        self.body.append('</figcaption>\n')
-        self.body.append('</figure>\n')
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
