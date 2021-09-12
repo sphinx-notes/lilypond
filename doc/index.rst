@@ -117,6 +117,9 @@ The directive supports the following options:
 :loop: (flag)
     Whethre audio player will automatically seek back to the start upon reaching the end of the audio.
     This implies `audio`.
+
+    .. versionadded:: 1.1
+
 :transpose: (text)
     Transposing the pitches of score from one to another.
     Pitches are written in `LilyPond Notation`_ and separated in whitespace.
@@ -161,10 +164,18 @@ Configuration
    Format of outputed audio, available values: ``['wav', 'ogg']``.
 :lilypond_audio_volume: (Type: ``int``, Default: `None`)
    Volume of outputed audio, will be converted to value of `Timidity++`_ argument ``--volume``.
+
+    .. versionadded:: 1.2
+
 :lilypond_png_resolution: (Type: ``int``, Default: ``300``)
    Resolution in DPI of score in PNG format, will be converted to value of LilyPond_ argument ``-dresolution``.
+
+    .. versionadded:: 1.1
+    
 :lilypond_inline_score_size: (Type: ``str``, Default: ``2.5em``)
    Line height of :ref:`inline socre <lily-role>`, will be converted to value of `CSS height`_.
+
+    .. versionadded:: 1.1
 
 .. _CSS height: https://developer.mozilla.org/en-US/docs/Web/CSS/height
 
@@ -264,6 +275,8 @@ Multiple Pages
 Loop
 ----
 
+.. versionadded:: 1.2
+
 .. code-block:: rst
 
    .. lilyinclude:: minuet-in-g.ly
@@ -281,12 +294,12 @@ Loop
 Chang Log
 =========
 
-2021-XX-XX 1.1
+2021-XX-XX 1.2
 --------------
 
 - Simplify argument passing between lilypond binding and sphinx extension
-- Add `loop` flag for directives
-* Add confval ``lilypond_audio_volume``
+- Add ``loop`` flag for directives
+- Add confval ``lilypond_audio_volume``
 
 2021-09-12 1.1
 --------------
