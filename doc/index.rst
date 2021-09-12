@@ -262,8 +262,8 @@ Chang Log
 2021-09-12 1.1
 --------------
 
-* Add confval `lilypond_png_resolution` for customizing score resolution in PNG format
-* Add confval `lilypond_inline_score_size` for customizing height of :ref:`inline score <lily-role>`
+* Add confval ``lilypond_png_resolution`` for customizing score resolution in PNG format
+* Add confval ``lilypond_inline_score_size`` for customizing height of :ref:`inline score <lily-role>`
 * Stop using ``<figure>`` as container of block-level score, which is buggy on Safari
 
 2021-06-26 1.0
@@ -276,7 +276,7 @@ Chang Log
 ----------------
 
 * Support multiple pages documents
-* Imporve  of lilypond outputs cache
+* Imporve of lilypond outputs cache
 
 2020-12-26 1.0a1
 ----------------
