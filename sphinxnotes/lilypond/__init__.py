@@ -227,8 +227,11 @@ def html_visit_lily_node(self, node:lily_base_node):
     # TODO: standalone css
     if node.get('preview') and out.preview:
         self.body.append(
-            '<img class="%s" src="%s" alt="%s" align="absbottom"/>' %
-            (_SCORECLS, out.preview, self.encode(node['lilysrc']).strip()))
+            '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
+            (_SCORECLS,
+             out.preview,
+             self.encode(node['lilysrc']).strip(),
+             self.builder.config.lilypond_inline_score_size))
     elif out.score:
         self.body.append('<img class="%s" src="%s" alt="%s"/>\n' %
                 (_SCORECLS, out.score, self.encode(node['lilysrc']).strip()))
@@ -271,4 +274,5 @@ def setup(app):
     app.add_config_value('lilypond_score_format', 'png', 'env')
     app.add_config_value('lilypond_audio_format', 'wav', 'env')
     app.add_config_value('lilypond_png_resolution', 300, 'env')
+    app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
     # TODO: Font size
