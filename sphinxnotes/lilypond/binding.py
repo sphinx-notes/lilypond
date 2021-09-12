@@ -210,12 +210,15 @@ class Document(object):
             preview:bool,
             crop:bool,
             score_format:str,
-            audio_format:str) -> Output:
+            audio_format:str,
+            png_resolution:int) -> Output:
         """Output scores and related files from LilyPond Document. """
         args = self._lilypond_args.copy()
         args += ['-o', outdir]
         if score_format in ['png', 'pdf', 'ps', 'eps']:
             args += ['--formats', score_format]
+            if score_format == 'png':
+                args += ['-dresolution=%d' % png_resolution]
         elif score_format == 'svg':
             args += ['-dbackend=svg']
         else:

@@ -202,7 +202,8 @@ def html_visit_lily_node(self, node:lily_base_node):
                     node.get('preview'),
                     node.get('noedge'),
                     self.builder.config.lilypond_score_format,
-                    self.builder.config.lilypond_audio_format)
+                    self.builder.config.lilypond_audio_format,
+                    self.builder.config.lilypond_png_resolution)
         except binding.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
@@ -269,4 +270,5 @@ def setup(app):
     app.add_config_value('lilypond_builddir', None, 'env')
     app.add_config_value('lilypond_score_format', 'png', 'env')
     app.add_config_value('lilypond_audio_format', 'wav', 'env')
+    app.add_config_value('lilypond_png_resolution', 300, 'env')
     # TODO: Font size
