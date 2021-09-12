@@ -159,10 +159,12 @@ Configuration
    Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
 :lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
    Format of outputed audio, available values: ``['wav', 'ogg']``.
+:lilypond_audio_volume: (Type: ``int``, Default: `None`)
+   Volume of outputed audio, will be converted to value of `Timidity++`_ argument ``--volume``.
 :lilypond_png_resolution: (Type: ``int``, Default: ``300``)
-   Resolution(DPI) of score in PNG format.
+   Resolution in DPI of score in PNG format, will be converted to value of LilyPond_ argument ``-dresolution``.
 :lilypond_inline_score_size: (Type: ``str``, Default: ``2.5em``)
-   Line height of :ref:`inline socre <lily-role>`, refer to `CSS height`_ for value format.
+   Line height of :ref:`inline socre <lily-role>`, will be converted to value of `CSS height`_.
 
 .. _CSS height: https://developer.mozilla.org/en-US/docs/Web/CSS/height
 
@@ -284,6 +286,7 @@ Chang Log
 
 - Simplify argument passing between lilypond binding and sphinx extension
 - Add `loop` flag for directives
+* Add confval ``lilypond_audio_volume``
 
 2021-09-12 1.1
 --------------

@@ -31,9 +31,12 @@ class Config(object):
     lilypond_args:List[str]
     timidity_args:List[str]
     magick_home:List[str]
+
     score_format:str
-    audio_format:str
     png_resolution:int
+
+    audio_format:str
+    audio_volume:List[str]
 
 
 class Error(Exception):
@@ -333,6 +336,8 @@ class Document(object):
                 timidity_args += ['-Ow']
             else:
                 raise Error('Unsupported audio format "%s"' % Config.audio_format)
+            if Config.audio_volume:
+                timidity_args += ['--volume=%d' % Config.audio_volume]
             timidity_args += [midifn]
             p = subprocess.run(timidity_args,
                     stdout=subprocess.PIPE,

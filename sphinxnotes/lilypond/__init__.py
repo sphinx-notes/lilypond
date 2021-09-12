@@ -245,9 +245,12 @@ def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
     lilypond.Config.magick_home  = config.lilypond_magick_home
+
     lilypond.Config.score_format  = config.lilypond_score_format
-    lilypond.Config.audio_format  = config.lilypond_audio_format
     lilypond.Config.png_resolution  = config.lilypond_png_resolution
+
+    lilypond.Config.audio_format  = config.lilypond_audio_format
+    lilypond.Config.audio_volume = config.lilypond_audio_volume
 
 
 def setup(app):
@@ -261,10 +264,13 @@ def setup(app):
     app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
     app.add_config_value('lilypond_magick_home', None, 'env')
     app.add_config_value('lilypond_builddir', None, 'env')
+
     app.add_config_value('lilypond_score_format', 'png', 'env')
-    app.add_config_value('lilypond_audio_format', 'wav', 'env')
     app.add_config_value('lilypond_png_resolution', 300, 'env')
     app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
+
+    app.add_config_value('lilypond_audio_format', 'wav', 'env')
+    app.add_config_value('lilypond_audio_volume', None, 'env')
 
     app.connect('config-inited', _config_inited)
     # TODO: Font size
