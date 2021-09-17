@@ -28,7 +28,7 @@ from . import lilypond
 
 __title__= 'sphinxnotes-lilypond'
 __license__ = 'BSD'
-__version__ = '1.1'
+__version__ = '1.2'
 __author__ = 'Shengyu Zhang'
 __url__ = 'https://sphinx-notes.github.io/lilypond'
 __description__ = 'Sphinx extension for Lilypond'

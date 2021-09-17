@@ -294,7 +294,7 @@ Loop
 Chang Log
 =========
 
-2021-XX-XX 1.2
+2021-09-17 1.2
 --------------
 
 - Simplify argument passing between lilypond binding and sphinx extension
