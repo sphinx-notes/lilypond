@@ -235,7 +235,7 @@ class Document(object):
                     stderr=subprocess.PIPE,
                     encoding=self._document.encoding or 'utf-8')
         except OSError as e:
-            raise Error('LilyPond can not be run') from e
+            raise Error('LilyPond cannot be run') from e
         if p.returncode != 0:
             raise Error('LilyPond exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
@@ -343,7 +343,7 @@ class Document(object):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         except OSError as e:
-            raise Error('TiMidity++ can not be run') from e
+            raise Error('TiMidity++ cannot be run') from e
         except Exception as e:
             raise e
         if p.returncode != 0:
