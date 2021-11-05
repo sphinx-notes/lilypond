@@ -61,6 +61,10 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['preview'] = True
     return [node], []
 
+
+def top_or_bottom(argument:str) -> str:
+    return directives.choice(argument, ('top', 'bottom'))
+
 class BaseLilyDirective(Directive):
 
     option_spec = {
@@ -71,11 +75,12 @@ class BaseLilyDirective(Directive):
         'audio': directives.flag,
         'loop': directives.flag,
         'transpose': directives.unchanged,
+        'controls': top_or_bottom,
     }
 
 
     @abstractmethod
-    def read_lily_source(self):
+    def read_lily_source(self) -> str:
         raise NotImplementedError()
 
 
@@ -88,9 +93,10 @@ class BaseLilyDirective(Directive):
         node['nofooter'] = 'nofooter' in self.options or True
         node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
-        node['audio'] = 'audio' in self.options or 'loop' in self.options
+        node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
         node['loop'] = 'loop' in self.options
         node['transpose'] = self.options.get('transpose')
+        node['controls'] = self.options.get('controls', 'bottom')
         return [node]
 
 class LilyDirective(BaseLilyDirective):
@@ -209,6 +215,11 @@ def html_visit_lily_node(self, node:lily_base_node):
         self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
         self.body.append('<p>')
 
+    if node.get('audio') and out.audio and node.get('controls') == 'top':
+        self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
+                (_SCORECLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
+        self.body.append('</audio>')
+
     # TODO: standalone css
     if node.get('preview') and out.preview:
         self.body.append(
@@ -231,9 +242,10 @@ def html_visit_lily_node(self, node:lily_base_node):
         sm.walkabout(self)
         raise nodes.SkipNode
 
-    if node.get('audio') and out.audio:
-        self.body.append('<audio controls class="%s" style="%s" src="%s" %s/>\n' %
+    if node.get('audio') and out.audio and node.get('controls') == 'bottom':
+        self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
                 (_SCORECLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
+        self.body.append('</audio>')
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
