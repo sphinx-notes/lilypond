@@ -116,16 +116,22 @@ The directive supports the following options:
     Whether to show a audio player for listen LilyPond-generated MIDI file
 :loop: (flag)
     Whethre audio player will automatically seek back to the start upon reaching the end of the audio.
-    This implies `audio`.
+    This implies ``audio``.
 
-    .. versionadded:: 1.1
+    .. versionadded:: 1.2
 
 :transpose: (text)
     Transposing the pitches of score from one to another.
     Pitches are written in `LilyPond Notation`_ and separated in whitespace.
     For example: ``:transpose: c' d'``
 
-.. _LilyPond Notation: http://lilypond.org/doc/v2.18/Documentation/notation/writing-pitches
+    .. _LilyPond Notation: http://lilypond.org/doc/v2.18/Documentation/notation/writing-pitches
+
+:controls: (text, one of the ``top`` or ``bottom``)
+    Specify the position of the control bar relative to the score.
+    This implies ``audio``.
+
+    .. versionadded:: 1.3
 
 The ``lilyinclude`` directives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -291,8 +297,32 @@ Loop
    :noedge:
    :loop:
 
+Control Bar at the Top
+----------------------
+
+.. versionadded:: 1.3
+
+.. code-block:: rst
+
+   .. lilyinclude:: minuet-in-g.ly
+      :noheader:
+      :nofooter:
+      :noedge:
+      :controls: top
+
+.. lilyinclude:: minuet-in-g.ly
+   :noheader:
+   :nofooter:
+   :noedge:
+   :controls: top
+
 Chang Log
 =========
+
+2021-11-XX 1.3
+--------------
+
+- Add ``controls`` flag for specifing the position of the control bar
 
 2021-09-17 1.2
 --------------
