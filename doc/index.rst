@@ -319,7 +319,7 @@ Control Bar at the Top
 Chang Log
 =========
 
-2021-11-XX 1.3
+2021-11-07 1.3
 --------------
 
 - Add ``controls`` flag for specifing the position of the control bar
