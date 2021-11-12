@@ -19,9 +19,10 @@ from typing import Tuple
 
 from docutils import nodes
 from docutils.utils import unescape
-from docutils.parsers.rst import directives, Directive
+from docutils.parsers.rst import directives
 
 from sphinx.util import ensuredir, relative_uri, logging
+from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 
 from . import lilypond
@@ -65,7 +66,7 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 def top_or_bottom(argument:str) -> str:
     return directives.choice(argument, ('top', 'bottom'))
 
-class BaseLilyDirective(Directive):
+class BaseLilyDirective(SphinxDirective):
 
     option_spec = {
         'noheader': directives.flag,
@@ -86,7 +87,7 @@ class BaseLilyDirective(Directive):
 
     def run(self):
         node = lily_outline_node()
-        node['docname'] = self.state.document.settings.env.docname
+        node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = self.read_lily_source()
         node['noheader'] = 'noheader' in self.options
@@ -116,9 +117,9 @@ class LilyIncludeDirective(BaseLilyDirective):
         lilyfn = self.arguments[0]
         if not path.isabs(lilyfn):
             # Rel to abs
-            env = self.state.document.settings.env
-            lilyfn = path.join(path.dirname(env.doc2path(env.docname)), lilyfn)
+            lilyfn = path.join(path.dirname(self.env.doc2path(self.env.docname)), lilyfn)
         with open(lilyfn, 'r') as f:
+            self.env.note_dependency(lilyfn)
             return f.read()
 
 
