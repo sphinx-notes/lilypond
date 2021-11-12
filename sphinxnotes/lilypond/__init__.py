@@ -15,7 +15,7 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
-from typing import Tuple
+from typing import Tuple, List
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -85,11 +85,19 @@ class BaseLilyDirective(SphinxDirective):
         raise NotImplementedError()
 
 
-    def run(self):
+    def run(self) -> List[nodes.Node]:
+        try:
+            lilysrc = self.read_lily_source()
+        except OSError as e:
+            msg = 'failed to read LilyPond source: %s' % e
+            logger.warning(msg, location=self.state.parent)
+            sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+            return [sm]
+
         node = lily_outline_node()
         node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
-        node['lilysrc'] = self.read_lily_source()
+        node['lilysrc'] = lilysrc
         node['noheader'] = 'noheader' in self.options
         node['nofooter'] = 'nofooter' in self.options or True
         node['noedge'] = 'noedge' in self.options
