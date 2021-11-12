@@ -55,6 +55,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # produce any output in the built files.
 show_authors = True
 
+# Keep warnings as “system message” paragraphs in the built documents.
+# Regardless of this setting, warnings are always written to the standard error
+# stream when sphinx-build is run.
+keep_warnings = True
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
