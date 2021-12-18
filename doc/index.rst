@@ -34,8 +34,10 @@ Install the follwing runtime dependencies before using the extension:
 
 - `LilyPond`_
 - `TiMidity++`_
+- `FFmpeg`_
 - `ImageMagick`_
 
+.. _FFmpeg: https://ffmpeg.org/
 .. _Timidity++: http://timidity.sourceforge.net/
 .. _ImageMagick: https://imagemagick.org/index.php
 
@@ -162,12 +164,22 @@ Configuration
    Argument list for running `LilyPond`_. The first one is path to LilyPond binary.
 :lilypond_timidity_args: (Type: ``list[str]``, Default: ``['timidity']``)
    Argument list for running `Timidity++`_. The first one is path to Timidity++ binary.
+:lilypond_ffmpeg_args: (Type: ``list[str]``, Default: ``['ffmpeg']``)
+   Argument list for running FFmpeg_. The first one is path to FFmpeg binary.
+
+   .. versionadded:: 1.4
+
 :lilypond_magick_home: (Type: ``str``, Default: ``None``)
    Path to `ImageMagick`_ library.
 :lilypond_score_format: (Type: ``str``, Default: ``'png'``)
    Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
 :lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
-   Format of outputed audio, available values: ``['wav', 'ogg']``.
+   Format of outputed audio, available values: ``['wav', 'ogg', 'mp3']``.
+
+   .. versionchanged:: 1.4
+
+      Add support for 'mp3' audio format
+
 :lilypond_audio_volume: (Type: ``int``, Default: `None`)
    Volume of outputed audio, will be converted to value of `Timidity++`_ argument ``--volume``.
 
@@ -318,6 +330,14 @@ Control Bar at the Top
 
 Chang Log
 =========
+
+2021-12-19 1.4
+--------------
+
+- Note ly files as dependencies, so Sphinx will rebuild document when ly file changes
+- Won't crash when score file does not exist
+- Left a "system message" paragraphs when score build failed
+- Add support for MP3 audio format, FFmpeg_ is required
 
 2021-11-07 1.3
 --------------
