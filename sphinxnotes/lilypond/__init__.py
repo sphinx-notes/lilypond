@@ -265,6 +265,7 @@ def html_visit_lily_node(self, node:lily_base_node):
 def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
+    lilypond.Config.ffmpeg_args = config.lilypond_ffmpeg_args
     lilypond.Config.magick_home  = config.lilypond_magick_home
 
     lilypond.Config.score_format  = config.lilypond_score_format
@@ -283,6 +284,7 @@ def setup(app):
 
     app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
     app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
+    app.add_config_value('lilypond_ffmpeg_args', ['ffmpeg'], 'env')
     app.add_config_value('lilypond_magick_home', None, 'env')
     app.add_config_value('lilypond_builddir', None, 'env')
 
