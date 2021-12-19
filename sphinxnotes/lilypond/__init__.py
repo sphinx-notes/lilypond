@@ -29,7 +29,7 @@ from . import lilypond
 
 __title__= 'sphinxnotes-lilypond'
 __license__ = 'BSD'
-__version__ = '1.3'
+__version__ = '1.4'
 __author__ = 'Shengyu Zhang'
 __url__ = 'https://sphinx-notes.github.io/lilypond'
 __description__ = 'Sphinx extension for Lilypond'
