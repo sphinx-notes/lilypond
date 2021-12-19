@@ -30,6 +30,7 @@ from wand import image
 class Config(object):
     lilypond_args:List[str]
     timidity_args:List[str]
+    ffmpeg_args:List[str]
     magick_home:List[str]
 
     score_format:str
@@ -332,7 +333,7 @@ class Document(object):
             timidity_args = Config.timidity_args.copy()
             if Config.audio_format == 'ogg':
                 timidity_args += ['-Ov']
-            elif Config.audio_format == 'wav':
+            elif Config.audio_format in ['wav', 'mp3']:
                 timidity_args += ['-Ow']
             else:
                 raise Error('Unsupported audio format "%s"' % Config.audio_format)
@@ -350,6 +351,28 @@ class Document(object):
             raise Error(
                     'TiMidity++ exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                     (p.stderr, p.stdout))
+
+        # Convert wav to mp3
+        if Config.audio_format == 'mp3':
+            ffmpeg_args = Config.ffmpeg_args.copy()
+            wavfn = midifn[:-len('midi')] + 'wav'
+            mp3fn = midifn[:-len('midi')] + 'mp3'
+            ffmpeg_args += ['-i', wavfn, mp3fn]
+            try:
+                p = subprocess.run(ffmpeg_args,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+            except OSError as e:
+                raise Error('FFmpeg cannot be run') from e
+            except Exception as e:
+                raise e
+            finally:
+                # Remove unused wav file
+                os.remove(wavfn)
+            if p.returncode != 0:
+                raise Error(
+                        'FFmpeg exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
+                        (p.stderr, p.stdout))
 
 
     def _pack_music_list(self) -> bool:
