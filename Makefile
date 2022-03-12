@@ -4,9 +4,9 @@ MAKE = make
 PY   = python3
 RM   = rm -rf
 
-.PHONY: doc
-doc:
-	$(MAKE) -C doc/
+.PHONY: docs
+docs:
+	$(MAKE) -C docs/
 
 .PHONY: dist
 dist: setup.py
