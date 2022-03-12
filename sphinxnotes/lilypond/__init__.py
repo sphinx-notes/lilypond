@@ -185,8 +185,7 @@ def move_to_builddir(builder, node:lily_base_node, out:lilypond.Output):
     return out
 
 
-# TODO: two type
-def html_visit_lily_node(self, node:lily_base_node):
+def get_lilypond_output(self, node:lily_base_node) -> lilypond.Output:
     out = pick_from_builddir(self.builder, node)
 
     cached = not (out is None)
@@ -218,6 +217,10 @@ def html_visit_lily_node(self, node:lily_base_node):
         else:
             # Get relative path
             move_to_builddir(self.builder, node, out)
+    return out
+
+def html_visit_lily_node(self, node:lily_base_node):
+    out = get_lilypond_output(self, node)
 
     # Create div for block level element
     if isinstance(node, lily_outline_node):
@@ -262,6 +265,57 @@ def html_visit_lily_node(self, node:lily_base_node):
 
     raise nodes.SkipNode
 
+def latex_visit_lily_node(self, node:lily_base_node):
+    """
+    See sphinx/sphinx/writers/latex.py::visit_image().
+    """
+
+    out = get_lilypond_output(self, node)
+
+    CR = '\n'
+    pre: List[str] = []  # in reverse order
+    post: List[str] = []
+
+
+    options = ''
+
+    if node.get('preview') and out.preview:
+        base, ext = path.splitext(out.preview)
+        self.body.append(CR)
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                         (options, base, ext))
+        self.body.append(CR)
+    elif out.score:
+        base, ext = path.splitext(out.score)
+        self.body.append(CR + r'\noindent')
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                         (options, base, ext))
+        self.body.append(CR)
+    elif out.paged_scores:
+        for p in out.paged_scores:
+            self.body.append(CR + r'\noindent')
+            base, ext = path.splitext(p)
+            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                             (options, base, ext))
+            self.body.append(CR)
+    else:
+        msg = 'no score generated from lilypond document'
+        logger.warning(msg, location=node)
+        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[],
+                                  source=node['lilysrc'])
+        sm.walkabout(self)
+        raise nodes.SkipNode
+
+    if node.get('audio'):
+        msg = 'audio option is supported for latex builder'
+        logger.warning(msg, location=node)
+        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[],
+                                  source=node['lilysrc'])
+        sm.walkabout(self)
+
+    raise nodes.SkipNode
+
+
 def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
@@ -276,8 +330,12 @@ def _config_inited(app, config:Config) -> None:
 
 
 def setup(app):
-    app.add_node(lily_inline_node, html=(html_visit_lily_node, None))
-    app.add_node(lily_outline_node, html=(html_visit_lily_node, None))
+    app.add_node(lily_inline_node,
+                 html=(html_visit_lily_node, None),
+                 latex=(latex_visit_lily_node, None))
+    app.add_node(lily_outline_node,
+                 html=(html_visit_lily_node, None),
+                 latex=(latex_visit_lily_node, None))
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
