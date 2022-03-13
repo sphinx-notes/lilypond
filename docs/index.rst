@@ -11,7 +11,7 @@ Sphinx Extension for LilyPond
    :target: https://github.com/sphinx-notes/lilypond
 
 :version: |version|
-:copyright: Copyright ©2020-2021 by Shengyu Zhang.
+:copyright: Copyright ©2020-2022 by Shengyu Zhang.
 :copyright: Copyright ©2009 by Wei-Wei Guo.
 :license: BSD, see LICENSE for details.
 
@@ -22,7 +22,7 @@ Compared to its predecessor, the extension has many new features such as:
 - `Scale transposing <Transposing>`_
 - `Audio preview <Audio preview>`_
 - Layout controlling
-- LaTeX support (Since `2022-03-XX 1.5`_)
+- LaTeX support (Since `2022-03-13 1.5`_)
 - And so on…
 
 .. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
@@ -336,7 +336,7 @@ Control Bar at the Top
 Chang Log
 =========
 
-2022-03-XX 1.5
+2022-03-13 1.5
 --------------
 
 - Add LaTeX builder suppport
