@@ -19,8 +19,8 @@ The extension is originated from `sphinx-contrib/lilypond`_ , allows `LilyPond`_
 music notes to be included in Sphinx-generated documents inline and outline.
 Compared to its predecessor, the extension has many new features such as:
 
-- `Scale transposing <Transposing>`_
-- `Audio preview <Audio preview>`_
+- Scale `Transposing`_
+- `Audio Preview`_
 - Layout controlling
 - LaTeX support (Since `2022-03-13 1.5`_)
 - And so on…
