@@ -309,9 +309,6 @@ def latex_visit_lily_node(self, node:lily_base_node):
     if node.get('audio'):
         msg = 'audio option is not supported for latex builder'
         logger.warning(msg, location=node)
-        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[],
-                                  source=node['lilysrc'])
-        sm.walkabout(self)
 
     raise nodes.SkipNode
 
