@@ -318,7 +318,12 @@ class Document(object):
         if Config.magick_home:
             old_magick_home = os.environ["MAGICK_HOME"]
             os.environ["DEBUSSY"] = Config.magick_home
-        with image.Image(filename=scorefn) as i:
+        # Specify resolution for vector formats
+        if Config.score_format in ['pdf', 'svg', 'ps', 'eps']:
+            resolution = Config.png_resolution
+        else:
+            resolution = None
+        with image.Image(filename=scorefn, resolution=resolution) as i:
             i.trim()
             i.save(filename=scorefn)
         if Config.magick_home:
