@@ -333,6 +333,31 @@ Control Bar at the Top
    :noedge:
    :controls: top
 
+Jianpu (Numbered Musical Notation)
+==================================
+
+.. versionadded:: 2.0
+
+.. code-block:: rst
+
+   .. jianpu::
+
+      %% tempo: 4=60
+      title=C Major Scale
+      1=C
+      2/4
+
+      1 2 3 4 5 6 7 1'
+
+.. jianpu::
+
+   %% tempo: 4=60
+   title=C Major Scale
+   1=C
+   2/4
+
+   1 2 3 4 5 6 7 1'
+
 Chang Log
 =========
 
