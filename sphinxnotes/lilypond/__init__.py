@@ -26,6 +26,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 
 from . import lilypond
+from . import jianpu
 
 __title__= 'sphinxnotes-lilypond'
 __license__ = 'BSD'
@@ -66,6 +67,7 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 def top_or_bottom(argument:str) -> str:
     return directives.choice(argument, ('top', 'bottom'))
 
+
 class BaseLilyDirective(SphinxDirective):
 
     option_spec = {
@@ -99,7 +101,7 @@ class BaseLilyDirective(SphinxDirective):
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
         node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options or True
+        node['nofooter'] = 'nofooter' in self.options or 'noedge' in self.options
         node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
         node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
@@ -122,14 +124,45 @@ class LilyIncludeDirective(BaseLilyDirective):
     final_argument_whitespace = True
 
     def read_lily_source(self) -> str:
-        lilyfn = self.arguments[0]
-        if not path.isabs(lilyfn):
+        fn = self.arguments[0]
+        if not path.isabs(fn):
             # Rel to abs
-            lilyfn = path.join(path.dirname(self.env.doc2path(self.env.docname)), lilyfn)
-        with open(lilyfn, 'r') as f:
-            self.env.note_dependency(lilyfn)
+            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
+        with open(fn, 'r') as f:
+            self.env.note_dependency(fn)
             return f.read()
 
+
+class BaseJianpuDirective(BaseLilyDirective):
+
+    def read_lily_source(self) -> str:
+        return jianpu.process_input(self.read_jianpu_source())
+
+    def read_jianpu_source(self) -> str:
+        raise NotImplementedError()
+
+
+class JianpuDirective(BaseJianpuDirective):
+
+    has_content = True
+
+    def read_jianpu_source(self) -> str:
+        return '\n'.join(self.content)
+
+
+class JianpuIncludeDirective(BaseJianpuDirective):
+
+    required_arguments = 1
+    final_argument_whitespace = True
+
+    def read_jianpu_source(self) -> str:
+        fn = self.arguments[0]
+        if not path.isabs(fn):
+            # Rel to abs
+            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
+        with open(fn, 'r') as f:
+            self.env.note_dependency(fn)
+            return f.read()
 
 def get_node_sig(node:lily_base_node) -> str:
     """Return signture of given node. """
@@ -218,6 +251,7 @@ def get_lilypond_output(self, node:lily_base_node) -> lilypond.Output:
             # Get relative path
             move_to_builddir(self.builder, node, out)
     return out
+
 
 def html_visit_lily_node(self, node:lily_base_node):
     out = get_lilypond_output(self, node)
@@ -336,6 +370,8 @@ def setup(app):
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
+    app.add_directive('jianpu', JianpuDirective)
+    app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
     app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
     app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
