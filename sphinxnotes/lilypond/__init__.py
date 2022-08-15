@@ -24,6 +24,8 @@ from docutils.parsers.rst import directives
 from sphinx.util import ensuredir, relative_uri, logging
 from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
+from sphinx.builders.html import StandaloneHTMLBuilder
+from sphinx.builders.latex import LaTeXBuilder
 
 from . import lilypond
 from . import jianpu
@@ -55,8 +57,16 @@ class lily_inline_node(nodes.Inline, nodes.TextElement, lily_base_node): pass
 class lily_outline_node(nodes.Part, nodes.Element, lily_base_node): pass
 
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    env = inliner.document.settings.env # type: ignore
+
+    if not isinstance(env.app.builder, (StandaloneHTMLBuilder, LaTeXBuilder)):
+        # Builder is not supported, fallback to literal_block.
+        node = nodes.literal(rawtext, unescape(text, restore_backslashes=True))
+        node['docname'] = env.docname
+        return [node], []
+
     node = lily_inline_node()
-    node['docname'] = inliner.document.settings.env.docname
+    node['docname'] = env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
     node['noedge'] = True
@@ -95,6 +105,12 @@ class BaseLilyDirective(SphinxDirective):
             logger.warning(msg, location=self.state.parent)
             sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
             return [sm]
+
+        if not isinstance(self.env.app.builder, (StandaloneHTMLBuilder, LaTeXBuilder)):
+            # Builder is not supported, fallback to literal_block.
+            node = nodes.literal_block(self.block_text, lilysrc)
+            node['docname'] = self.env.docname
+            return [node]
 
         node = lily_outline_node()
         node['docname'] = self.env.docname
