@@ -336,7 +336,7 @@ Control Bar at the Top
 Jianpu (Numbered Musical Notation)
 ==================================
 
-.. versionadded:: 2.0
+.. versionadded:: 1.5
 
 .. code-block:: rst
 
@@ -360,6 +360,13 @@ Jianpu (Numbered Musical Notation)
 
 Chang Log
 =========
+
+2022-10-08 1.6
+--------------
+
+- Fix resolution of SVG output (#18)
+- Add basic Jianpu (Numbered Musical Notation) support (#17)
+- Don't panic when running unsupported builders (#20)
 
 2022-03-13 1.5
 --------------
