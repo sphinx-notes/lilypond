@@ -25,6 +25,7 @@ setup(
         'Environment :: Console',
         'Environment :: Web Environment',
         'Environment :: Plugins',
+        'Framework :: Sphinx :: Extension',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
