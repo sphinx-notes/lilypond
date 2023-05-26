@@ -1,4 +1,11 @@
-include README.rst
+# This file is generated from sphinx-notes/template.
+# You need to consider modifying the TEMPLATE or modifying THIS FILE.
+
 include LICENSE
-recursive-include doc *
-prune doc/_build
+include README.rst
+
+recursive-include tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
