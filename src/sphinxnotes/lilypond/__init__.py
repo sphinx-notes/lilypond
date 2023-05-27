@@ -141,8 +141,11 @@ class LilyIncludeDirective(BaseLilyDirective):
 
     def read_lily_source(self) -> str:
         fn = self.arguments[0]
-        if not path.isabs(fn):
-            # Rel to abs
+        if path.isabs(fn):
+            # Doc abs to fs abs.
+            fn = self.env.srcdir + fn
+        else:
+            # Relpath to abspath.
             fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
         with open(fn, 'r') as f:
             self.env.note_dependency(fn)
