@@ -1,0 +1,14 @@
+.. lily::
+   :noedge:
+   :nofooter:
+   :audio:
+
+   \score {
+     <<
+       \new Staff {
+           \time 4/4
+           \tempo 4 = 70
+           c' d' e' f' g' a' b' c''
+     }
+     >>
+   }

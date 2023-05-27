@@ -1,0 +1,62 @@
+# This file is generated from sphinx-notes/template.
+# You need to consider modifying the TEMPLATE or modifying THIS FILE.
+
+# This file is used to configure your project.
+# Read more about the various options under:
+# https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#declaring-project-metadata
+
+[project]
+name = "sphinxnotes-lilypond"
+description = "Sphinx extension for embedding LilyPond scores"
+readme = "README.rst"
+license = { file = "BSD-3-Clause" }
+authors = [ { name = "Shengyu Zhang" } ]
+maintainers = [ { name = "Shengyu Zhang" } ]
+keywords = ["sphinx", "extension", "documentation", "music", "lilypond"] # TOOD: additional_keywords
+classifiers = [
+    # "Development Status :: 4 - Beta",
+    "Environment :: Plugins",
+    "Framework :: Sphinx",
+    "Framework :: Sphinx :: Extension",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Documentation",
+    "Topic :: Documentation :: Sphinx",
+]
+
+requires-python = ">=3.8"
+dependencies = [
+    "Sphinx>=4",
+    "python-ly==0.9",
+    "Wand==0.6",
+]
+
+dynamic = ["version"] # required by setuptools_scm, see section [build-system]
+
+[project.optional-dependencies]
+docs = ["furo", "sphinxnotes-any", "sphinx_design", "sphinx_copybutton"]
+test = ["pytest"]
+dev = ["build", "twine", "cruft"]
+
+[project.urls]
+homepage = "https://sphinx.silverrainz.me/lilypond"
+documentation = "https://sphinx.silverrainz.me/lilypond"
+repository = "https://github.com/sphinx-notes/lilypond"
+changelog = "https://sphinx.silverrainz.me/lilypond/changelog.html"
+tracker = "https://github.com/sphinx-notes/lilypond/issues"
+
+[build-system]
+requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# For smarter version schemes and other configuration options,
+# check out https://github.com/pypa/setuptools_scm
+version_scheme = "no-guess-dev"
+
+[tool.setuptools.packages.find]
+# Find namespace package,
+# check out https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#finding-namespace-packages
+where = ["src"]

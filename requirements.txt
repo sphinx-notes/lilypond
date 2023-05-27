@@ -1,2 +1,0 @@
-python-ly==0.9
-Wand==0.6

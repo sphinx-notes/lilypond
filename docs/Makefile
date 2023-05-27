@@ -1,10 +1,11 @@
-# Minimal makefile for Sphinx documentation
-#
+# This file is generated from sphinx-notes/template.
+# You need to consider modifying the TEMPLATE or modifying THIS FILE.
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+# Minimal makefile for Sphinx documentation
+
+# You can set these variables from the command line.
+SPHINXOPTS    =
+SPHINXBUILD   = python3 -msphinx
 SOURCEDIR     = .
 BUILDDIR      = _build
 
