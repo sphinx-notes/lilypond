@@ -1,7 +1,13 @@
 .. lily::
    :noedge:
+   :noheader:
    :nofooter:
    :audio:
+
+   \version "2.20.0"
+   \header {
+     title = "C Major Scale"
+   }
 
    \score {
      <<
