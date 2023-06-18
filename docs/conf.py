@@ -97,6 +97,9 @@ extlinks = {
     'tag': ('https://github.com/sphinx-notes/lilypond/releases/tag/%s', '🏷️ %s'),
 }
 
+extensions.append('sphinxcontrib.gtagjs')
+gtagjs_ids = ['G-E4SNX0WZYV']
+
 # -- Eat your own dog food --------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
