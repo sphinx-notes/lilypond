@@ -271,12 +271,12 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
 
     # Create div for block level element
     if isinstance(node, lily_outline_node):
-        self.body.append(self.starttag(node, 'div', CLASS='lilypond'))
+        self.body.append(self.starttag(node, 'div', CLASS=_DIVCLS))
         self.body.append('<p>')
 
     if node.get('audio') and out.audio and node.get('controls') == 'top':
         self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
-                (_SCORECLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
+                (_AUDIOCLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
         self.body.append('</audio>')
 
     # TODO: standalone css
