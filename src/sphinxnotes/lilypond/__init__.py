@@ -21,7 +21,8 @@ from docutils import nodes
 from docutils.utils import unescape
 from docutils.parsers.rst import directives
 
-from sphinx.util import ensuredir, relative_uri, logging
+from sphinx.util import logging
+from sphinx.util.osutil import ensuredir, relative_uri
 from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 from sphinx.builders.html import StandaloneHTMLBuilder
@@ -45,16 +46,9 @@ _SCORECLS = 'lilypond-score'
 _AUDIOCLS = 'lilypond-audio'
 _LILYDIR = '_lilypond'
 
-class lily_base_node(object):
-    """
-    Parent class of :class:`lily_inline_node` and :class:`lily_outline_node`,
-    just created for type annotations.
-    """
-    pass
+class lily_inline_node(nodes.Inline, nodes.TextElement): pass
 
-class lily_inline_node(nodes.Inline, nodes.TextElement, lily_base_node): pass
-
-class lily_outline_node(nodes.Part, nodes.Element, lily_base_node): pass
+class lily_outline_node(nodes.Part, nodes.Element): pass
 
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env # type: ignore
@@ -183,12 +177,12 @@ class JianpuIncludeDirective(BaseJianpuDirective):
             self.env.note_dependency(fn)
             return f.read()
 
-def get_node_sig(node:lily_base_node) -> str:
+def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     """Return signture of given node. """
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> Tuple[str,str]:
     """
     Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
@@ -199,7 +193,7 @@ def get_builddir_and_reldir(builder, node:lily_base_node) -> Tuple[str,str]:
     return (builddir, reldir)
 
 
-def pick_from_builddir(builder, node:lily_base_node) -> lilypond.Output:
+def pick_from_builddir(builder, node:lily_inline_node|lily_outline_node) -> lilypond.Output|None:
     """
     Try to pick the LilyPond outputted files (:class:`lilypond.Output`)
     already cached in builder's outdir.
@@ -222,7 +216,7 @@ def pick_from_builddir(builder, node:lily_base_node) -> lilypond.Output:
         return out
 
 
-def move_to_builddir(builder, node:lily_base_node, out:lilypond.Output):
+def move_to_builddir(builder, node:lily_inline_node|lily_outline_node, out:lilypond.Output):
     """
     Move lilypond outputted files to builder's outdir, relocate the path of
     :class:`lilypond.Output` to relative path.
@@ -237,7 +231,7 @@ def move_to_builddir(builder, node:lily_base_node, out:lilypond.Output):
     return out
 
 
-def get_lilypond_output(self, node:lily_base_node) -> lilypond.Output:
+def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypond.Output:
     out = pick_from_builddir(self.builder, node)
 
     cached = not (out is None)
@@ -272,7 +266,7 @@ def get_lilypond_output(self, node:lily_base_node) -> lilypond.Output:
     return out
 
 
-def html_visit_lily_node(self, node:lily_base_node):
+def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     out = get_lilypond_output(self, node)
 
     # Create div for block level element
@@ -318,7 +312,7 @@ def html_visit_lily_node(self, node:lily_base_node):
 
     raise nodes.SkipNode
 
-def latex_visit_lily_node(self, node:lily_base_node):
+def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     """
     See sphinx/sphinx/writers/latex.py::visit_image().
     """
