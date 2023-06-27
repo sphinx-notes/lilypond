@@ -31,6 +31,6 @@ jobs:
         fetch-depth: 0
         submodules: true # for jianpu-ly
     - id: deployment
-      uses: sphinx-notes/pages@upgrade-actions-deploy-v2
+      uses: sphinx-notes/pages@v3
       with:
         checkout: false
