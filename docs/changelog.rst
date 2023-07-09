@@ -18,6 +18,11 @@ Change Log
 Version 1.x
 -----------
 
+.. version:: 1.6.1
+   :date: 2023-06-09
+
+   - Support including score from abs path (:pull:`25`)
+
 .. version:: 1.6.0
    :date: 2022-10-08
 

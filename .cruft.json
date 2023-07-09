@@ -9,7 +9,7 @@
       "full_name": "sphinxnotes-lilypond",
       "author": "Shengyu Zhang",
       "description": "Sphinx extension for embedding LilyPond scores",
-      "version": "1.6.0",
+      "version": "1.6.1",
       "github_owner": "sphinx-notes",
       "github_repo": "lilypond",
       "pypi_name": "sphinxnotes-lilypond",
