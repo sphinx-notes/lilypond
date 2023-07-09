@@ -45,9 +45,6 @@ Version 1.x
 
    .. _FFmpeg: https://ffmpeg.org/
 
-Version 1.3
------------
-
 .. version:: 1.3
    :date: 2021-11-07 
 
