@@ -57,7 +57,6 @@ Install the follwing runtime dependencies before using the extension:
 - `LilyPond`_
 - `TiMidity++`_
 - `FFmpeg`_
-- `ImageMagick`_
 
 .. note::
    
@@ -66,7 +65,6 @@ Install the follwing runtime dependencies before using the extension:
 
 .. _FFmpeg: https://ffmpeg.org/
 .. _Timidity++: http://timidity.sourceforge.net/
-.. _ImageMagick: https://imagemagick.org/index.php
 .. _LilyPond Learning Manual: https://lilypond.org/doc/Documentation/learning/index
 
 We provide :ref:`roles` for embedding score fragment and :ref:`directives` for

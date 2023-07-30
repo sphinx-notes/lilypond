@@ -13,8 +13,6 @@ Configuration
 
    .. versionadded:: 1.4
 
-:lilypond_magick_home: (Type: ``str``, Default: ``None``)
-   Path to `ImageMagick`_ library.
 :lilypond_score_format: (Type: ``str``, Default: ``'png'``)
    Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
 :lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
@@ -43,5 +41,4 @@ Configuration
 .. _LilyPond: https://lilypond.org/
 .. _FFmpeg: https://ffmpeg.org/
 .. _Timidity++: http://timidity.sourceforge.net/
-.. _ImageMagick: https://imagemagick.org/index.php
 .. _CSS height: https://developer.mozilla.org/en-US/docs/Web/CSS/height

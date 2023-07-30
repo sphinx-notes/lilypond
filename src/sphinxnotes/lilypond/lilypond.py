@@ -10,12 +10,11 @@
 """
 
 from __future__ import annotations
-from typing import Optional
 import os
 from os import path
 import subprocess
 from packaging import version
-from dataclasses import dataclass
+import itertools
 
 from ly import pitch
 from ly import document
@@ -24,20 +23,18 @@ from ly import music
 from ly import pkginfo
 from ly.pitch import transpose
 from ly.music import items
-from wand import image
 
 # Golbal bining config
 class Config(object):
-    lilypond_args:List[str]
-    timidity_args:List[str]
-    ffmpeg_args:List[str]
-    magick_home:List[str]
+    lilypond_args:list[str]
+    timidity_args:list[str]
+    ffmpeg_args:list[str]
 
     score_format:str
     png_resolution:int
 
     audio_format:str
-    audio_volume:List[str]
+    audio_volume:list[str]
 
 
 class Error(Exception):
@@ -51,14 +48,15 @@ class Output(object):
     """
     BASENAME:str = 'music'
 
-    outdir:str = None
+    outdir:str
 
-    source:str = None
-    score:Optional[str] = None
-    preview:Optional[str] = None
-    paged_scores:list[str] = []
-    midi:Optional[str] = None
-    audio:Optional[str] = None
+    source:str
+    score: str|None
+    preview_score:str|None
+    paged_scores:list[str]
+    cropped_score:str|None
+    midi:str|None
+    audio:str|None
 
     def __init__(self, outdir:str):
         self.outdir = outdir
@@ -66,41 +64,45 @@ class Output(object):
         prefix = path.join(outdir, self.BASENAME)
 
         srcfn = prefix + '.ly'
-        if path.isfile(srcfn):
-            self.source = srcfn
-
-        pvfn = prefix + '.preview.' + Config.score_format
-        if path.isfile(pvfn):
-            self.preview = pvfn
+        if not path.isfile(srcfn):
+            raise Error('Lilypond source is not a file: %s' % srcfn)
+        self.source = srcfn
 
         scorefn = prefix + '.' + Config.score_format
-        if path.isfile(scorefn):
-            self.score = scorefn
+        self.score = scorefn if path.isfile(scorefn) else None
+
+        previewfn = prefix + '.preview.' + Config.score_format
+        self.preview_score = previewfn if path.isfile(previewfn) else None
+
+        croppedfn = prefix + '.cropped.' + Config.score_format
+        self.cropped_score = croppedfn if path.isfile(croppedfn) else None
 
         # May multiple scores generated
+        self.paged_scores = []
         if Config.score_format in ['png', 'svg']:
             if Config.score_format == 'png':
                 pattern = prefix + '-page%d.png'
             elif Config.score_format == 'svg':
                 pattern = prefix + '-%d.svg'
-            i = 1
-            while path.isfile(pattern % i):
-                # NOTE: Dont use ``+=`` or ``append``
-                # See: https://github.com/satwikkansal/wtfpython#-class-attributes-and-instance-attributes
-                self.paged_scores = self.paged_scores + [pattern % i]
-                i = i + 1
+            else:
+                raise Error('Unknown score format: %s' % Config.score_format )
+            for i in itertools.count(start=1):
+                if not path.isfile(pattern % i):
+                    break
+                self.paged_scores.append(pattern % i)
 
-        if not (self.preview or self.score or self.paged_scores):
+        if not any([self.score,
+                    self.preview_score,
+                    self.cropped_score,
+                    self.paged_scores]):
             raise Error('No score generated, please check "*.%s" files under "%s"' %
                         (self.BASENAME, outdir))
 
         midifn = prefix + '.midi'
-        if path.isfile(midifn):
-            self.midi = midifn
+        self.midi = midifn if path.isfile(midifn) else None
 
         audiofn = prefix + '.' + Config.audio_format
-        if path.isfile(audiofn):
-            self.audio = audiofn
+        self.audio = audiofn if path.isfile(audiofn) else None
 
     def relocate(self, newdir:str):
         """
@@ -112,8 +114,10 @@ class Output(object):
         self.source = newdir + self.source[l:]
         if self.score:
             self.score = newdir + self.score[l:]
-        if self.preview:
-            self.preview = newdir + self.preview[l:]
+        if self.preview_score:
+            self.preview_score = newdir + self.preview_score[l:]
+        if self.cropped_score:
+            self.cropped_score = newdir + self.cropped_score[l:]
         for i, p in enumerate(self.paged_scores):
             self.paged_scores[i] = newdir + p[l:]
         if self.midi:
@@ -122,7 +126,7 @@ class Output(object):
             self.audio = newdir + self.audio[l:]
 
 class Document(object):
-    _document:document.Document = None
+    _document:document.Document
 
     def __init__(self, src:str):
         self._document = document.Document(src)
@@ -224,6 +228,9 @@ class Document(object):
         if preview:
             args += ['-dpreview=#t']
 
+        if crop:
+            args += ['-dcrop=#t']
+
         prefix = path.join(outdir, Output.BASENAME)
         srcfn = prefix + '.ly'
         with open(srcfn, 'w') as f:
@@ -248,13 +255,7 @@ class Document(object):
 
         out = Output(outdir)
 
-        if crop:
-            if out.score:
-                self._crop(out.score)
-            for p in out.paged_scores:
-                self._crop(p)
-
-        if preview and not out.preview:
+        if preview and not out.preview_score:
             raise Error('No score preview file generated, please check "%s"' % outdir)
 
         return out
@@ -312,25 +313,6 @@ class Document(object):
         if not found:
             # Insert a assignment expression directly when nothing found
             self._insert_into(container, name + ' = ' + val)
-
-
-    def _crop(self, scorefn:str):
-        if Config.magick_home:
-            old_magick_home = os.environ["MAGICK_HOME"]
-            os.environ["DEBUSSY"] = Config.magick_home
-        # Specify resolution for vector formats
-        if Config.score_format in ['pdf', 'svg', 'ps', 'eps']:
-            resolution = Config.png_resolution
-        else:
-            resolution = None
-        with image.Image(filename=scorefn, resolution=resolution) as i:
-            i.trim()
-            i.save(filename=scorefn)
-        if Config.magick_home:
-            if old_magick_home:
-                os.environ["MAGICK_HOME"] = old_magick_home
-            else:
-                del os.environ["MAGICK_HOME"]
 
 
     def _midi_to_audio(self, midifn:str):

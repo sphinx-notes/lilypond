@@ -15,7 +15,6 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
-from typing import Tuple, List
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -91,7 +90,7 @@ class BaseLilyDirective(SphinxDirective):
         raise NotImplementedError()
 
 
-    def run(self) -> List[nodes.Node]:
+    def run(self) -> list[nodes.Node]:
         try:
             lilysrc = self.read_lily_source()
         except OSError as e:
@@ -182,7 +181,7 @@ def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> tuple[str,str]:
     """
     Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
@@ -280,13 +279,16 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append('</audio>')
 
     # TODO: standalone css
-    if node.get('preview') and out.preview:
+    if node.get('preview') and out.preview_score:
         self.body.append(
             '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
             (_SCORECLS,
-             out.preview,
+             out.preview_score,
              self.encode(node['lilysrc']).strip(),
              self.builder.config.lilypond_inline_score_size))
+    elif out.cropped_score:
+        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
+                (_SCORECLS, out.cropped_score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
     elif out.score:
         self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
                 (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
@@ -320,15 +322,21 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     out = get_lilypond_output(self, node)
 
     CR = '\n'
-    pre: List[str] = []  # in reverse order
-    post: List[str] = []
+    pre: list[str] = []  # in reverse order
+    post: list[str] = []
 
 
     options = ''
 
-    if node.get('preview') and out.preview:
-        base, ext = path.splitext(out.preview)
+    if node.get('preview') and out.preview_score:
+        base, ext = path.splitext(out.preview_score)
         self.body.append(CR)
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                         (options, base, ext))
+        self.body.append(CR)
+    elif out.cropped_score:
+        base, ext = path.splitext(out.cropped_score)
+        self.body.append(CR + r'\noindent')
         self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
                          (options, base, ext))
         self.body.append(CR)
@@ -364,7 +372,6 @@ def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
     lilypond.Config.ffmpeg_args = config.lilypond_ffmpeg_args
-    lilypond.Config.magick_home  = config.lilypond_magick_home
 
     lilypond.Config.score_format  = config.lilypond_score_format
     lilypond.Config.png_resolution  = config.lilypond_png_resolution
@@ -389,7 +396,6 @@ def setup(app):
     app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
     app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
     app.add_config_value('lilypond_ffmpeg_args', ['ffmpeg'], 'env')
-    app.add_config_value('lilypond_magick_home', None, 'env')
     app.add_config_value('lilypond_builddir', None, 'env')
 
     app.add_config_value('lilypond_score_format', 'png', 'env')

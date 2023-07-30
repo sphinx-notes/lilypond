@@ -25,7 +25,7 @@ jobs:
         sudo locale-gen en_US.UTF-8
         sudo update-locale
         sudo apt-get update;
-        sudo apt-get install lilypond timidity imagemagick fonts-noto-cjk
+        sudo apt-get install lilypond timidity fonts-noto-cjk
     - uses: actions/checkout@master
       with:
         fetch-depth: 0
