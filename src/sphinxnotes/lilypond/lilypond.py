@@ -10,11 +10,11 @@
 """
 
 from __future__ import annotations
-from typing import Optional
 import os
 from os import path
 import subprocess
 from packaging import version
+import itertools
 
 from ly import pitch
 from ly import document
@@ -26,15 +26,15 @@ from ly.music import items
 
 # Golbal bining config
 class Config(object):
-    lilypond_args:List[str]
-    timidity_args:List[str]
-    ffmpeg_args:List[str]
+    lilypond_args:list[str]
+    timidity_args:list[str]
+    ffmpeg_args:list[str]
 
     score_format:str
     png_resolution:int
 
     audio_format:str
-    audio_volume:List[str]
+    audio_volume:list[str]
 
 
 class Error(Exception):
@@ -48,15 +48,15 @@ class Output(object):
     """
     BASENAME:str = 'music'
 
-    outdir:str = None
+    outdir:str
 
-    source:str = None
-    score:Optional[str] = None
-    preview_score:Optional[str] = None
-    paged_scores:list[str] = []
-    cropped_score:Optional[str] = None
-    midi:Optional[str] = None
-    audio:Optional[str] = None
+    source:str
+    score: str|None
+    preview_score:str|None
+    paged_scores:list[str]
+    cropped_score:str|None
+    midi:str|None
+    audio:str|None
 
     def __init__(self, outdir:str):
         self.outdir = outdir
@@ -64,45 +64,45 @@ class Output(object):
         prefix = path.join(outdir, self.BASENAME)
 
         srcfn = prefix + '.ly'
-        if path.isfile(srcfn):
-            self.source = srcfn
-
-        preview_scorefn = prefix + '.preview.' + Config.score_format
-        if path.isfile(preview_scorefn):
-            self.preview_score = preview_scorefn
+        if not path.isfile(srcfn):
+            raise Error('Lilypond source is not a file: %s' % srcfn)
+        self.source = srcfn
 
         scorefn = prefix + '.' + Config.score_format
-        if path.isfile(scorefn):
-            self.score = scorefn
+        self.score = scorefn if path.isfile(scorefn) else None
 
-        cropped_scorefn = prefix + '.cropped.' + Config.score_format
-        if path.isfile(cropped_scorefn):
-            self.score = cropped_scorefn
+        previewfn = prefix + '.preview.' + Config.score_format
+        self.preview_score = previewfn if path.isfile(previewfn) else None
+
+        croppedfn = prefix + '.cropped.' + Config.score_format
+        self.cropped_score = croppedfn if path.isfile(croppedfn) else None
 
         # May multiple scores generated
+        self.paged_scores = []
         if Config.score_format in ['png', 'svg']:
             if Config.score_format == 'png':
                 pattern = prefix + '-page%d.png'
             elif Config.score_format == 'svg':
                 pattern = prefix + '-%d.svg'
-            i = 1
-            while path.isfile(pattern % i):
-                # NOTE: Dont use ``+=`` or ``append``
-                # See: https://github.com/satwikkansal/wtfpython#-class-attributes-and-instance-attributes
-                self.paged_scores = self.paged_scores + [pattern % i]
-                i = i + 1
+            else:
+                raise Error('Unknown score format: %s' % Config.score_format )
+            for i in itertools.count(start=1):
+                if not path.isfile(pattern % i):
+                    break
+                self.paged_scores.append(pattern % i)
 
-        if not (self.preview_score or self.score or self.paged_scores):
+        if not any([self.score,
+                    self.preview_score,
+                    self.cropped_score,
+                    self.paged_scores]):
             raise Error('No score generated, please check "*.%s" files under "%s"' %
                         (self.BASENAME, outdir))
 
         midifn = prefix + '.midi'
-        if path.isfile(midifn):
-            self.midi = midifn
+        self.midi = midifn if path.isfile(midifn) else None
 
         audiofn = prefix + '.' + Config.audio_format
-        if path.isfile(audiofn):
-            self.audio = audiofn
+        self.audio = audiofn if path.isfile(audiofn) else None
 
     def relocate(self, newdir:str):
         """
@@ -116,6 +116,8 @@ class Output(object):
             self.score = newdir + self.score[l:]
         if self.preview_score:
             self.preview_score = newdir + self.preview_score[l:]
+        if self.cropped_score:
+            self.cropped_score = newdir + self.cropped_score[l:]
         for i, p in enumerate(self.paged_scores):
             self.paged_scores[i] = newdir + p[l:]
         if self.midi:
@@ -124,7 +126,7 @@ class Output(object):
             self.audio = newdir + self.audio[l:]
 
 class Document(object):
-    _document:document.Document = None
+    _document:document.Document
 
     def __init__(self, src:str):
         self._document = document.Document(src)

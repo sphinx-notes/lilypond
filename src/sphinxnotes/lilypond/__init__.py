@@ -15,7 +15,6 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
-from typing import Tuple, List
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -91,7 +90,7 @@ class BaseLilyDirective(SphinxDirective):
         raise NotImplementedError()
 
 
-    def run(self) -> List[nodes.Node]:
+    def run(self) -> list[nodes.Node]:
         try:
             lilysrc = self.read_lily_source()
         except OSError as e:
@@ -182,7 +181,7 @@ def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> tuple[str,str]:
     """
     Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
@@ -323,8 +322,8 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     out = get_lilypond_output(self, node)
 
     CR = '\n'
-    pre: List[str] = []  # in reverse order
-    post: List[str] = []
+    pre: list[str] = []  # in reverse order
+    post: list[str] = []
 
 
     options = ''
