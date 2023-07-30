@@ -15,7 +15,6 @@ import os
 from os import path
 import subprocess
 from packaging import version
-from dataclasses import dataclass
 
 from ly import pitch
 from ly import document
@@ -24,7 +23,6 @@ from ly import music
 from ly import pkginfo
 from ly.pitch import transpose
 from ly.music import items
-from wand import image
 
 # Golbal bining config
 class Config(object):
@@ -55,8 +53,9 @@ class Output(object):
 
     source:str = None
     score:Optional[str] = None
-    preview:Optional[str] = None
+    preview_score:Optional[str] = None
     paged_scores:list[str] = []
+    cropped_score:Optional[str] = None
     midi:Optional[str] = None
     audio:Optional[str] = None
 
@@ -69,13 +68,17 @@ class Output(object):
         if path.isfile(srcfn):
             self.source = srcfn
 
-        pvfn = prefix + '.preview.' + Config.score_format
-        if path.isfile(pvfn):
-            self.preview = pvfn
+        preview_scorefn = prefix + '.preview.' + Config.score_format
+        if path.isfile(preview_scorefn):
+            self.preview_score = preview_scorefn
 
         scorefn = prefix + '.' + Config.score_format
         if path.isfile(scorefn):
             self.score = scorefn
+
+        cropped_scorefn = prefix + '.cropped.' + Config.score_format
+        if path.isfile(cropped_scorefn):
+            self.score = cropped_scorefn
 
         # May multiple scores generated
         if Config.score_format in ['png', 'svg']:
@@ -90,7 +93,7 @@ class Output(object):
                 self.paged_scores = self.paged_scores + [pattern % i]
                 i = i + 1
 
-        if not (self.preview or self.score or self.paged_scores):
+        if not (self.preview_score or self.score or self.paged_scores):
             raise Error('No score generated, please check "*.%s" files under "%s"' %
                         (self.BASENAME, outdir))
 
@@ -112,8 +115,8 @@ class Output(object):
         self.source = newdir + self.source[l:]
         if self.score:
             self.score = newdir + self.score[l:]
-        if self.preview:
-            self.preview = newdir + self.preview[l:]
+        if self.preview_score:
+            self.preview_score = newdir + self.preview_score[l:]
         for i, p in enumerate(self.paged_scores):
             self.paged_scores[i] = newdir + p[l:]
         if self.midi:
@@ -224,6 +227,9 @@ class Document(object):
         if preview:
             args += ['-dpreview=#t']
 
+        if crop:
+            args += ['-dcrop=#t']
+
         prefix = path.join(outdir, Output.BASENAME)
         srcfn = prefix + '.ly'
         with open(srcfn, 'w') as f:
@@ -248,13 +254,7 @@ class Document(object):
 
         out = Output(outdir)
 
-        if crop:
-            if out.score:
-                self._crop(out.score)
-            for p in out.paged_scores:
-                self._crop(p)
-
-        if preview and not out.preview:
+        if preview and not out.preview_score:
             raise Error('No score preview file generated, please check "%s"' % outdir)
 
         return out
@@ -312,25 +312,6 @@ class Document(object):
         if not found:
             # Insert a assignment expression directly when nothing found
             self._insert_into(container, name + ' = ' + val)
-
-
-    def _crop(self, scorefn:str):
-        if Config.magick_home:
-            old_magick_home = os.environ["MAGICK_HOME"]
-            os.environ["DEBUSSY"] = Config.magick_home
-        # Specify resolution for vector formats
-        if Config.score_format in ['pdf', 'svg', 'ps', 'eps']:
-            resolution = Config.png_resolution
-        else:
-            resolution = None
-        with image.Image(filename=scorefn, resolution=resolution) as i:
-            i.trim()
-            i.save(filename=scorefn)
-        if Config.magick_home:
-            if old_magick_home:
-                os.environ["MAGICK_HOME"] = old_magick_home
-            else:
-                del os.environ["MAGICK_HOME"]
 
 
     def _midi_to_audio(self, midifn:str):

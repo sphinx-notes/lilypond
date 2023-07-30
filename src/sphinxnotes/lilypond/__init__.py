@@ -280,13 +280,16 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append('</audio>')
 
     # TODO: standalone css
-    if node.get('preview') and out.preview:
+    if node.get('preview') and out.preview_score:
         self.body.append(
             '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
             (_SCORECLS,
-             out.preview,
+             out.preview_score,
              self.encode(node['lilysrc']).strip(),
              self.builder.config.lilypond_inline_score_size))
+    elif out.cropped_score:
+        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
+                (_SCORECLS, out.cropped_score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
     elif out.score:
         self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
                 (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
@@ -326,8 +329,8 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
 
     options = ''
 
-    if node.get('preview') and out.preview:
-        base, ext = path.splitext(out.preview)
+    if node.get('preview') and out.preview_score:
+        base, ext = path.splitext(out.preview_score)
         self.body.append(CR)
         self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
                          (options, base, ext))
