@@ -334,6 +334,12 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
                          (options, base, ext))
         self.body.append(CR)
+    elif out.cropped_score:
+        base, ext = path.splitext(out.cropped_score)
+        self.body.append(CR + r'\noindent')
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                         (options, base, ext))
+        self.body.append(CR)
     elif out.score:
         base, ext = path.splitext(out.score)
         self.body.append(CR + r'\noindent')
