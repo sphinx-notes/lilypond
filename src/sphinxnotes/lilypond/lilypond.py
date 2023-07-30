@@ -29,7 +29,6 @@ class Config(object):
     lilypond_args:List[str]
     timidity_args:List[str]
     ffmpeg_args:List[str]
-    magick_home:List[str]
 
     score_format:str
     png_resolution:int

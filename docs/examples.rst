@@ -141,6 +141,7 @@ Jianpu (Numbered Musical Notation)
 .. code-block:: rst
 
    .. jianpu::
+      :noedge:
 
       %% tempo: 4=60
       title=C Major Scale
@@ -150,6 +151,7 @@ Jianpu (Numbered Musical Notation)
       1 2 3 4 5 6 7 1'
 
 .. jianpu::
+   :noedge:
 
    %% tempo: 4=60
    title=C Major Scale

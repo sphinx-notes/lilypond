@@ -30,7 +30,6 @@ requires-python = ">=3.8"
 dependencies = [
     "Sphinx>=4",
     "python-ly==0.9",
-    "Wand==0.6",
 ]
 
 dynamic = ["version"] # required by setuptools_scm, see section [build-system]
