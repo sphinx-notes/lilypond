@@ -93,7 +93,7 @@ class BaseLilyDirective(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         try:
             lilysrc = self.read_lily_source()
-        except OSError as e:
+        except Exception as e:
             msg = 'failed to read LilyPond source: %s' % e
             logger.warning(msg, location=self.state.parent)
             sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
