@@ -119,7 +119,7 @@ class BaseLilyDirective(SphinxDirective):
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
         node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options or 'noedge' in self.options
+        node['nofooter'] = 'nofooter' in self.options
         node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
         node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
