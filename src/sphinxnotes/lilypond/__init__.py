@@ -66,6 +66,15 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['preview'] = True
     return [node], []
 
+def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    try:
+        text = jianpu.process_input(unescape(text, restore_backslashes=True))
+    except Exception as e:
+        msg = 'failed to process Jianpu source: %s' % e
+        logger.warning(msg, location=inliner.parent)
+        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+        return [], [sm]
+    return lily_role(role, rawtext, text, lineno, inliner, options, content)
 
 def top_or_bottom(argument:str) -> str:
     return directives.choice(argument, ('top', 'bottom'))
@@ -388,8 +397,10 @@ def setup(app):
                  html=(html_visit_lily_node, None),
                  latex=(latex_visit_lily_node, None))
     app.add_role('lily', lily_role)
+    app.add_role('jianpu', jianpu_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
+
     app.add_directive('jianpu', JianpuDirective)
     app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
