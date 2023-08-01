@@ -2,6 +2,8 @@
 Usage
 =====
 
+.. TODO: notation
+
 .. _roles:
 
 Roles
@@ -31,6 +33,31 @@ Will be rendered as:
     Role ``lily`` produces a preview image of the music expression (using
     ``-dpreview=#t``). You can still write a long music expression as interpreted text,
     but only the beginning can be shown.
+
+.. _jianpu-role:
+
+The ``jianpu`` role
+-------------------
+
+You can use ``jianpu`` role to insert short Jianpu_ (numbered musical notation)
+as inline element.
+
+.. hint::
+
+   We use `Silas S. Brown’s Jianpu in Lilypond`_ script to convert Jianpu to
+   Lilypond source, so please refer to the page for jianpu Syntax.
+
+.. _Jianpu: https://en.wikipedia.org/wiki/Numbered_musical_notation
+.. _Silas S. Brown’s Jianpu in Lilypond: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
+
+For example:
+
+.. literalinclude:: /_scores/jianpu-role.txt
+    :language: rst
+
+Will be rendered as:
+
+    .. include:: /_scores/jianpu-role.txt
 
 .. _directives:
 
@@ -100,3 +127,19 @@ Options of the directive are same to :ref:`lily-directive`.
 
     You and download the example LilyPond documentation from here:
     :download:`/_scores/witch-spring.ly`.
+
+.. _jianpu-directive:
+
+The ``jianpu`` directive
+------------------------
+
+The ``jianpu`` directive is used to insert a Jianpu_ (numbered musical notation)
+score as block level element.
+
+.. hint::
+
+   We use `Silas S. Brown’s Jianpu in Lilypond`_ script to convert Jianpu to
+   Lilypond source, so please refer to the page for jianpu Syntax.
+   Simply put
+
+Options of the directive are same to :ref:`lily-directive`.
