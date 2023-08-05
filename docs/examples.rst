@@ -138,6 +138,8 @@ Jianpu (Numbered Musical Notation)
 
 .. versionadded:: 1.5
 
+.. seealso:: :ref:`jianpu-directive`.
+
 .. code-block:: rst
 
    .. jianpu::

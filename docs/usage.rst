@@ -100,3 +100,54 @@ Options of the directive are same to :ref:`lily-directive`.
 
     You and download the example LilyPond documentation from here:
     :download:`/_scores/witch-spring.ly`.
+
+.. _jianpu-directive:
+
+The ``jianpu`` directive
+------------------------
+
+.. versionadded:: 1.6
+
+The ``jianpu`` directive is used to insert a Jianpu_
+(Numbered Musical Notation, 简谱) score as block level element.
+
+.. hint::
+
+   The syntax of Jianpu is defined by `Silas S. Brown`_ and we use his
+   `jianpu-ly`_ script to convert Jianpu source code to Lilypond source
+   code, and finally engraving a music score.
+
+.. _Jianpu: https://en.wikipedia.org/wiki/Numbered_musical_notation
+.. _Silas S. Brown:  https://ssb22.user.srcf.net/
+.. _jianpu-ly: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
+
+.. literalinclude:: /_scores/jianpu-directive.txt
+    :language: rst
+
+Will be rendered as:
+
+   .. include:: /_scores/jianpu-directive.txt
+
+Options of the directive are same to :ref:`lily-directive`.
+
+The ``jianpuinclude`` directive
+-------------------------------
+
+.. versionadded:: 1.6
+
+The ``jianpuinclude`` directive is similar to :ref:`jianpu-directive`,
+except the source of Jianpu are read from file but not contents of directive.
+
+.. literalinclude:: /_scores/jianpuinclude-directive.txt
+   :language: rst
+
+Will be rendered as:
+
+   .. include:: /_scores/jianpuinclude-directive.txt
+
+.. seealso::
+
+    You and download the example LilyPond documentation from here:
+    :download:`/_scores/songbie.jianpu`.
+
+Options of the directive are same to :ref:`lily-directive`.
