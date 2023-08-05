@@ -26,6 +26,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.builders.latex import LaTeXBuilder
+from sphinx.environment import BuildEnvironment
 
 from . import lilypond
 from . import jianpu
@@ -66,6 +67,15 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['preview'] = True
     return [node], []
 
+def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    try:
+        text = jianpu.to_lilypond(unescape(text, restore_backslashes=True))
+    except jianpu.Error as e:
+        msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
+        logger.warning(msg, location=inliner.parent)
+        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+        return [], [sm]
+    return lily_role(role, rawtext, text, lineno, inliner, options, content)
 
 def top_or_bottom(argument:str) -> str:
     return directives.choice(argument, ('top', 'bottom'))
@@ -98,6 +108,11 @@ class BaseLilyDirective(SphinxDirective):
             logger.warning(msg, location=self.state.parent)
             sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
             return [sm]
+        except jianpu.Error as e:
+            msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
+            logger.warning(msg, location=self.state.parent)
+            sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+            return [sm]
 
         if not isinstance(self.env.app.builder, (StandaloneHTMLBuilder, LaTeXBuilder)):
             # Builder is not supported, fallback to literal_block.
@@ -110,7 +125,7 @@ class BaseLilyDirective(SphinxDirective):
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
         node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options or 'noedge' in self.options
+        node['nofooter'] = 'nofooter' in self.options
         node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
         node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
@@ -133,23 +148,15 @@ class LilyIncludeDirective(BaseLilyDirective):
     final_argument_whitespace = True
 
     def read_lily_source(self) -> str:
-        fn = self.arguments[0]
-        if path.isabs(fn):
-            # Doc abs to fs abs.
-            fn = self.env.srcdir + fn
-        else:
-            # Relpath to abspath.
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
 
 
 class BaseJianpuDirective(BaseLilyDirective):
 
     def read_lily_source(self) -> str:
-        return jianpu.process_input(self.read_jianpu_source())
+        return jianpu.to_lilypond(self.read_jianpu_source())
 
+    @abstractmethod
     def read_jianpu_source(self) -> str:
         raise NotImplementedError()
 
@@ -168,13 +175,8 @@ class JianpuIncludeDirective(BaseJianpuDirective):
     final_argument_whitespace = True
 
     def read_jianpu_source(self) -> str:
-        fn = self.arguments[0]
-        if not path.isabs(fn):
-            # Rel to abs
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
+
 
 def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     """Return signture of given node. """
@@ -368,6 +370,23 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     raise nodes.SkipNode
 
 
+def read_source_file(env:BuildEnvironment, fn:str) -> str:
+    """
+    Read the score source from a local file. Can be an absolute path
+    (relative to the root of srcdir) or relative path (relative to the current document).
+    """
+    if path.isabs(fn):
+        # Source dir absolute path to file system absolute path.
+        fn = env.srcdir + fn
+    else:
+        # Document relative path to file system absolute path.
+        fn = path.join(path.dirname(env.doc2path(env.docname)), fn)
+    with open(fn, 'r') as f:
+        # Febuild the current document if the file changes.
+        env.note_dependency(fn)
+        return f.read()
+
+
 def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
@@ -390,6 +409,8 @@ def setup(app):
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
+
+    # app.add_role('jianpu', jianpu_role)
     app.add_directive('jianpu', JianpuDirective)
     app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
