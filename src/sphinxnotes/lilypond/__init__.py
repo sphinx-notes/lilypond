@@ -26,6 +26,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.builders.latex import LaTeXBuilder
+from sphinx.environment import BuildEnvironment
 
 from . import lilypond
 from . import jianpu
@@ -147,16 +148,7 @@ class LilyIncludeDirective(BaseLilyDirective):
     final_argument_whitespace = True
 
     def read_lily_source(self) -> str:
-        fn = self.arguments[0]
-        if path.isabs(fn):
-            # Doc abs to fs abs.
-            fn = self.env.srcdir + fn
-        else:
-            # Relpath to abspath.
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
 
 
 class BaseJianpuDirective(BaseLilyDirective):
@@ -164,6 +156,7 @@ class BaseJianpuDirective(BaseLilyDirective):
     def read_lily_source(self) -> str:
         return jianpu.to_lilypond(self.read_jianpu_source())
 
+    @abstractmethod
     def read_jianpu_source(self) -> str:
         raise NotImplementedError()
 
@@ -182,13 +175,8 @@ class JianpuIncludeDirective(BaseJianpuDirective):
     final_argument_whitespace = True
 
     def read_jianpu_source(self) -> str:
-        fn = self.arguments[0]
-        if not path.isabs(fn):
-            # Rel to abs
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
+
 
 def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     """Return signture of given node. """
@@ -380,6 +368,23 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         logger.warning(msg, location=node)
 
     raise nodes.SkipNode
+
+
+def read_source_file(env:BuildEnvironment, fn:str) -> str:
+    """
+    Read the score source from a local file. Can be an absolute path
+    (relative to the root of srcdir) or relative path (relative to the current document).
+    """
+    if path.isabs(fn):
+        # Source dir absolute path to file system absolute path.
+        fn = env.srcdir + fn
+    else:
+        # Document relative path to file system absolute path.
+        fn = path.join(path.dirname(env.doc2path(env.docname)), fn)
+    with open(fn, 'r') as f:
+        # Febuild the current document if the file changes.
+        env.note_dependency(fn)
+        return f.read()
 
 
 def _config_inited(app, config:Config) -> None:
