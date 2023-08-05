@@ -68,9 +68,9 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 
 def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     try:
-        text = jianpu.process_input(unescape(text, restore_backslashes=True))
-    except Exception as e:
-        msg = 'failed to process Jianpu source: %s' % e
+        text = jianpu.to_lilypond(unescape(text, restore_backslashes=True))
+    except jianpu.Error as e:
+        msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
         logger.warning(msg, location=inliner.parent)
         sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
         return [], [sm]
@@ -102,8 +102,13 @@ class BaseLilyDirective(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         try:
             lilysrc = self.read_lily_source()
-        except Exception as e:
+        except OSError as e:
             msg = 'failed to read LilyPond source: %s' % e
+            logger.warning(msg, location=self.state.parent)
+            sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+            return [sm]
+        except jianpu.Error as e:
+            msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
             logger.warning(msg, location=self.state.parent)
             sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
             return [sm]
@@ -157,7 +162,7 @@ class LilyIncludeDirective(BaseLilyDirective):
 class BaseJianpuDirective(BaseLilyDirective):
 
     def read_lily_source(self) -> str:
-        return jianpu.process_input(self.read_jianpu_source())
+        return jianpu.to_lilypond(self.read_jianpu_source())
 
     def read_jianpu_source(self) -> str:
         raise NotImplementedError()
