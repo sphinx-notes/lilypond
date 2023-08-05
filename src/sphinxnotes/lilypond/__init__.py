@@ -402,10 +402,10 @@ def setup(app):
                  html=(html_visit_lily_node, None),
                  latex=(latex_visit_lily_node, None))
     app.add_role('lily', lily_role)
-    app.add_role('jianpu', jianpu_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
 
+    # app.add_role('jianpu', jianpu_role)
     app.add_directive('jianpu', JianpuDirective)
     app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
