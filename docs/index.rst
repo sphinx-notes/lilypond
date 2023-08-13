@@ -12,9 +12,9 @@ The extension is originated from `sphinx-contrib/lilypond`_ , allows `LilyPond`_
 music notes :lily:`\relative { c' }` to be included in Sphinx-generated documents.
 Compared to its predecessor, the extension has many new features such as:
 
+- Play score audio (:doc:`examples`)
+- LaTeX builder support (Since :version:`1.5`)
 - Scale :ref:`example-transposing`
-- :ref:`example-audio-preview`
-- LaTeX support (Since :version:`1.5`)
 - :ref:`Jianpu <jianpu-directive>` (Numbered Musical Notation, 简谱) support (Since :version:`1.6.0`)
 - And so on…
 

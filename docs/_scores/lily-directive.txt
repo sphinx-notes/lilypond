@@ -1,7 +1,4 @@
 .. lily::
-   :noedge:
-   :nofooter:
-   :audio:
 
    \version "2.20.0"
    \header {
@@ -18,4 +15,7 @@
            d4 r r r
      }
      >>
+
+     \layout {}
+     \midi {}
    }

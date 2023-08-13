@@ -4,18 +4,25 @@
   composer = "Christian Petzold"
 }
 
-\relative c'' {
-  \time 3/4
-  \tempo 4 = 120
-  \key g \major
+\score {
+    <<
+    \relative c'' {
+      \time 3/4
+      \tempo 4 = 120
+      \key g \major
 
-  d4 g,8 a b c
-  d4 g, g
-  e'4 c8 d e fis
-  g4 g, g
+      d4 g,8 a b c
+      d4 g, g
+      e'4 c8 d e fis
+      g4 g, g
 
-  c4 d8 c b a
-  b4 d8 c b a
-  fis4 g8 a b g
-  a2.
+      c4 d8 c b a
+      b4 d8 c b a
+      fis4 g8 a b g
+      a2.
+    }
+    >>
+
+    \midi {}
+    \layout {}
 }

@@ -26,12 +26,6 @@ Will be rendered as:
 
     .. include:: /_scores/lily-role.txt
 
-.. note::
-
-    Role ``lily`` produces a preview image of the music expression (using
-    ``-dpreview=#t``). You can still write a long music expression as interpreted text,
-    but only the beginning can be shown.
-
 .. _directives:
 
 Directives
@@ -54,32 +48,41 @@ Will be rendered as:
 
 The directive supports the following options:
 
-:noheader: (flag)
-    Whether to remove the header of score
-:nofooter: (flag)
-    Whether to remove the footer of score
-:noedge: (flag)
-    Whether to remove the blank edges of score
-:audio: (flag)
-    Whether to show a audio player for listen LilyPond-generated MIDI file
-:loop: (flag)
-    Whethre audio player will automatically seek back to the start upon reaching the end of the audio.
-    This implies ``audio``.
+:nocrop: (flag)
+   Set this option to have scores output to images with appropriate margins and preset size (A4), which is easy for printing. See :ref:`example-nocrop`.
 
-    .. versionadded:: 1.2
+   .. versionchanged:: 2.0.0
+
+:noaudio: (flag)
+   If the score contains `MIDI block`_, Lilypond generates MIDI output files.
+   which are converted to audio files by this extension.
+   Use this option to disable audio, see :ref:`example-noaudio`
+
+   .. versionchanged:: 2.0.0
+
+   .. _MIDI block: https://lilypond.org/doc/v2.23/Documentation/notation/the-midi-block
+
+:loop: (flag)
+   Whethre audio player will automatically seek back to the start upon reaching
+   the end of the audio.
+   This conflicts with ``noaudio``.
+
+   .. versionadded:: 1.2
 
 :transpose: (text)
-    Transposing the pitches of score from one to another.
-    Pitches are written in `LilyPond Notation`_ and separated in whitespace.
-    For example: ``:transpose: c' d'``
+   Transposing the pitches of score from one to another.
+   Pitches are written in `LilyPond Notation`_ and separated in whitespace.
+   For example: ``:transpose: c' d'``
 
-    .. _LilyPond Notation: http://lilypond.org/doc/Documentation/notation/writing-pitches
+   .. versionadded:: 2.0.0
+
+   .. _LilyPond Notation: http://lilypond.org/doc/Documentation/notation/writing-pitches
 
 :controls: (text, one of the ``top`` or ``bottom``)
-    Specify the position of the control bar relative to the score.
-    This implies ``audio``.
+   Specify the position of the control bar relative to the score.
+   This implies ``audio``.
 
-    .. versionadded:: 1.3
+   .. versionadded:: 1.3
 
 The ``lilyinclude`` directive
 -----------------------------
