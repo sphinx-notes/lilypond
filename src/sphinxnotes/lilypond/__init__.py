@@ -63,8 +63,8 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['docname'] = env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
-    node['noedge'] = True
     node['preview'] = True
+    node['crop'] = True
     return [node], []
 
 def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
@@ -84,11 +84,9 @@ def top_or_bottom(argument:str) -> str:
 class BaseLilyDirective(SphinxDirective):
 
     option_spec = {
-        'noheader': directives.flag,
-        'nofooter': directives.flag,
-        'noedge': directives.flag,
         'preview': directives.flag,
-        'audio': directives.flag,
+        'nocrop': directives.flag,
+        'noaudio': directives.flag,
         'loop': directives.flag,
         'transpose': directives.unchanged,
         'controls': top_or_bottom,
@@ -124,11 +122,9 @@ class BaseLilyDirective(SphinxDirective):
         node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
-        node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options
-        node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
-        node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
+        node['audio'] = 'noaudio' not in self.options
+        node['crop'] = 'nocrop' not in self.options
         node['loop'] = 'loop' in self.options
         node['transpose'] = self.options.get('transpose')
         node['controls'] = self.options.get('controls', 'bottom')
@@ -247,20 +243,14 @@ def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypo
             if node.get('transpose'):
                 from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
                 doc.transpose(from_pitch, to_pitch)
-            if node.get('audio'):
-                doc.enable_audio_output()
-            doc.strip_header_footer(
-                    strip_header=node.get('noheader'),
-                    strip_footer=node.get('nofooter'))
-            out = doc.output(builddir, node.get('preview'), node.get('noedge'))
+            out = doc.output(builddir, node.get('preview'), node.get('crop'))
         except lilypond.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
                                       backrefs=[], source=node['lilysrc'])
             sm.walkabout(self)
+            shutil.rmtree(builddir) # cleanup lilypond builddir
             raise nodes.SkipNode
-            # Cleanup lilypond builddir
-            shutil.rmtree(builddir)
         else:
             # Get relative path
             move_to_builddir(self.builder, node, out)

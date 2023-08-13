@@ -19,10 +19,8 @@ import itertools
 from ly import pitch
 from ly import document
 from ly import docinfo
-from ly import music
 from ly import pkginfo
 from ly.pitch import transpose
-from ly.music import items
 
 # Golbal bining config
 class Config(object):
@@ -125,6 +123,7 @@ class Output(object):
         if self.audio:
             self.audio = newdir + self.audio[l:]
 
+
 class Document(object):
     _document:document.Document
 
@@ -136,17 +135,17 @@ class Document(object):
 
     def transpose(self, from_pitch:str, to_pitch:str):
         fp = pitch.Pitch(
-                *pitch.pitchReader("nederlands")(from_pitch[0]),
-                octave = pitch.octaveToNum(from_pitch[1:]))
+            *pitch.pitchReader("nederlands")(from_pitch[0]), # type: ignore
+            octave = pitch.octaveToNum(from_pitch[1:]))
         tp = pitch.Pitch(
-                *pitch.pitchReader("nederlands")(to_pitch[0]),
-                octave = pitch.octaveToNum(to_pitch[1:]))
+            *pitch.pitchReader("nederlands")(to_pitch[0]), # type: ignore
+            octave = pitch.octaveToNum(to_pitch[1:]))
         transposer = transpose.Transposer(fp, tp)
         cursor = document.Cursor(self._document)
         try:
             if version.parse(pkginfo.version) > version.parse("0.9"):
-                transpose.transpose(cursor, transposer,
-                        relative_first_pitch_absolute = True) # only consider lilypond >= 2.18 for now
+                # Only consider lilypond >= 2.18 for now.
+                transpose.transpose(cursor, transposer, relative_first_pitch_absolute=True) # type: ignore
             else:
                 transpose.transpose(cursor, transposer)
         except pitch.PitchNameNotAvailable:
@@ -154,59 +153,6 @@ class Document(object):
             raise Error(
                     'Pitch names not available in "%s", skipping file: %s' %
                     (language, cursor.document.filename))
-
-
-    def strip_header_footer(self, strip_header=False, strip_footer=False):
-        """Strip header and footer from outputed scores. """
-
-        # Return when nothing todo
-        if not strip_header and not strip_footer:
-            return
-
-        # Find \paper block, if not found, we create one
-        if not music.document(self._document).find_child(items.Paper):
-            self._document[0:0] = """\paper {\n}\n"""
-
-        if strip_header:
-            doc = music.document(self._document)
-            for paper in doc.find_children(items.Paper):
-                self._set_value(paper, 'oddHeaderMarkup', '##f')
-                self._set_value(paper, 'evenHeaderMarkup', '##f')
-                self._set_value(paper, 'bookTitleMarkup', '##f')
-                self._set_value(paper, 'scoreTitleMarkup', '##f')
-
-        if strip_footer:
-            doc = music.document(self._document)
-            for paper in doc.find_children(items.Paper):
-                self._set_value(paper, 'oddFooterMarkup', '##f')
-                self._set_value(paper, 'evenFooterMarkup', '##f')
-
-            doc = music.document(self._document)
-            no_header_found = True
-            for header in doc.find_children(items.Header):
-                self._set_value(header, 'tagline', '##f')
-                no_header_found = False
-            if no_header_found:
-                self._document[0:0] = r'\header { tagline = ##f }'
-
-
-    def enable_audio_output(self):
-        """
-        Enable audio output for this document.
-        In other words, insert ``\midi{}`` to every ``\score{}`` block.
-        If no ``\score{}`` found, find music list under root node, pack it
-        in ``\socre{}``, then call this function again.
-        """
-        no_score_found = True
-        doc = music.document(self._document)
-        for score in doc.find_children(items.Score): # \score
-            no_score_found = False
-            if not score.find_child(items.Midi):
-                self._insert_into(score, '\midi {}')
-                self._insert_into(score, '\layout {}') # FIXME
-        if no_score_found:
-            if self._pack_music_list():
-                self.enable_audio_output()
 
 
     def output(self,
@@ -261,60 +207,6 @@ class Document(object):
         return out
 
 
-    def _replace_item(self, item:items.Item, new_item:str):
-        """
-        Replace the text at position of given item to new_item.
-        Note that the position of other music items on same tree may be influenced
-        after replacement.
-        """
-        with self._document as d:
-            d[item.position:item.end_position()] = new_item
-
-
-    def _insert_into(self, container:items.Container, item:str):
-        """
-        Insert the text into position of given container.
-        Note that the position of other music items on same tree may be influenced
-        after insertion.
-        """
-        with self._document as d:
-            d[container.end_position()-1:container.end_position()-1] = '\n' + item + '\n'
-
-
-    def _insert_before(self, container:items.Container, item:str):
-        """
-        Insert the text before position of given container.
-        Note that the position of other music items on same tree may be influenced
-        after insertion.
-        """
-        with self._document as d:
-            d[container.position:container.position] = '\n' + item + '\n'
-
-
-    def _insert_after(self, container:items.Container, item:str):
-        """
-        Insert the text after position of given container.
-        Note that the position of other music items on same tree may be influenced
-        after insertion.
-        """
-        with self._document as d:
-            d[container.end_position():container.end_position()] = '\n' + item + '\n'
-
-
-    def _set_value(self, container:items.Container, name:str, val:str):
-        found = False
-        children = list(container.find_children(items.Assignment))
-        if children:
-            # Reverse list to prevent replacement influences the position of token
-            for a in reversed(children):
-                if a.name() == name:
-                    self._replace_item(a.value(), val)
-                    found = True
-        if not found:
-            # Insert a assignment expression directly when nothing found
-            self._insert_into(container, name + ' = ' + val)
-
-
     def _midi_to_audio(self, midifn:str):
         try:
             timidity_args = Config.timidity_args.copy()
@@ -360,28 +252,3 @@ class Document(object):
                 raise Error(
                         'FFmpeg exited with error:\n[stderr]\n%s\n[stdout]\n%s' %
                         (p.stderr, p.stdout))
-
-
-    def _pack_music_list(self) -> bool:
-        """
-        Find music list under root node, pack it in ``\socre{}``.
-        Return turn when at least one music list is packed.
-        """
-        packed = False
-        doc = music.document(self._document)
-        for mit in doc.find_children(items.MusicList):
-            if mit.parent() == doc:
-                self._insert_after(mit, r'}')
-                self._insert_before(mit, r'\score {')
-                packed = True
-            elif isinstance(mit.parent(), (items.Relative, items.Absolute)) \
-                    and mit.parent().parent() == doc:
-                self._insert_after(mit.parent(), r'}')
-                self._insert_before(mit.parent(), r'\score {')
-                packed = True
-        return packed
-
-
-    def _merge_pages(self, scorefns:list[str]):
-        # TODO
-        pass
