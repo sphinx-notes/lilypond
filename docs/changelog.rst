@@ -15,6 +15,40 @@ Change Log
 
       Change log here.
 
+Version 2.x
+-----------
+
+.. version:: 2.0.0
+   :date: 2023-08-18
+
+.. todo https://github.com/sphinx-notes/any/issues/21
+
+.. warning:: This release introduces some BREAKING changes.
+
+- **BREAKING** changes:
+
+  - Drop ``:noheader``, ``:nofooter:`` options. User should modifying their Lilypond
+    source to removing header and footer of scores, see `Custom titles headers and footers`__
+    for more details (:issue:`35`)
+  - Drop ``:noedge:`` option and introduce ``:nocrop:`` with opposite meaning compared to before.
+    It is said that score is croppped (noedge) by default
+    By the way, dependencies to Wand and ImageMagick are dropped (:issue:`31`)
+  - Drop ``:audio:`` option and introduce ``:noaudio:`` with opposite meaning compared to before.
+    Audio will be auto-generated when any `MIDI output`__ avaliable, and user set `:noaudio:`
+    only when they don't need this behavior (:pull:`36`)
+
+- Enhanced Jianpu support (:issue:`30`)
+
+  - Don't panic when Jianpu parsing failed
+  - Can display multiple Jianpu scores, see also `jianpu-ly#35`__
+  - Audio works fine now
+
+- Score image generataion is reproducible now (:issue:`10`)
+
+__ https://lilypond.org/doc/Documentation/notation/creating-titles-headers-and-footers
+__ https://lilypond.org/doc/Documentation/notation/the-midi-block
+__ https://github.com/ssb22/jianpu-ly/issues/35
+
 Version 1.x
 -----------
 
@@ -36,7 +70,7 @@ Version 1.x
    - Add LaTeX builder suppport (:issue:`11`)
 
 .. version:: 1.4
-   :date: 2021-12-19 
+   :date: 2021-12-19
 
    - Note ly files as dependencies, so Sphinx will rebuild document when ly file changes
    - Won't crash when score file does not exist
@@ -46,7 +80,7 @@ Version 1.x
    .. _FFmpeg: https://ffmpeg.org/
 
 .. version:: 1.3
-   :date: 2021-11-07 
+   :date: 2021-11-07
 
    - Add ``controls`` flag for specifing the position of the control bar
 
@@ -65,7 +99,7 @@ Version 1.x
    - Stop using ``<figure>`` as container of block-level score, which is buggy on Safari
 
 .. version:: 1.0
-   :date: 2021-06-26 
+   :date: 2021-06-26
 
    - Rebuild env when configuration changed
    - Fix wrong license value
@@ -74,13 +108,13 @@ Pre-release
 -----------
 
 .. version:: 1.0a2
-   :date: 2020-12-27 
+   :date: 2020-12-27
 
    - Support multiple pages documents
    - Imporve of lilypond outputs cache
 
 .. version:: 1.0a1
-   :date: 2020-12-26 
+   :date: 2020-12-26
 
    - Fix invalid insertion of ``\header``
    - Set default audio format to wav

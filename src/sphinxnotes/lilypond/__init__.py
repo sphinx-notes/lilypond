@@ -15,7 +15,6 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
-from typing import Tuple, List
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -27,17 +26,10 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.config import Config
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.builders.latex import LaTeXBuilder
+from sphinx.environment import BuildEnvironment
 
 from . import lilypond
 from . import jianpu
-
-__title__= 'sphinxnotes-lilypond'
-__license__ = 'BSD'
-__version__ = '1.6.0'
-__author__ = 'Shengyu Zhang'
-__url__ = 'https://sphinx-notes.github.io/lilypond'
-__description__ = 'Sphinx extension for Lilypond'
-__keywords__ = 'documentation, music, sphinx, lilypond, extension'
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +55,19 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['docname'] = env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
-    node['noedge'] = True
     node['preview'] = True
+    node['crop'] = True
     return [node], []
 
+def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    try:
+        text = jianpu.to_lilypond(unescape(text, restore_backslashes=True))
+    except jianpu.Error as e:
+        msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
+        logger.warning(msg, location=inliner.parent)
+        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+        return [], [sm]
+    return lily_role(role, rawtext, text, lineno, inliner, options, content)
 
 def top_or_bottom(argument:str) -> str:
     return directives.choice(argument, ('top', 'bottom'))
@@ -75,11 +76,9 @@ def top_or_bottom(argument:str) -> str:
 class BaseLilyDirective(SphinxDirective):
 
     option_spec = {
-        'noheader': directives.flag,
-        'nofooter': directives.flag,
-        'noedge': directives.flag,
         'preview': directives.flag,
-        'audio': directives.flag,
+        'nocrop': directives.flag,
+        'noaudio': directives.flag,
         'loop': directives.flag,
         'transpose': directives.unchanged,
         'controls': top_or_bottom,
@@ -91,11 +90,16 @@ class BaseLilyDirective(SphinxDirective):
         raise NotImplementedError()
 
 
-    def run(self) -> List[nodes.Node]:
+    def run(self) -> list[nodes.Node]:
         try:
             lilysrc = self.read_lily_source()
         except OSError as e:
             msg = 'failed to read LilyPond source: %s' % e
+            logger.warning(msg, location=self.state.parent)
+            sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+            return [sm]
+        except jianpu.Error as e:
+            msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
             logger.warning(msg, location=self.state.parent)
             sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
             return [sm]
@@ -110,11 +114,9 @@ class BaseLilyDirective(SphinxDirective):
         node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
-        node['noheader'] = 'noheader' in self.options
-        node['nofooter'] = 'nofooter' in self.options or 'noedge' in self.options
-        node['noedge'] = 'noedge' in self.options
         node['preview'] = 'preview' in self.options
-        node['audio'] = 'audio' in self.options or 'loop' in self.options or 'controls' in self.options
+        node['audio'] = 'noaudio' not in self.options
+        node['crop'] = 'nocrop' not in self.options
         node['loop'] = 'loop' in self.options
         node['transpose'] = self.options.get('transpose')
         node['controls'] = self.options.get('controls', 'bottom')
@@ -134,23 +136,15 @@ class LilyIncludeDirective(BaseLilyDirective):
     final_argument_whitespace = True
 
     def read_lily_source(self) -> str:
-        fn = self.arguments[0]
-        if path.isabs(fn):
-            # Doc abs to fs abs.
-            fn = self.env.srcdir + fn
-        else:
-            # Relpath to abspath.
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
 
 
 class BaseJianpuDirective(BaseLilyDirective):
 
     def read_lily_source(self) -> str:
-        return jianpu.process_input(self.read_jianpu_source())
+        return jianpu.to_lilypond(self.read_jianpu_source())
 
+    @abstractmethod
     def read_jianpu_source(self) -> str:
         raise NotImplementedError()
 
@@ -169,20 +163,15 @@ class JianpuIncludeDirective(BaseJianpuDirective):
     final_argument_whitespace = True
 
     def read_jianpu_source(self) -> str:
-        fn = self.arguments[0]
-        if not path.isabs(fn):
-            # Rel to abs
-            fn = path.join(path.dirname(self.env.doc2path(self.env.docname)), fn)
-        with open(fn, 'r') as f:
-            self.env.note_dependency(fn)
-            return f.read()
+        return read_source_file(self.env, self.arguments[0])
+
 
 def get_node_sig(node:lily_inline_node|lily_outline_node) -> str:
     """Return signture of given node. """
     return sha((node['lilysrc'] + node['rawtext']).encode('utf-8')).hexdigest()
 
 
-def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> Tuple[str,str]:
+def get_builddir_and_reldir(builder, node:lily_inline_node|lily_outline_node) -> tuple[str,str]:
     """
     Return the path of Sphinx builder's outdir and its corrsponding relative
     path.
@@ -246,20 +235,14 @@ def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypo
             if node.get('transpose'):
                 from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
                 doc.transpose(from_pitch, to_pitch)
-            if node.get('audio'):
-                doc.enable_audio_output()
-            doc.strip_header_footer(
-                    strip_header=node.get('noheader'),
-                    strip_footer=node.get('nofooter'))
-            out = doc.output(builddir, node.get('preview'), node.get('noedge'))
+            out = doc.output(builddir, node.get('preview'), node.get('crop'))
         except lilypond.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
                                       backrefs=[], source=node['lilysrc'])
             sm.walkabout(self)
+            shutil.rmtree(builddir) # cleanup lilypond builddir
             raise nodes.SkipNode
-            # Cleanup lilypond builddir
-            shutil.rmtree(builddir)
         else:
             # Get relative path
             move_to_builddir(self.builder, node, out)
@@ -280,13 +263,16 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append('</audio>')
 
     # TODO: standalone css
-    if node.get('preview') and out.preview:
+    if node.get('preview') and out.preview_score:
         self.body.append(
             '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
             (_SCORECLS,
-             out.preview,
+             out.preview_score,
              self.encode(node['lilysrc']).strip(),
              self.builder.config.lilypond_inline_score_size))
+    elif out.cropped_score:
+        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
+                (_SCORECLS, out.cropped_score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
     elif out.score:
         self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
                 (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
@@ -320,15 +306,21 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     out = get_lilypond_output(self, node)
 
     CR = '\n'
-    pre: List[str] = []  # in reverse order
-    post: List[str] = []
+    pre: list[str] = []  # in reverse order
+    post: list[str] = []
 
 
     options = ''
 
-    if node.get('preview') and out.preview:
-        base, ext = path.splitext(out.preview)
+    if node.get('preview') and out.preview_score:
+        base, ext = path.splitext(out.preview_score)
         self.body.append(CR)
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                         (options, base, ext))
+        self.body.append(CR)
+    elif out.cropped_score:
+        base, ext = path.splitext(out.cropped_score)
+        self.body.append(CR + r'\noindent')
         self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
                          (options, base, ext))
         self.body.append(CR)
@@ -360,11 +352,27 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     raise nodes.SkipNode
 
 
+def read_source_file(env:BuildEnvironment, fn:str) -> str:
+    """
+    Read the score source from a local file. Can be an absolute path
+    (relative to the root of srcdir) or relative path (relative to the current document).
+    """
+    if path.isabs(fn):
+        # Source dir absolute path to file system absolute path.
+        fn = env.srcdir + fn
+    else:
+        # Document relative path to file system absolute path.
+        fn = path.join(path.dirname(env.doc2path(env.docname)), fn)
+    with open(fn, 'r') as f:
+        # Febuild the current document if the file changes.
+        env.note_dependency(fn)
+        return f.read()
+
+
 def _config_inited(app, config:Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
     lilypond.Config.ffmpeg_args = config.lilypond_ffmpeg_args
-    lilypond.Config.magick_home  = config.lilypond_magick_home
 
     lilypond.Config.score_format  = config.lilypond_score_format
     lilypond.Config.png_resolution  = config.lilypond_png_resolution
@@ -383,13 +391,14 @@ def setup(app):
     app.add_role('lily', lily_role)
     app.add_directive('lily', LilyDirective)
     app.add_directive('lilyinclude', LilyIncludeDirective)
+
+    # app.add_role('jianpu', jianpu_role)
     app.add_directive('jianpu', JianpuDirective)
     app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
     app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
     app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
     app.add_config_value('lilypond_ffmpeg_args', ['ffmpeg'], 'env')
-    app.add_config_value('lilypond_magick_home', None, 'env')
     app.add_config_value('lilypond_builddir', None, 'env')
 
     app.add_config_value('lilypond_score_format', 'png', 'env')

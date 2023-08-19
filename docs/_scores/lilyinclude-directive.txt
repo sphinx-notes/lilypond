@@ -1,4 +1,1 @@
 .. lilyinclude:: /_scores/witch-spring.ly
-   :nofooter:
-   :noedge:
-   :audio:

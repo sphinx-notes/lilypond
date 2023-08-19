@@ -12,10 +12,10 @@ The extension is originated from `sphinx-contrib/lilypond`_ , allows `LilyPond`_
 music notes :lily:`\relative { c' }` to be included in Sphinx-generated documents.
 Compared to its predecessor, the extension has many new features such as:
 
+- Play score audio (:doc:`examples`)
+- LaTeX builder support (Since :version:`1.5`)
 - Scale :ref:`example-transposing`
-- :ref:`example-audio-preview`
-- Layout controlling
-- LaTeX support (Since :version:`1.5`)
+- :ref:`Jianpu <jianpu-directive>` (Numbered Musical Notation, 简谱) support (Since :version:`1.6.0`)
 - And so on…
 
 .. _sphinx-contrib/lilypond: https://github.com/sphinx-contrib/lilypond
@@ -57,7 +57,6 @@ Install the follwing runtime dependencies before using the extension:
 - `LilyPond`_
 - `TiMidity++`_
 - `FFmpeg`_
-- `ImageMagick`_
 
 .. note::
    
@@ -66,7 +65,6 @@ Install the follwing runtime dependencies before using the extension:
 
 .. _FFmpeg: https://ffmpeg.org/
 .. _Timidity++: http://timidity.sourceforge.net/
-.. _ImageMagick: https://imagemagick.org/index.php
 .. _LilyPond Learning Manual: https://lilypond.org/doc/Documentation/learning/index
 
 We provide :ref:`roles` for embedding score fragment and :ref:`directives` for
