@@ -361,8 +361,13 @@ def read_source_file(env:BuildEnvironment, fn:str) -> str:
         # Source dir absolute path to file system absolute path.
         #
         # Since Sphinx 7.2, env.srcdir changes its type from str to pathlib.Path.
-        # See https://github.com/sphinx-doc/sphinx/pull/11526. TODO: use pathlib
-        fn = path.join(str(env.srcdir), fn)
+        # See https://github.com/sphinx-doc/sphinx/pull/11526.
+        #
+        # TODO: Use pathlib.Path.
+        #
+        # NOTE: CANNOT use path.join because fn is absolute.
+        # join('/foo', '/bar') finally get '/bar'.
+        fn = str(env.srcdir) + fn
     else:
         # Document relative path to file system absolute path.
         fn = path.join(path.dirname(env.doc2path(env.docname)), fn)
