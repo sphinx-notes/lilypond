@@ -21,33 +21,31 @@ Version 2.x
 .. version:: 2.0.0
    :date: 2023-08-18
 
-.. todo https://github.com/sphinx-notes/any/issues/21
+   .. warning:: This release introduces some BREAKING changes.
 
-.. warning:: This release introduces some BREAKING changes.
+   - **BREAKING** changes:
 
-- **BREAKING** changes:
+     - Drop ``:noheader``, ``:nofooter:`` options. User should modifying their Lilypond
+       source to removing header and footer of scores, see `Custom titles headers and footers`__
+       for more details (:issue:`35`)
+     - Drop ``:noedge:`` option and introduce ``:nocrop:`` with opposite meaning compared to before.
+       It is said that score is croppped (noedge) by default
+       By the way, dependencies to Wand and ImageMagick are dropped (:issue:`31`)
+     - Drop ``:audio:`` option and introduce ``:noaudio:`` with opposite meaning compared to before.
+       Audio will be auto-generated when any `MIDI output`__ avaliable, and user set `:noaudio:`
+       only when they don't need this behavior (:pull:`36`)
 
-  - Drop ``:noheader``, ``:nofooter:`` options. User should modifying their Lilypond
-    source to removing header and footer of scores, see `Custom titles headers and footers`__
-    for more details (:issue:`35`)
-  - Drop ``:noedge:`` option and introduce ``:nocrop:`` with opposite meaning compared to before.
-    It is said that score is croppped (noedge) by default
-    By the way, dependencies to Wand and ImageMagick are dropped (:issue:`31`)
-  - Drop ``:audio:`` option and introduce ``:noaudio:`` with opposite meaning compared to before.
-    Audio will be auto-generated when any `MIDI output`__ avaliable, and user set `:noaudio:`
-    only when they don't need this behavior (:pull:`36`)
+   - Enhanced Jianpu support (:issue:`30`)
 
-- Enhanced Jianpu support (:issue:`30`)
+     - Don't panic when Jianpu parsing failed
+     - Can display multiple Jianpu scores, see also `jianpu-ly#35`__
+     - Audio works fine now
 
-  - Don't panic when Jianpu parsing failed
-  - Can display multiple Jianpu scores, see also `jianpu-ly#35`__
-  - Audio works fine now
+   - Score image generataion is reproducible now (:issue:`10`)
 
-- Score image generataion is reproducible now (:issue:`10`)
-
-__ https://lilypond.org/doc/Documentation/notation/creating-titles-headers-and-footers
-__ https://lilypond.org/doc/Documentation/notation/the-midi-block
-__ https://github.com/ssb22/jianpu-ly/issues/35
+   __ https://lilypond.org/doc/Documentation/notation/creating-titles-headers-and-footers
+   __ https://lilypond.org/doc/Documentation/notation/the-midi-block
+   __ https://github.com/ssb22/jianpu-ly/issues/35
 
 Version 1.x
 -----------

@@ -14,7 +14,7 @@ Compared to its predecessor, the extension has many new features such as:
 
 - Play score audio (:doc:`examples`)
 - LaTeX builder support (Since :version:`1.5`)
-- Scale :ref:`example-transposing`
+- Scale :example:`Transposing`
 - :ref:`Jianpu <jianpu-directive>` (Numbered Musical Notation, 简谱) support (Since :version:`1.6.0`)
 - And so on…
 
@@ -70,27 +70,31 @@ Install the follwing runtime dependencies before using the extension:
 We provide :ref:`roles` for embedding score fragment and :ref:`directives` for
 embedding a whole socre:
 
-.. grid:: 2
+.. example::
 
-   .. grid-item-card:: Role
+   :lily:`\relative { c' }` is the first note of the C major scale.
 
-      .. literalinclude:: /_scores/lily-role.txt
-          :language: rst
+.. example::
 
-   .. grid-item-card:: Result
+   .. lily::
 
-       .. include:: /_scores/lily-role.txt
+      \version "2.20.0"
+      \header {
+        title = "C Major Scale"
+      }
 
-.. grid:: 2
+      \score {
+        <<
+          \new Staff {
+              \time 4/4
+              \tempo 4 = 70
+              c' d' e' f' g' a' b' c''
+        }
+        >>
 
-   .. grid-item-card:: Directive
-
-      .. literalinclude:: /_scores/lily-directive-c-major-scale.txt
-          :language: rst
-
-   .. grid-item-card:: Result
-
-       .. include:: /_scores/lily-directive-c-major-scale.txt
+        \midi {}
+        \layout {}
+      }
 
 See :doc:`usage` for more details.
 

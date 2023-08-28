@@ -7,8 +7,6 @@ Usage
 Roles
 =====
 
-.. _lily-role:
-
 The ``lily`` role
 -----------------
 
@@ -17,14 +15,9 @@ element.
 
 .. _LilyPond Music Expression: http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained
 
-For example:
+.. example:: lily role
 
-.. literalinclude:: /_scores/lily-role.txt
-    :language: rst
-
-Will be rendered as:
-
-    .. include:: /_scores/lily-role.txt
+   :lily:`\relative { c' }` is the first note of the C major scale.
 
 .. _directives:
 
@@ -39,17 +32,34 @@ The ``lily`` directive
 The ``lily`` directive is used to insert a complete LilyPond score as
 block level element.
 
-.. literalinclude:: /_scores/lily-directive.txt
-    :language: rst
+.. example:: lily directive
 
-Will be rendered as:
+   .. lily::
 
-    .. include:: /_scores/lily-directive.txt
+      \version "2.20.0"
+      \header {
+        title = "翼をください, Excerpts"
+      }
+
+      \score {
+        <<
+          \new Staff \relative c' {
+              \time 4/4
+              \tempo 4 = 70
+              r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
+              c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
+              d4 r r r
+        }
+        >>
+
+        \layout {}
+        \midi {}
+      }
 
 The directive supports the following options:
 
 :nocrop: (flag)
-   Set this option to have scores output to images with appropriate margins and preset size (A4), which is easy for printing. See :ref:`example-nocrop`.
+   Set this option to have scores output to images with appropriate margins and preset size (A4), which is easy for printing. See :example:`Original paper size`.
 
    .. versionchanged:: 2.0.0
 
@@ -90,12 +100,9 @@ The ``lilyinclude`` directive
 The ``lilyinclude`` directive is similar to :ref:`lily-directive`,
 except the source of LilyPond are read from file but not contents of directive.
 
-.. literalinclude:: /_scores/lilyinclude-directive.txt
-   :language: rst
+.. example:: lilyinclude directive
 
-Will be rendered as:
-
-   .. include:: /_scores/lilyinclude-directive.txt
+   .. lilyinclude:: /_scores/witch-spring.ly
 
 Options of the directive are same to :ref:`lily-directive`.
 
@@ -123,13 +130,18 @@ The ``jianpu`` directive is used to insert a Jianpu_
 .. _Jianpu: https://en.wikipedia.org/wiki/Numbered_musical_notation
 .. _Silas S. Brown:  https://ssb22.user.srcf.net/
 .. _jianpu-ly: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
+ 
 
-.. literalinclude:: /_scores/jianpu-directive.txt
-    :language: rst
+.. example:: jianpu directive
 
-Will be rendered as:
+   .. jianpu::
 
-   .. include:: /_scores/jianpu-directive.txt
+      title=C Major Scale
+      1=C
+      2/4
+      4=60
+
+      1 2 3 4 5 6 7 1'
 
 Options of the directive are same to :ref:`lily-directive`.
 
@@ -141,16 +153,11 @@ The ``jianpuinclude`` directive
 The ``jianpuinclude`` directive is similar to :ref:`jianpu-directive`,
 except the source of Jianpu are read from file but not contents of directive.
 
-.. literalinclude:: /_scores/jianpuinclude-directive.txt
-   :language: rst
-
-Will be rendered as:
-
-   .. include:: /_scores/jianpuinclude-directive.txt
+   .. jianpuinclude:: /_scores/songbie.jp
 
 .. seealso::
 
     You and download the example LilyPond documentation from here:
-    :download:`/_scores/songbie.jianpu`.
+    :download:`/_scores/songbie.jp`.
 
 Options of the directive are same to :ref:`lily-directive`.
