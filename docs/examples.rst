@@ -5,88 +5,63 @@ Examples
 The LilyPond documentation used in example can be downloaded here:
 :download:`/_scores/minuet-in-g.ly`.
 
-.. _example-nocrop:
-
 Original paper size
 ===================
 
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :nocrop:
-
-.. lilyinclude:: /_scores/minuet-in-g.ly
-   :nocrop:
  
 .. _example-noaudio:
 
 Disable Audio
 =============
 
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :noaudio:
 
-.. lilyinclude:: /_scores/minuet-in-g.ly
-   :noaudio:
-
-.. _example-transposing:
-
 Transposing
 ===========
 
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :transpose: g c
 
-.. lilyinclude:: /_scores/minuet-in-g.ly
-   :transpose: g c
-
 Multiple Pages
 ==============
 
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/alice.ly
-
-.. lilyinclude:: /_scores/alice.ly
 
 Loop
 ====
 
-.. versionadded:: 1.2
-
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :loop:
 
-.. lilyinclude:: /_scores/minuet-in-g.ly
-   :loop:
+.. versionadded:: 1.2
 
 Control Bar at the Top
 ======================
 
-.. versionadded:: 1.3
-
-.. code-block:: rst
+.. example:: _
 
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :controls: top
 
-.. lilyinclude:: /_scores/minuet-in-g.ly
-   :controls: top
+.. versionadded:: 1.3
 
 Jianpu (Numbered Musical Notation)
 ==================================
 
-.. versionadded:: 1.5
-
-.. seealso:: :ref:`jianpu-directive`.
-
-.. code-block:: rst
+.. example:: _
 
    .. jianpu::
 
@@ -97,11 +72,6 @@ Jianpu (Numbered Musical Notation)
 
       1 2 3 4 5 6 7 1'
 
-.. jianpu::
+.. seealso:: :example:`jianpu directive`.
 
-   title=C Major Scale
-   1=C
-   4=60
-   2/4
-
-   1 2 3 4 5 6 7 1'
+.. versionadded:: 1.5

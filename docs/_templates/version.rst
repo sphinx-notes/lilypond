@@ -8,4 +8,3 @@
 {% for line in content %}
 {{ line }}
 {% endfor %}
-
