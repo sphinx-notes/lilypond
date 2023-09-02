@@ -116,6 +116,6 @@ any_schemas.append(Schema('example',
                           name=F(referenceable=True),
                           content=F(form=F.Form.LINES),
                           description_template=open('_templates/example.rst', 'r').read(),
-                          reference_template='🎼 {{ title }}',
-                          missing_reference_template='🎼 {{ title }}',
-                          ambiguous_reference_template='🎼 {{ title }}'))
+                          reference_template='🎵 {{ title }}',
+                          missing_reference_template='🎵 {{ title }}',
+                          ambiguous_reference_template='🎵 {{ title }}'))

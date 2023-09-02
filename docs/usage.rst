@@ -7,6 +7,8 @@ Usage
 Roles
 =====
 
+.. _lily-role:
+
 The ``lily`` role
 -----------------
 
@@ -15,7 +17,7 @@ element.
 
 .. _LilyPond Music Expression: http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained
 
-.. example:: lily role
+.. example::
 
    :lily:`\relative { c' }` is the first note of the C major scale.
 
@@ -32,7 +34,7 @@ The ``lily`` directive
 The ``lily`` directive is used to insert a complete LilyPond score as
 block level element.
 
-.. example:: lily directive
+.. example::
 
    .. lily::
 
@@ -66,7 +68,7 @@ The directive supports the following options:
 :noaudio: (flag)
    If the score contains `MIDI block`_, Lilypond generates MIDI output files.
    which are converted to audio files by this extension.
-   Use this option to disable audio, see :ref:`example-noaudio`
+   Use this option to disable audio, see :example:`Disable Audio`.
 
    .. versionchanged:: 2.0.0
 
@@ -76,13 +78,14 @@ The directive supports the following options:
    Whethre audio player will automatically seek back to the start upon reaching
    the end of the audio.
    This conflicts with ``noaudio``.
+   Example: :example:`Loop`.
 
    .. versionadded:: 1.2
 
 :transpose: (text)
    Transposing the pitches of score from one to another.
    Pitches are written in `LilyPond Notation`_ and separated in whitespace.
-   For example: ``:transpose: c' d'``
+   For example: ``:transpose: g c``, see :example:`Transposing`.
 
    .. versionadded:: 2.0.0
 
@@ -90,7 +93,7 @@ The directive supports the following options:
 
 :controls: (text, one of the ``top`` or ``bottom``)
    Specify the position of the control bar relative to the score.
-   This implies ``audio``.
+   This implies ``audio``. See example :example:`Control Bar at the Top`.
 
    .. versionadded:: 1.3
 
@@ -100,7 +103,7 @@ The ``lilyinclude`` directive
 The ``lilyinclude`` directive is similar to :ref:`lily-directive`,
 except the source of LilyPond are read from file but not contents of directive.
 
-.. example:: lilyinclude directive
+.. example::
 
    .. lilyinclude:: /_scores/witch-spring.ly
 
@@ -131,8 +134,7 @@ The ``jianpu`` directive is used to insert a Jianpu_
 .. _Silas S. Brown:  https://ssb22.user.srcf.net/
 .. _jianpu-ly: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
  
-
-.. example:: jianpu directive
+.. example::
 
    .. jianpu::
 
@@ -152,6 +154,8 @@ The ``jianpuinclude`` directive
 
 The ``jianpuinclude`` directive is similar to :ref:`jianpu-directive`,
 except the source of Jianpu are read from file but not contents of directive.
+
+.. example::
 
    .. jianpuinclude:: /_scores/songbie.jp
 

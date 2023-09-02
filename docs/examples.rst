@@ -13,8 +13,6 @@ Original paper size
    .. lilyinclude:: /_scores/minuet-in-g.ly
       :nocrop:
  
-.. _example-noaudio:
-
 Disable Audio
 =============
 
@@ -72,6 +70,6 @@ Jianpu (Numbered Musical Notation)
 
       1 2 3 4 5 6 7 1'
 
-.. seealso:: :example:`jianpu directive`.
+.. seealso:: :ref:`jianpu-directive`.
 
 .. versionadded:: 1.5
