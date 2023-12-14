@@ -54,8 +54,10 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node = lily_inline_node()
     node['docname'] = env.docname
     node['rawtext'] = rawtext
-    node['lilysrc'] = unescape(text, restore_backslashes=True)
+    node['lilysrc'] = r'\score{' + unescape(text, restore_backslashes=True) + '}'
     node['crop'] = True
+    node['audio'] = True
+    node['controls'] = 'bottom'
     return [node], []
 
 def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
