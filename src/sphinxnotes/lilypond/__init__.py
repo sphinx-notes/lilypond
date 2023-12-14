@@ -55,7 +55,6 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node['docname'] = env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = unescape(text, restore_backslashes=True)
-    node['preview'] = True
     node['crop'] = True
     return [node], []
 
@@ -76,7 +75,6 @@ def top_or_bottom(argument:str) -> str:
 class BaseLilyDirective(SphinxDirective):
 
     option_spec = {
-        'preview': directives.flag,
         'nocrop': directives.flag,
         'noaudio': directives.flag,
         'loop': directives.flag,
@@ -114,7 +112,6 @@ class BaseLilyDirective(SphinxDirective):
         node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
-        node['preview'] = 'preview' in self.options
         node['audio'] = 'noaudio' not in self.options
         node['crop'] = 'nocrop' not in self.options
         node['loop'] = 'loop' in self.options
@@ -235,7 +232,7 @@ def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypo
             if node.get('transpose'):
                 from_pitch, to_pitch = node['transpose'].split(' ', maxsplit=1)
                 doc.transpose(from_pitch, to_pitch)
-            out = doc.output(builddir, node.get('preview'), node.get('crop'))
+            out = doc.output(builddir, node.get('crop'))
         except lilypond.Error as e:
             logger.warning('failed to generate scores: %s' % e, location=node)
             sm = nodes.system_message(e, type='WARNING', level=2,
@@ -263,16 +260,22 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append('</audio>')
 
     # TODO: standalone css
-    if node.get('preview') and out.preview_score:
-        self.body.append(
-            '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
-            (_SCORECLS,
-             out.preview_score,
-             self.encode(node['lilysrc']).strip(),
-             self.builder.config.lilypond_inline_score_size))
-    elif out.cropped_score:
-        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
-                (_SCORECLS, out.cropped_score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
+    if out.cropped_score:
+        # Inline node MUST use cropped score.
+        if isinstance(node, lily_inline_node):
+            self.body.append(
+                '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
+                (_SCORECLS,
+                 out.cropped_score,
+                 self.encode(node['lilysrc']).strip(),
+                 self.builder.config.lilypond_inline_score_size))
+        else:
+            self.body.append(
+                '<img class="%s" src="%s" alt="%s" style="%s"/>\n' % (
+                    _SCORECLS,
+                    out.cropped_score,
+                    self.encode(node['lilysrc']).strip(),
+                    'width:100%;'))
     elif out.score:
         self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
                 (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
@@ -312,18 +315,19 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
 
     options = ''
 
-    if node.get('preview') and out.preview_score:
-        base, ext = path.splitext(out.preview_score)
-        self.body.append(CR)
-        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                         (options, base, ext))
-        self.body.append(CR)
-    elif out.cropped_score:
-        base, ext = path.splitext(out.cropped_score)
-        self.body.append(CR + r'\noindent')
-        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                         (options, base, ext))
-        self.body.append(CR)
+    if out.cropped_score:
+        if isinstance(node, lily_inline_node):
+            base, ext = path.splitext(out.cropped_score)
+            self.body.append(CR)
+            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                             (options, base, ext))
+            self.body.append(CR)
+        else:
+            base, ext = path.splitext(out.cropped_score)
+            self.body.append(CR + r'\noindent')
+            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
+                             (options, base, ext))
+            self.body.append(CR)
     elif out.score:
         base, ext = path.splitext(out.score)
         self.body.append(CR + r'\noindent')
