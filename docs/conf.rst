@@ -2,41 +2,65 @@
 Configuration
 =============
 
-.. hint:: Normally, extensions should work without any configuration
+.. hint:: In most cases, the extension should work without any configuration.
 
-:lilypond_lilypond_args: (Type: ``list[str]``, Default: ``['lilypond']``)
+.. confval:: lilypond_lilypond_args:
+   :type: list[str]
+   :default: ['lilypond']
+   :versionadded: 1.4
+
    Argument list for running `LilyPond`_. The first one is path to LilyPond binary.
-:lilypond_timidity_args: (Type: ``list[str]``, Default: ``['timidity']``)
+
+.. confval:: lilypond_timidity_args
+   :type: list[str]
+   :default: ['timidity']
+
    Argument list for running `Timidity++`_. The first one is path to Timidity++ binary.
-:lilypond_ffmpeg_args: (Type: ``list[str]``, Default: ``['ffmpeg']``)
+
+.. confval:: lilypond_ffmpeg_args
+   :type: list[str]
+   :default: ['ffmpeg']
+
    Argument list for running FFmpeg_. The first one is path to FFmpeg binary.
 
-   .. versionadded:: 1.4
+.. confval:: lilypond_score_format
+   :Type: str
+   :default: 'png'
+   :choice: 'png' 'svg' 'pdf' 'eps'
 
-:lilypond_score_format: (Type: ``str``, Default: ``'png'``)
-   Format of outputed scores, available values: ``['png', 'svg', 'pdf', 'eps']``.
-:lilypond_audio_format: (Type: ``str``, Default: ``'wav'``)
-   Format of outputed audio, available values: ``['wav', 'ogg', 'mp3']``.
+   Format of outputed scores
 
-   .. versionchanged:: 1.4
-
+.. confval:: lilypond_audio_format
+   :type: str
+   :default: 'wav'
+   :choice: 'wav' 'ogg' 'mp3'
+   :versionchanged:
+      1.4
       Add support for 'mp3' audio format
 
-:lilypond_audio_volume: (Type: ``int``, Default: `None`)
+   Format of outputed audio, available values: 
+
+.. confval:: lilypond_audio_volume
+   :type: int
+   :default: none
+   :versionadded: 1.2
+
    Volume of outputed audio, will be converted to value of `Timidity++`_ argument ``--volume``.
 
-   .. versionadded:: 1.2
+.. confval:: lilypond_png_resolution
+   :type: int
+   :default: 300
+   :versionadded: 1.1
 
-:lilypond_png_resolution: (Type: ``int``, Default: ``300``)
    Resolution in DPI of score in PNG format, will be converted to value of LilyPond_ argument ``-dresolution``.
 
-   .. versionadded:: 1.1
     
-:lilypond_inline_score_size: (Type: ``str``, Default: ``2.5em``)
+.. confval:: lilypond_inline_score_size
+   :type: str
+   :default: '2.5em'
+   :versionadded: 1.1
+
    Line height of :ref:`inline socre <lily-role>`, will be converted to value of `CSS height`_.
-
-   .. versionadded:: 1.1
-
 
 .. _LilyPond: https://lilypond.org/
 .. _FFmpeg: https://ffmpeg.org/
