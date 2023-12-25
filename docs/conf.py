@@ -138,4 +138,9 @@ extensions.append('lilypond')
 
 # DOG FOOD CONFIGURATION START
 
+# Use a more relevant example emoji.
+example_schema.reference_template = '🎵 ' + example_schema.reference_template[1:]
+example_schema.missing_reference_template = '🎵 ' + example_schema.missing_reference_template[1:]
+example_schema.ambiguous_reference_template = '🎵 ' + example_schema.ambiguous_reference_template[1:]
+
 # DOG FOOD CONFIGURATION END
