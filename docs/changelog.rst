@@ -1,4 +1,4 @@
-.. This file is generated from sphinx-notes/template.
+.. This file is generated from sphinx-notes/cookiecutter.
    You need to consider modifying the TEMPLATE or modifying THIS FILE.
 
 ==========
@@ -87,13 +87,13 @@ Version 1.x
 
    - Simplify argument passing between lilypond binding and sphinx extension
    - Add ``loop`` flag for directives
-   - Add confval ``lilypond_audio_volume``
+   - Add confval :confval:`lilypond_audio_volume`
 
 .. version:: 1.1
    :date: 2021-09-12
 
-   - Add confval ``lilypond_png_resolution`` for customizing score resolution in PNG format
-   - Add confval ``lilypond_inline_score_size`` for customizing height of :ref:`inline score <lily-role>`
+   - Add confval :confval:`lilypond_png_resolution` for customizing score resolution in PNG format
+   - Add confval :confval:`lilypond_inline_score_size` for customizing height of :ref:`inline score <lily-role>`
    - Stop using ``<figure>`` as container of block-level score, which is buggy on Safari
 
 .. version:: 1.0
