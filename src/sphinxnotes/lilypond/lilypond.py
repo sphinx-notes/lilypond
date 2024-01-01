@@ -50,7 +50,6 @@ class Output(object):
 
     source:str
     score: str|None
-    preview_score:str|None
     paged_scores:list[str]
     cropped_score:str|None
     midi:str|None
@@ -68,9 +67,6 @@ class Output(object):
 
         scorefn = prefix + '.' + Config.score_format
         self.score = scorefn if path.isfile(scorefn) else None
-
-        previewfn = prefix + '.preview.' + Config.score_format
-        self.preview_score = previewfn if path.isfile(previewfn) else None
 
         croppedfn = prefix + '.cropped.' + Config.score_format
         self.cropped_score = croppedfn if path.isfile(croppedfn) else None
@@ -90,7 +86,6 @@ class Output(object):
                 self.paged_scores.append(pattern % i)
 
         if not any([self.score,
-                    self.preview_score,
                     self.cropped_score,
                     self.paged_scores]):
             raise Error('No score generated, please check "*.%s" files under "%s"' %
@@ -112,8 +107,6 @@ class Output(object):
         self.source = newdir + self.source[l:]
         if self.score:
             self.score = newdir + self.score[l:]
-        if self.preview_score:
-            self.preview_score = newdir + self.preview_score[l:]
         if self.cropped_score:
             self.cropped_score = newdir + self.cropped_score[l:]
         for i, p in enumerate(self.paged_scores):
@@ -155,10 +148,7 @@ class Document(object):
                     (language, cursor.document.filename))
 
 
-    def output(self,
-            outdir:str,
-            preview:bool,
-            crop:bool) -> Output:
+    def output(self, outdir:str, crop:bool) -> Output:
         """Output scores and related files from LilyPond Document. """
         args = Config.lilypond_args.copy()
         args += ['-o', outdir]
@@ -170,9 +160,6 @@ class Document(object):
             args += ['-dbackend=svg']
         else:
             raise Error('Unknown score format: %s' % Config.score_format )
-
-        if preview:
-            args += ['-dpreview=#t']
 
         if crop:
             args += ['-dcrop=#t']
@@ -200,9 +187,6 @@ class Document(object):
             self._midi_to_audio(midifn)
 
         out = Output(outdir)
-
-        if preview and not out.preview_score:
-            raise Error('No score preview file generated, please check "%s"' % outdir)
 
         return out
 

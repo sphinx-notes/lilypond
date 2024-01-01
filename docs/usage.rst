@@ -12,14 +12,34 @@ Roles
 The ``lily`` role
 -----------------
 
-You can use ``lily`` role to insert short `LilyPond Music Expression`_ as inline
-element.
+You can use ``lily`` role to insert a single `LilyPond Music Expression`_ as
+inline score.
 
 .. _LilyPond Music Expression: http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained
 
-.. example::
+.. example:: Inline Score
+   :style: grid
 
-   :lily:`\relative { c' }` is the first note of the C major scale.
+   :lily:`{c'}` is the first note of the C major scale.
+
+If the score contains `MIDI block`_, the extension will generate audio file
+and show a player beside the score:
+
+.. example:: Playable Inline Score
+   :style: grid
+
+   :lily:`{c' e' g' } \layout{} \midi{}` is playable.
+
+.. versionadded:: 2.1.0
+
+.. hint::
+
+   Some implementation details to help you debug your music expressions:
+   the music expression will be wrapped by a ``\score`` block before passing
+   to Lilypond.
+
+   For example, ``:lily:`{c'}``` will be converted to ``\scores { {c'} }``.
+
 
 .. _directives:
 
