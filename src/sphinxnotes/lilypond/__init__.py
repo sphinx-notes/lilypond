@@ -15,6 +15,7 @@ import tempfile
 from os import path
 from hashlib import sha1 as sha
 from abc import abstractmethod
+import re
 
 from docutils import nodes
 from docutils.utils import unescape
@@ -251,14 +252,24 @@ def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypo
 def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     out = get_lilypond_output(self, node)
 
-    # Create div for block level element
+    # Create div for block element and span for inline element.
     if isinstance(node, lily_outline_node):
         self.body.append(self.starttag(node, 'div', CLASS=_DIVCLS))
         self.body.append('<p>')
+    else:
+        self.body.append(
+            self.starttag(node, 'span',
+                          CLASS=_DIVCLS,
+                          STYLE="display: inline-flex; vertical-align: middle;"))
 
     if node.get('audio') and out.audio and node.get('controls') == 'top':
+        if isinstance(node, lily_inline_node):
+            size, unit = parse_size(self.builder.config.lilypond_inline_score_size)
+            style = 'width: %s%s;' % (1.2*size, unit)
+        else:
+            style = 'width:100%;'
         self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
-                (_AUDIOCLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
+                (_AUDIOCLS, style, out.audio, 'loop' if node.get('loop') else ''))
         self.body.append('</audio>')
 
     # TODO: standalone css
@@ -266,7 +277,7 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         # Inline node MUST use cropped score.
         if isinstance(node, lily_inline_node):
             self.body.append(
-                '<img class="%s" src="%s" alt="%s" style="height:%s;", align="absbottom"/>' %
+                '<img class="%s" src="%s" alt="%s" style="height: %s"/>' %
                 (_SCORECLS,
                  out.cropped_score,
                  self.encode(node['lilysrc']).strip(),
@@ -293,15 +304,23 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         raise nodes.SkipNode
 
     if node.get('audio') and out.audio and node.get('controls') == 'bottom':
+        if isinstance(node, lily_inline_node):
+            size, unit = parse_size(self.builder.config.lilypond_inline_score_size)
+            style = 'width: %s%s;' % (1.2*size, unit)
+        else:
+            style = 'width:100%;'
         self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
-                (_SCORECLS, 'width:100%;', out.audio, 'loop' if node.get('loop') else ''))
+                (_SCORECLS, style, out.audio, 'loop' if node.get('loop') else ''))
         self.body.append('</audio>')
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
         self.body.append('</div>')
+    else:
+        self.body.append('</span>')
 
     raise nodes.SkipNode
+
 
 def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     """
@@ -381,6 +400,17 @@ def read_source_file(env:BuildEnvironment, fn:str) -> str:
         # Febuild the current document if the file changes.
         env.note_dependency(fn)
         return f.read()
+
+
+def parse_size(sz: str) -> tuple[float, str]:
+    """Parse HTML size (like "10px", "1.2em", "100%") to number and unit."""
+    regex = r'^(\d+(?:\.\d+)?)(\D+)$'
+    match = re.match(regex, sz)
+    if not match:
+        raise ValueError("Invalid size string: %s" % sz)
+    value = float(match.group(1))
+    unit = match.group(2)
+    return value, unit
 
 
 def _config_inited(app, config:Config) -> None:
