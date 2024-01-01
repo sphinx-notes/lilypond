@@ -250,6 +250,17 @@ def get_lilypond_output(self, node:lily_inline_node|lily_outline_node) -> lilypo
 
 
 def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
+    # Helper to append a audio player.
+    def append_audio():
+        if isinstance(node, lily_inline_node):
+            size, unit = parse_html_size(self.builder.config.lilypond_inline_score_size)
+            style = 'width: %s%s;' % (1.2*size, unit)
+        else:
+            style = 'width:100%;'
+        self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
+                (_AUDIOCLS, style, out.audio, 'loop' if node.get('loop') else ''))
+        self.body.append('</audio>')
+
     out = get_lilypond_output(self, node)
 
     # Create div for block element and span for inline element.
@@ -258,60 +269,36 @@ def html_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
         self.body.append('<p>')
     else:
         self.body.append(
-            self.starttag(node, 'span',
-                          CLASS=_DIVCLS,
+            self.starttag(node, 'span', CLASS=_DIVCLS,
                           STYLE="display: inline-flex; vertical-align: middle;"))
 
     if node.get('audio') and out.audio and node.get('controls') == 'top':
-        if isinstance(node, lily_inline_node):
-            size, unit = parse_size(self.builder.config.lilypond_inline_score_size)
-            style = 'width: %s%s;' % (1.2*size, unit)
-        else:
-            style = 'width:100%;'
-        self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
-                (_AUDIOCLS, style, out.audio, 'loop' if node.get('loop') else ''))
-        self.body.append('</audio>')
+        append_audio()
 
-    # TODO: standalone css
-    if out.cropped_score:
-        # Inline node MUST use cropped score.
-        if isinstance(node, lily_inline_node):
-            self.body.append(
-                '<img class="%s" src="%s" alt="%s" style="height: %s"/>' %
-                (_SCORECLS,
-                 out.cropped_score,
-                 self.encode(node['lilysrc']).strip(),
-                 self.builder.config.lilypond_inline_score_size))
-        else:
-            self.body.append(
-                '<img class="%s" src="%s" alt="%s" style="%s"/>\n' % (
-                    _SCORECLS,
-                    out.cropped_score,
-                    self.encode(node['lilysrc']).strip(),
-                    'width:100%;'))
-    elif out.score:
-        self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
-                (_SCORECLS, out.score, self.encode(node['lilysrc']).strip(), 'width:100%;'))
-    elif out.paged_scores:
-        for p in out.paged_scores:
-            self.body.append('<img class="%s" src="%s" alt="%s" style="%s"/>\n' %
-                    (_SCORECLS, p, self.encode(node['lilysrc']).strip(), 'width:100%;'))
+    scores = []
+    score_style = ''
+    if isinstance(node, lily_inline_node):
+        score_style = 'height: %s;' % self.builder.config.lilypond_inline_score_size
+        if out.cropped_score: # inline node MUST use cropped score
+            scores.append(out.cropped_score)
     else:
-        logger.warning('no score generated from lilypond document', location=node)
-        sm = nodes.system_message('no score generated', type='WARNING', level=2,
-                                  backrefs=[], source=node['lilysrc'])
-        sm.walkabout(self)
-        raise nodes.SkipNode
+        score_style = 'width: 100%;'
+        if out.cropped_score:
+            scores.append(out.cropped_score)
+        elif out.score:
+            scores.append(out.score)
+        elif out.paged_scores:
+            scores.extend(out.paged_scores)
+    if not scores:
+        raise_no_score_message_and_skip(self, node)
+
+    for score in scores:
+        self.body.append(
+            '<img class="%s" src="%s" alt="%s" style="%s"/>' %
+            (_SCORECLS, score, self.encode(node['lilysrc']).strip(), score_style))
 
     if node.get('audio') and out.audio and node.get('controls') == 'bottom':
-        if isinstance(node, lily_inline_node):
-            size, unit = parse_size(self.builder.config.lilypond_inline_score_size)
-            style = 'width: %s%s;' % (1.2*size, unit)
-        else:
-            style = 'width:100%;'
-        self.body.append('<audio controls class="%s" style="%s" src="%s" %s>\n' %
-                (_SCORECLS, style, out.audio, 'loop' if node.get('loop') else ''))
-        self.body.append('</audio>')
+        append_audio()
 
     if isinstance(node, lily_outline_node):
         self.body.append('</p>')
@@ -328,51 +315,36 @@ def latex_visit_lily_node(self, node:lily_inline_node|lily_outline_node):
     """
 
     out = get_lilypond_output(self, node)
-
     CR = '\n'
-    pre: list[str] = []  # in reverse order
-    post: list[str] = []
-
-
     options = ''
 
-    if out.cropped_score:
-        if isinstance(node, lily_inline_node):
-            base, ext = path.splitext(out.cropped_score)
-            self.body.append(CR)
-            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                             (options, base, ext))
+    scores = []
+    is_inline = False
+    if isinstance(node, lily_outline_node):
+        is_inline = True
+        if out.cropped_score: # inline node MUST use cropped score
+            scores.append(out.cropped_score)
+    else:
+        if out.cropped_score:
+            scores.append(out.cropped_score)
+        elif out.score:
+            scores.append(out.score)
+        elif out.paged_scores:
+            scores.extend(out.paged_scores)
+    if not scores:
+        raise_no_score_message_and_skip(self, node)
+
+    for score in scores:
+        if is_inline:
             self.body.append(CR)
         else:
-            base, ext = path.splitext(out.cropped_score)
             self.body.append(CR + r'\noindent')
-            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                             (options, base, ext))
-            self.body.append(CR)
-    elif out.score:
-        base, ext = path.splitext(out.score)
-        self.body.append(CR + r'\noindent')
-        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                         (options, base, ext))
+        base, ext = path.splitext(score)
+        self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' % (options, base, ext))
         self.body.append(CR)
-    elif out.paged_scores:
-        for p in out.paged_scores:
-            self.body.append(CR + r'\noindent')
-            base, ext = path.splitext(p)
-            self.body.append(r'\sphinxincludegraphics%s{{%s}%s}' %
-                             (options, base, ext))
-            self.body.append(CR)
-    else:
-        msg = 'no score generated from lilypond document'
-        logger.warning(msg, location=node)
-        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[],
-                                  source=node['lilysrc'])
-        sm.walkabout(self)
-        raise nodes.SkipNode
 
     if node.get('audio'):
-        msg = 'audio option is not supported for latex builder'
-        logger.warning(msg, location=node)
+        logger.warning('audio option is not supported for latex builder', location=node)
 
     raise nodes.SkipNode
 
@@ -402,7 +374,7 @@ def read_source_file(env:BuildEnvironment, fn:str) -> str:
         return f.read()
 
 
-def parse_size(sz: str) -> tuple[float, str]:
+def parse_html_size(sz: str) -> tuple[float, str]:
     """Parse HTML size (like "10px", "1.2em", "100%") to number and unit."""
     regex = r'^(\d+(?:\.\d+)?)(\D+)$'
     match = re.match(regex, sz)
@@ -411,6 +383,14 @@ def parse_size(sz: str) -> tuple[float, str]:
     value = float(match.group(1))
     unit = match.group(2)
     return value, unit
+
+
+def raise_no_score_message_and_skip(self, node):
+    msg = 'no score generated'
+    logger.warning(msg, location=node)
+    sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source=node['lilysrc'])
+    sm.walkabout(self)
+    raise nodes.SkipNode
 
 
 def _config_inited(app, config:Config) -> None:
