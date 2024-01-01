@@ -18,6 +18,11 @@ Change Log
 Version 2.x
 -----------
 
+.. version:: 2.1.0 (draft)
+   :date: 2024-01-xx
+
+   - Support :example:`Playable Inline Score` (:pull:`39`)
+
 .. version:: 2.0.0
    :date: 2023-08-18
 
