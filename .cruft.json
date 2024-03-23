@@ -1,7 +1,7 @@
 {
   "template": "https://github.com/sphinx-notes/cookiecutter",
-  "commit": "b0f937e5596c086960ee27cfe0b069947de8a43f",
-  "checkout": "2023-12-updates",
+  "commit": "1701bf78ca498d756ce4502aa1712cfe23ed35af",
+  "checkout": null,
   "context": {
     "cookiecutter": {
       "namespace": "sphinxnotes",
