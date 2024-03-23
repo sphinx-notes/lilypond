@@ -18,10 +18,17 @@ Change Log
 Version 2.x
 -----------
 
-.. version:: 2.1.0 (draft)
-   :date: 2024-01-xx
+.. version:: 2.1
+   :date: 2024-03-23
 
    - Support :example:`Playable Inline Score` (:pull:`39`)
+   - Update jianpu-ly submodule to v1.75
+   - Document improvements
+
+.. version:: 2.0.1
+   :date: 2023-08-19
+
+   - Compat with Sphinx 7.2's changes
 
 .. version:: 2.0.0
    :date: 2023-08-18
