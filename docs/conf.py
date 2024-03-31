@@ -17,7 +17,7 @@ author = 'Shengyu Zhang'
 copyright = "2023, " + author
 
 # The full version, including alpha/beta/rc tags
-version = release = '2.1'
+version = release = '2.2'
 
 # -- General configuration ---------------------------------------------------
 

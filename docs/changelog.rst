@@ -18,6 +18,11 @@ Change Log
 Version 2.x
 -----------
 
+.. version:: 2.2
+   :date: 2024-03-31
+
+   - Fix broken PyPI package
+
 .. version:: 2.1
    :date: 2024-03-23
 
