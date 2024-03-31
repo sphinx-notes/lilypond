@@ -16,6 +16,8 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
     - uses: actions/setup-python@v5
     - run: pip install build twine && make dist
     - uses: pypa/gh-action-pypi-publish@release/v1
