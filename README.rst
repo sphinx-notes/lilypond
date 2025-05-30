@@ -5,26 +5,28 @@
 sphinxnotes-lilypond
 ====================
 
-.. image:: https://img.shields.io/github/actions/workflow/status/sphinx-notes/lilypond/pages.yml
+.. |docs| image:: https://img.shields.io/github/deployments/sphinx-notes/lilypond/github-pages
    :target: https://sphinx.silverrainz.me/lilypond
    :alt: Documentation Status
-
-.. image:: https://img.shields.io/github/license/sphinx-notes/lilypond
-   :target: https://github.com/sphinx-notes/lilypond/LICENSE
+.. |license| image:: https://img.shields.io/github/license/sphinx-notes/lilypond
+   :target: https://github.com/sphinx-notes/lilypond/blob/master/LICENSE
    :alt: Open Source License
-
-.. image:: https://img.shields.io/pypi/v/sphinxnotes-lilypond.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/sphinxnotes-lilypond.svg
    :target: https://pypi.python.org/pypi/sphinxnotes-lilypond
    :alt: PyPI Package
-
-.. image:: https://img.shields.io/pypi/dm/sphinxnotes-lilypond
+.. |download| image:: https://img.shields.io/pypi/dm/sphinxnotes-lilypond
    :target: https://pypi.python.org/pypi/sphinxnotes-lilypond
    :alt: PyPI Package Downloads
 
+|docs| |license| |pypi| |download|
+
 Sphinx extension for embedding LilyPond scores.
 
-* Documentation: https://sphinx.silverrainz.me/lilypond
-* Source: https://github.com/sphinx-notes/lilypond
-* Changelog: https://sphinx.silverrainz.me/lilypond/changelog.html
-* Tracker: https://github.com/sphinx-notes/lilypond/issues
-* Download: https://pypi.org/project/sphinxnotes-lilypond/#files
+.. INTRODUCTION START 
+   (MUST written in standard reStructuredText, without Sphinx stuff)
+
+.. INTRODUCTION END
+
+Please refer to Documentation_ for more details.
+
+.. _Documentation: https://sphinx.silverrainz.me/lilypond
