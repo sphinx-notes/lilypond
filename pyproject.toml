@@ -73,7 +73,7 @@ docs = [
     "sphinx-last-updated-by-git",
 
     # Dependencies of sphinxnotes projcts.
-    "sphinxnotes-project @ git+https://github.com/sphinx-notes/project.git",
+    "sphinxnotes-project",
     "sphinxnotes-comboroles",
 
     # CUSTOM DOCS DEPENDENCIES START

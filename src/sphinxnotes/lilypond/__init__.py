@@ -31,6 +31,8 @@ from sphinx.environment import BuildEnvironment
 
 from . import lilypond
 from . import jianpu
+from . import meta
+
 
 logger = logging.getLogger(__name__)
 
@@ -406,6 +408,8 @@ def _config_inited(app, config:Config) -> None:
 
 
 def setup(app):
+    meta.pre_setup(app)
+
     app.add_node(lily_inline_node,
                  html=(html_visit_lily_node, None),
                  latex=(latex_visit_lily_node, None))
@@ -434,3 +438,5 @@ def setup(app):
 
     app.connect('config-inited', _config_inited)
     # TODO: Font size
+
+    return meta.post_setup(app)
