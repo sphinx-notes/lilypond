@@ -1,6 +1,6 @@
 """
-    sphinxnotes.lilypond.binding
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    sphinxnotes.lilypond.jianpu
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Jianpu to Lilypond transformer.
     This module wraps https://github.com/ssb22/jianpu-ly
@@ -11,8 +11,7 @@
     :license: BSD, see LICENSE for details.
 """
 
-import importlib
-from . import jianpu_ly
+import jianpu_ly
 
 class Error(Exception):
     pass
@@ -20,15 +19,8 @@ class Error(Exception):
 def to_lilypond(jp: str) -> str:
     """
     Convert Jianpu source to Lilypond source.
-
-    .. note::
-
-       Due to https://github.com/ssb22/jianpu-ly/issues/35, we have to
-       reload jianpu-ly module every time.
     """
     try:
         return jianpu_ly.process_input(jp)
     except Exception as e:
         raise Error(e) from e
-    finally:
-        importlib.reload(jianpu_ly)

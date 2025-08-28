@@ -46,6 +46,7 @@ dependencies = [
 
     # CUSTOM DEPENDENCIES START
     "python-ly>=0.9",
+    "jianpu-ly>=1.862",
     # CUSTOM DEPENDENCIES END
 ]
 
