@@ -22,6 +22,12 @@ Change Log
 Version 2.x
 -----------
 
+.. version:: 2.3
+   :date: 2025-09
+
+   - Use jianpu-ly pypi version (#44)
+   - Add :example:`Jianpu (Change Chords into Roman Numerals)`
+
 .. version:: 2.2
    :date: 2024-03-31
 
