@@ -8,9 +8,9 @@
 from __future__ import annotations
 from importlib import metadata
 
-__project__ = "sphinxnotes-lilypond"
-__author__ = "Shengyu Zhang"
-__desc__ = "Sphinx extension for embedding LilyPond scores"
+__project__ = 'sphinxnotes-lilypond'
+__author__ = 'Shengyu Zhang'
+__desc__ = 'Sphinx extension for embedding LilyPond scores'
 
 try:
     __version__ = metadata.version('sphinxnotes-lilypond')
@@ -28,7 +28,7 @@ def pre_setup(app):
 def post_setup(app):
     return {
         'version': __version__,
-        "parallel_read_safe": True,
-        "parallel_write_safe": True
+        'parallel_read_safe': True,
+        'parallel_write_safe': True
     }
 #

@@ -7,3 +7,8 @@ exclude = [
 
 [format]
 quote-style = "single"
+
+[lint]
+ignore = [
+    "E741", # Checks for the use of the characters 'l', 'O', or 'I' as variable names
+]
