@@ -22,13 +22,17 @@ except metadata.PackageNotFoundError:
 # Sphinx extension utils.
 ################################################################################
 
+
 def pre_setup(app):
     app.require_sphinx('7.0')
+
 
 def post_setup(app):
     return {
         'version': __version__,
         'parallel_read_safe': True,
-        'parallel_write_safe': True
+        'parallel_write_safe': True,
     }
+
+
 #
