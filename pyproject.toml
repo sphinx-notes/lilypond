@@ -47,6 +47,7 @@ dependencies = [
     # CUSTOM DEPENDENCIES START
     "python-ly>=0.9",
     "jianpu-ly>=1.862",
+    "mido",
     # CUSTOM DEPENDENCIES END
 ]
 
@@ -103,3 +104,8 @@ version_scheme = "no-guess-dev"
 where = ["src"]
 
 # CUSTOM CONFIGURATION
+
+[tool.setuptools.package-data]
+# A maps from PACKAGE NAMES to lists of glob patterns,
+# see also https://setuptools.pypa.io/en/latest/userguide/datafiles.html
+"sphinxnotes.lilypond.static" = ["*.*"]

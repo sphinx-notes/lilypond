@@ -28,17 +28,20 @@ from sphinx.config import Config
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.environment import BuildEnvironment
+from sphinx.application import Sphinx
+from sphinx.util.nodes import make_id
+
 
 from . import lilypond
 from . import jianpu
 from . import meta
+from . import static
 
 
 logger = logging.getLogger(__name__)
 
-_DIVCLS = 'lilypond'
-_SCORECLS = 'lilypond-score'
-_AUDIOCLS = 'lilypond-audio'
+
+_CLS = 'sphinxnotes-lilypond'
 _LILYDIR = '_lilypond'
 
 
@@ -60,6 +63,7 @@ def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
         return [node], []
 
     node = lily_inline_node()
+    node['ids'] = [make_id(env, inliner.document, _CLS, None)]
     node['docname'] = env.docname
     node['rawtext'] = rawtext
     node['lilysrc'] = r'\score{' + unescape(text, restore_backslashes=True) + '}'
@@ -122,6 +126,7 @@ class BaseLilyDirective(SphinxDirective):
             return [node]
 
         node = lily_outline_node()
+        node['ids'] = [make_id(self.env, self.state.document, _CLS, None)]
         node['docname'] = self.env.docname
         node['rawtext'] = self.block_text
         node['lilysrc'] = lilysrc
@@ -270,32 +275,41 @@ def html_visit_lily_node(self, node: lily_inline_node | lily_outline_node):
     def append_audio():
         if isinstance(node, lily_inline_node):
             size, unit = parse_html_size(self.builder.config.lilypond_inline_score_size)
-            style = 'width: %s%s;' % (1.2 * size, unit)
+            style = 'width: %s%s;' % (1.2 * size, unit)  # override style of css file
         else:
-            style = 'width:100%;'
+            style = 'witdh: 100%'
+
+        if len(out.audios) > 1:
+            self.body.append('<select class="%s">' % _CLS)
+            for i, audio in enumerate(out.audios):
+                self.body.append(
+                    '<option value="%s" %s>%s</option>'
+                    % (audio, 'selected' if i == 0 else '', out.tracks[i])
+                )
+            self.body.append('</select>')
+
         self.body.append(
-            '<audio controls class="%s" style="%s" src="%s" %s>\n'
-            % (_AUDIOCLS, style, out.audio, 'loop' if node.get('loop') else '')
+            '<audio controls class="%s" style="%s" src="%s" %s></audio>'
+            % (_CLS, style, out.audios[0], 'loop' if node.get('loop') else '')
         )
-        self.body.append('</audio>')
 
     out = get_lilypond_output(self, node)
 
     # Create div for block element and span for inline element.
     if isinstance(node, lily_outline_node):
-        self.body.append(self.starttag(node, 'div', CLASS=_DIVCLS))
+        self.body.append(self.starttag(node, 'div', CLASS=_CLS))
         self.body.append('<p>')
     else:
         self.body.append(
             self.starttag(
                 node,
                 'span',
-                CLASS=_DIVCLS,
+                CLASS=_CLS,
                 STYLE='display: inline-flex; vertical-align: middle;',
             )
         )
 
-    if node.get('audio') and out.audio and node.get('controls') == 'top':
+    if node.get('audio') and out.audios and node.get('controls') == 'top':
         append_audio()
 
     scores = []
@@ -318,10 +332,10 @@ def html_visit_lily_node(self, node: lily_inline_node | lily_outline_node):
     for score in scores:
         self.body.append(
             '<img class="%s" src="%s" alt="%s" style="%s"/>'
-            % (_SCORECLS, score, self.encode(node['lilysrc']).strip(), score_style)
+            % (_CLS, score, self.encode(node['lilysrc']).strip(), score_style)
         )
 
-    if node.get('audio') and out.audio and node.get('controls') == 'bottom':
+    if node.get('audio') and out.audios and node.get('controls') == 'bottom':
         append_audio()
 
     if isinstance(node, lily_outline_node):
@@ -419,7 +433,7 @@ def raise_no_score_message_and_skip(self, node):
     raise nodes.SkipNode
 
 
-def _config_inited(app, config: Config) -> None:
+def _config_inited(app: Sphinx, config: Config) -> None:
     lilypond.Config.lilypond_args = config.lilypond_lilypond_args
     lilypond.Config.timidity_args = config.lilypond_timidity_args
     lilypond.Config.ffmpeg_args = config.lilypond_ffmpeg_args
@@ -429,6 +443,24 @@ def _config_inited(app, config: Config) -> None:
 
     lilypond.Config.audio_format = config.lilypond_audio_format
     lilypond.Config.audio_volume = config.lilypond_audio_volume
+
+    app.config.html_static_path.append(str(static.dir()))
+
+
+def _on_html_page_context(
+    app: Sphinx, pagename: str, templatename: str, context, doctree: nodes.document
+) -> None:
+    if not doctree:
+        return
+    if (
+        doctree.next_node(
+            lambda x: isinstance(x, (lily_inline_node, lily_outline_node))
+        )
+        is None
+    ):
+        return  # no lilypond score, skip
+    app.add_js_file('sphinxnotes-lilypond.js')
+    app.add_css_file('sphinxnotes-lilypond.css')
 
 
 def setup(app):
@@ -460,11 +492,12 @@ def setup(app):
     app.add_config_value('lilypond_score_format', 'png', 'env')
     app.add_config_value('lilypond_png_resolution', 300, 'env')
     app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
+    # TODO: Font size
 
     app.add_config_value('lilypond_audio_format', 'wav', 'env')
     app.add_config_value('lilypond_audio_volume', None, 'env')
 
     app.connect('config-inited', _config_inited)
-    # TODO: Font size
+    app.connect('html-page-context', _on_html_page_context)
 
     return meta.post_setup(app)
