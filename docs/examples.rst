@@ -119,3 +119,62 @@ Jianpu (Change Chords into Roman Numerals)
    and require `jianpu-ly`__ >=v1.856
 
    __ https://pypi.org/project/jianpu-ly/
+
+
+Multiple MIDI Outputs
+=====================
+
+.. example:: _
+
+   .. lily::
+
+      \version "2.22.0"
+
+      melody = \relative {
+        \key c \major
+        \time 4/4
+        c'4 c g' g a a g2
+        f4 f e e d d c2
+      }
+
+      harmony = \chordmode {
+        c1: f2: c:
+        f2: c: g2: c:
+      }
+
+      \book {
+        \header {
+          title = "Twinkle Twinkle Little Star"
+          piece = \markup { \vspace #1 }
+        }
+        \score {
+          <<
+            \new ChordNames { \harmony }
+            \new Staff { \melody }
+            \addlyrics {
+              Twin -- kle, twin -- kle, lit -- tle star,
+              how I won -- der what you are! 
+            }
+          >>
+          \layout {}
+          \midi {}
+        }
+      }
+
+      \book {
+        \header { title = "Twinkle Twinkle Little Star (Melody)" }
+        \score {
+          \new Staff { \melody }
+          \midi {}
+        }
+      }
+
+      \book {
+        \header { title = "Twinkle Twinkle Little Star (Harmony)" }
+        \score {
+          \new ChordNames { \harmony }
+          \midi {}
+        }
+      }
+
+.. versionadded:: 2.4

@@ -15,12 +15,15 @@ from os import path
 import subprocess
 from packaging import version
 import itertools
+from pathlib import Path
 
 from ly import pitch
 from ly import document
 from ly import docinfo
 from ly import pkginfo
 from ly.pitch import transpose
+
+from . import midi
 
 
 # Golbal bining config
@@ -37,7 +40,6 @@ class Config(object):
 
 
 class Error(Exception):
-    # TODO
     pass
 
 
@@ -46,6 +48,8 @@ class Output(object):
     Helper for collecting LilyPond outputed files outputed by :class:`Document`.
     """
 
+    # TODO: Deal with custom output file name?
+    # https://lilypond.org/doc/v2.24/Documentation/notation/output-file-names
     BASENAME: str = 'music'
 
     outdir: str
@@ -54,8 +58,9 @@ class Output(object):
     score: str | None
     paged_scores: list[str]
     cropped_score: str | None
-    midi: str | None
-    audio: str | None
+    midis: list[str]
+    tracks: list[str]  # MIDI track names, used as audio title
+    audios: list[str]
 
     def __init__(self, outdir: str):
         self.outdir = outdir
@@ -82,10 +87,7 @@ class Output(object):
                 pattern = prefix + '-%d.svg'
             else:
                 raise Error('Unknown score format: %s' % Config.score_format)
-            for i in itertools.count(start=1):
-                if not path.isfile(pattern % i):
-                    break
-                self.paged_scores.append(pattern % i)
+            self.paged_scores += self._collect_by_index(pattern)
 
         if not any([self.score, self.cropped_score, self.paged_scores]):
             raise Error(
@@ -93,11 +95,27 @@ class Output(object):
                 % (self.BASENAME, outdir)
             )
 
-        midifn = prefix + '.midi'
-        self.midi = midifn if path.isfile(midifn) else None
+        self.midis = self._collect_by_ext(outdir, '.midi')
+        self.audios = self._collect_by_ext(outdir, '.' + Config.audio_format)
+        self.tracks = [midi.get_track_name(m) or Path(m).stem for m in self.midis]
 
-        audiofn = prefix + '.' + Config.audio_format
-        self.audio = audiofn if path.isfile(audiofn) else None
+    @staticmethod
+    def _collect_by_index(pattern: str, start: int = 1) -> list[str]:
+        files = []
+        for i in itertools.count(start=start):
+            if not path.isfile(pattern % i):
+                break
+            files.append(pattern % i)
+        return files
+
+    @staticmethod
+    def _collect_by_ext(dir: str, ext: str) -> list[str]:
+        files = []
+        for f in os.listdir(dir):
+            fullpath = path.join(dir, f)
+            if fullpath.endswith(ext) and path.isfile(fullpath):
+                files.append(fullpath)
+        return sorted(files)
 
     def relocate(self, newdir: str):
         """
@@ -113,10 +131,10 @@ class Output(object):
             self.cropped_score = newdir + self.cropped_score[l:]
         for i, p in enumerate(self.paged_scores):
             self.paged_scores[i] = newdir + p[l:]
-        if self.midi:
-            self.midi = newdir + self.midi[l:]
-        if self.audio:
-            self.audio = newdir + self.audio[l:]
+        for i, p in enumerate(self.midis):
+            self.midis[i] = newdir + p[l:]
+        for i, p in enumerate(self.audios):
+            self.audios[i] = newdir + p[l:]
 
 
 class Document(object):
@@ -191,59 +209,17 @@ class Document(object):
                 % (p.stderr, p.stdout)
             )
 
-        # Generate audio
-        midifn = prefix + '.midi'
-        if path.isfile(midifn):
-            self._midi_to_audio(midifn)
+        # Generate audios.
+        for fn in Output._collect_by_ext(outdir, '.midi'):
+            self._midi_to_audio(fn)
 
-        out = Output(outdir)
-
-        return out
+        return Output(outdir)
 
     def _midi_to_audio(self, midifn: str):
-        try:
-            timidity_args = Config.timidity_args.copy()
-            if Config.audio_format == 'ogg':
-                timidity_args += ['-Ov']
-            elif Config.audio_format in ['wav', 'mp3']:
-                timidity_args += ['-Ow']
-            else:
-                raise Error('Unsupported audio format "%s"' % Config.audio_format)
-            if Config.audio_volume:
-                timidity_args += ['--volume=%d' % Config.audio_volume]
-            timidity_args += [midifn]
-            p = subprocess.run(
-                timidity_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-        except OSError as e:
-            raise Error('TiMidity++ cannot be run') from e
-        except Exception as e:
-            raise e
-        if p.returncode != 0:
-            raise Error(
-                'TiMidity++ exited with error:\n[stderr]\n%s\n[stdout]\n%s'
-                % (p.stderr, p.stdout)
-            )
-
-        # Convert wav to mp3
-        if Config.audio_format == 'mp3':
-            ffmpeg_args = Config.ffmpeg_args.copy()
-            wavfn = midifn[: -len('midi')] + 'wav'
-            mp3fn = midifn[: -len('midi')] + 'mp3'
-            ffmpeg_args += ['-i', wavfn, mp3fn]
-            try:
-                p = subprocess.run(
-                    ffmpeg_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
-            except OSError as e:
-                raise Error('FFmpeg cannot be run') from e
-            except Exception as e:
-                raise e
-            finally:
-                # Remove unused wav file
-                os.remove(wavfn)
-            if p.returncode != 0:
-                raise Error(
-                    'FFmpeg exited with error:\n[stderr]\n%s\n[stdout]\n%s'
-                    % (p.stderr, p.stdout)
-                )
+        midi.to_audio(
+            Config.timidity_args,
+            Config.ffmpeg_args,
+            Config.audio_format,
+            Config.audio_volume,
+            midifn,
+        )
