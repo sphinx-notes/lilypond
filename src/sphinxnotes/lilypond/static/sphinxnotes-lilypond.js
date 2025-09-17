@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     players.forEach(player => {
         const select = player.querySelector('select');
         const audio = player.querySelector('audio');
+        if (!select || !audio) {
+            return
+        }
         
         select.addEventListener('change', function() {
             if (this.value) {
