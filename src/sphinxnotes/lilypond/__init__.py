@@ -277,7 +277,7 @@ def html_visit_lily_node(self, node: lily_inline_node | lily_outline_node):
             size, unit = parse_html_size(self.builder.config.lilypond_inline_score_size)
             style = 'width: %s%s;' % (1.2 * size, unit)  # override style of css file
         else:
-            style = 'witdh: 100%'
+            style = 'width: 100%'
 
         if len(out.audios) > 1:
             self.body.append('<select class="%s">' % _CLS)

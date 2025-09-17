@@ -6,6 +6,7 @@ select.sphinxnotes-lilypond {
 }
 
 audio.sphinxnotes-lilypond {
+    /* width is dynamiclly set by HTML attributes, see :meth:`html_visit_lily_node` */
     margin-top: 5px;
     border-radius: 5px;
 }
