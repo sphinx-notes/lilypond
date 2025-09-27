@@ -22,6 +22,11 @@ Change Log
 Version 2.x
 -----------
 
+.. version:: 2.4
+
+   - feat: Support multiple MIDI outputs (:pull:`45`)
+   - Add confval :confval:`lilypond_include_paths` for appending search paths for including LilyPond files (:pull:`46`)
+
 .. version:: 2.3
    :date: 2025-09-01
 
