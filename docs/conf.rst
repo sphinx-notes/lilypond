@@ -38,7 +38,7 @@ Configuration
       1.4
       Add support for 'mp3' audio format
 
-   Format of outputed audio, available values: 
+   Format of outputed audio, available values:
 
 .. confval:: lilypond_audio_volume
    :type: int
@@ -54,7 +54,6 @@ Configuration
 
    Resolution in DPI of score in PNG format, will be converted to value of LilyPond_ argument ``-dresolution``.
 
-    
 .. confval:: lilypond_inline_score_size
    :type: str
    :default: '2.5em'
@@ -62,7 +61,44 @@ Configuration
 
    Line height of :ref:`inline socre <lily-role>`, will be converted to value of `CSS height`_.
 
+.. confval:: lilypond_include_paths
+   :type: list[str]
+   :default: []
+   :versionadded: 2.4
+
+   A list of paths relative to Sphinx source directory. It is used as additional
+   search path for `Including LilyPond files`_, will be converted to
+   value of LilyPond argument ``-I``/``--include``.
+
+   For example, set ``lilypond_include_paths`` to ``/_scores``:
+
+   .. grid:: 1 2 2 2
+
+      .. grid-item::
+
+         .. example:: Include another file
+
+            .. lily::
+
+               \version "2.24.0"
+
+               \include "include.ly"
+
+               \score {
+                 \new Staff { \myMusic }
+               }
+
+      .. grid-item::
+
+         |
+         |
+         |
+
+         .. literalinclude:: /_scores/include.ly
+            :caption: /_scores/include.ly
+
 .. _LilyPond: https://lilypond.org/
 .. _FFmpeg: https://ffmpeg.org/
 .. _Timidity++: http://timidity.sourceforge.net/
 .. _CSS height: https://developer.mozilla.org/en-US/docs/Web/CSS/height
+.. _Including LilyPond files: https://lilypond.org/doc/Documentation/notation/including-lilypond-files

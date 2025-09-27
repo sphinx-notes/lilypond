@@ -134,3 +134,5 @@ def setup(app):
 # DOG FOOD CONFIGURATION END
 
 # CUSTOM CONFIGURATION
+
+lilypond_include_paths = ['/_scores']
