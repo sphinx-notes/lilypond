@@ -34,6 +34,7 @@ class Config(object):
 
     score_format: str
     png_resolution: int
+    include_paths: list[str]
 
     audio_format: str
     audio_volume: list[str]
@@ -176,6 +177,10 @@ class Document(object):
         """Output scores and related files from LilyPond Document."""
         args = Config.lilypond_args.copy()
         args += ['-o', outdir]
+
+        for i in Config.include_paths:
+            args += ['--include', i]
+
         if Config.score_format in ['png', 'pdf', 'ps', 'eps']:
             args += ['--formats', Config.score_format]
             if Config.score_format == 'png':
