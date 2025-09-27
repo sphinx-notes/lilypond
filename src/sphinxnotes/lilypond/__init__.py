@@ -440,6 +440,11 @@ def _config_inited(app: Sphinx, config: Config) -> None:
 
     lilypond.Config.score_format = config.lilypond_score_format
     lilypond.Config.png_resolution = config.lilypond_png_resolution
+    lilypond.Config.include_paths = [
+        # ./foo => ./foo; /foo => SRCDIR/foo
+        p if not path.isabs(p) else str(app.srcdir) + p
+        for p in config.lilypond_include_paths
+    ]
 
     lilypond.Config.audio_format = config.lilypond_audio_format
     lilypond.Config.audio_volume = config.lilypond_audio_volume
@@ -463,7 +468,7 @@ def _on_html_page_context(
     app.add_css_file('sphinxnotes-lilypond.css')
 
 
-def setup(app):
+def setup(app: Sphinx):
     meta.pre_setup(app)
 
     app.add_node(
@@ -492,6 +497,7 @@ def setup(app):
     app.add_config_value('lilypond_score_format', 'png', 'env')
     app.add_config_value('lilypond_png_resolution', 300, 'env')
     app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
+    app.add_config_value('lilypond_include_paths', [], 'env')
     # TODO: Font size
 
     app.add_config_value('lilypond_audio_format', 'wav', 'env')
