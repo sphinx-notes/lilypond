@@ -23,6 +23,7 @@ Version 2.x
 -----------
 
 .. version:: 2.4
+   :date: 2025-10-02
 
    - feat: Support multiple MIDI outputs (:pull:`45`)
    - Add confval :confval:`lilypond_include_paths` for appending search paths for including LilyPond files (:pull:`46`)
