@@ -17,7 +17,7 @@ try:
 except metadata.PackageNotFoundError:
     __version__ = 'unknown'
 
-#
+
 ################################################################################
 # Sphinx extension utils.
 ################################################################################
@@ -33,6 +33,5 @@ def post_setup(app):
         'parallel_read_safe': True,
         'parallel_write_safe': True,
     }
-
 
 #

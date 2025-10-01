@@ -120,7 +120,8 @@ import sys
 sys.path.insert(0, os.path.abspath('../src/sphinxnotes'))
 extensions.append('lilypond')
 
-# DOG FOOD CONFIGURATION START
+# CUSTOM CONFIGURATION
+
 def _config_inited(_, config) -> None:
     for s in config.any_schemas:
         if s.objtype not in ['rst-example', 'example']:
@@ -131,8 +132,5 @@ def _config_inited(_, config) -> None:
         break
 def setup(app):
     app.connect('config-inited', _config_inited)
-# DOG FOOD CONFIGURATION END
-
-# CUSTOM CONFIGURATION
 
 lilypond_include_paths = ['/_scores']
