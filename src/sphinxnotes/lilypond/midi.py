@@ -85,6 +85,12 @@ def get_track_name(fn: str) -> str | None:
         return None
     for track in midi.tracks:
         for msg in track:
-            if msg.type == 'track_name':
-                return msg.name
+            if msg.type != 'track_name':
+                continue
+            # FIXME: It seems that in LilyPond 2.23+, the encoding of MIDI title
+            # is UTF-8 rather that UTF-16. But we still found that 2.24.4
+            # produces UTF-16 output.
+            #
+            # See also: https://gitlab.com/lilypond/lilypond/-/issues/6389
+            return msg.name.encode('latin-1').decode('utf-8')
     return None
