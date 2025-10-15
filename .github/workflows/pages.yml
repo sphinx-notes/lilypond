@@ -26,11 +26,5 @@ jobs:
         sudo update-locale
         sudo apt-get update;
         sudo apt-get install lilypond timidity fonts-noto-cjk
-    - uses: actions/checkout@master
-      with:
-        fetch-depth: 0
-        submodules: true # for jianpu-ly
     - id: deployment
       uses: sphinx-notes/pages@v3
-      with:
-        checkout: false
