@@ -22,6 +22,12 @@ Change Log
 Version 2.x
 -----------
 
+.. version:: 2.5
+   :date: 2025-10-28
+
+   - fix: Convert MIDI track name to utf-8 (:pull:`47`)
+   - ci: No longer need checkout submodules
+
 .. version:: 2.4
    :date: 2025-10-02
 
