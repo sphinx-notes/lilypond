@@ -12,7 +12,7 @@ sphinxnotes-lilypond
    :target: https://github.com/sphinx-notes/lilypond/blob/master/LICENSE
    :alt: Open Source License
 .. |pypi| image:: https://img.shields.io/pypi/v/sphinxnotes-lilypond.svg
-   :target: https://pypi.python.org/pypi/sphinxnotes-lilypond
+   :target: https://pypistats.org/packages/sphinxnotes-lilypond
    :alt: PyPI Package
 .. |download| image:: https://img.shields.io/pypi/dm/sphinxnotes-lilypond
    :target: https://pypi.python.org/pypi/sphinxnotes-lilypond
