@@ -23,7 +23,7 @@ clean:
 
 .PHONY: fmt
 fmt:
-	ruff format src/ && ruff check --fix src/
+	ruff format src/ tests/ && ruff check --fix src/ tests/
 
 .PHONY: test
 test:
