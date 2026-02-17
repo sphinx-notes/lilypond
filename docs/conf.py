@@ -122,15 +122,14 @@ extensions.append('lilypond')
 
 # CUSTOM CONFIGURATION
 
+lilypond_include_paths = ['/_scores']
+
 def _config_inited(_, config) -> None:
-    for s in config.any_schemas:
-        if s.objtype not in ['rst-example', 'example']:
+    for k, v in config.any_object_types.items():
+        if k not in ['rst-example', 'example']:
             continue
-        s.reference_template = '🎵 ' + s.reference_template[1:]
-        s.missing_reference_template = '🎵 ' + s.missing_reference_template[1:]
-        s.ambiguous_reference_template = '🎵 ' + s.ambiguous_reference_template[1:]
+        v['templates']['ref'] = '🎵 {{ name }}' 
         break
+
 def setup(app):
     app.connect('config-inited', _config_inited)
-
-lilypond_include_paths = ['/_scores']

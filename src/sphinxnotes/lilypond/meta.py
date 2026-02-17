@@ -38,4 +38,5 @@ def post_setup(app: Sphinx) -> ExtensionMetadata:
         'parallel_write_safe': True,
     }
 
+
 #

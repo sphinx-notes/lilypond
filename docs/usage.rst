@@ -2,186 +2,175 @@
 Usage
 =====
 
-.. _roles:
+.. rst:role:: lily
 
-Roles
-=====
+   Used to insert a single `LilyPond Music Expression`_ as inline score.
 
-.. _lily-role:
+   .. example:: Inline Score
+      :style: grid
 
-The ``lily`` role
------------------
+      :lily:`{c'}` is the first note of the C major scale.
 
-You can use ``lily`` role to insert a single `LilyPond Music Expression`_ as
-inline score.
+   .. versionadded:: 2.1.0
 
-.. _LilyPond Music Expression: http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained
+      If the score contains `MIDI block`_, the extension will generate audio file
+      and show a player beside the score:
 
-.. example:: Inline Score
-   :style: grid
+      .. example:: Playable Inline Score
+         :style: grid
 
-   :lily:`{c'}` is the first note of the C major scale.
+         :lily:`{c' e' g' } \layout{} \midi{}` is playable.
 
-If the score contains `MIDI block`_, the extension will generate audio file
-and show a player beside the score:
 
-.. example:: Playable Inline Score
-   :style: grid
+   .. hint::
 
-   :lily:`{c' e' g' } \layout{} \midi{}` is playable.
+      Some implementation details to help you debug your music expressions:
+      the music expression will be wrapped by a ``\score`` block before passing
+      to Lilypond.
 
-.. versionadded:: 2.1.0
+      For example, ``:lily:`{c'}``` will be converted to ``\scores { {c'} }``.
 
-.. hint::
+   .. _LilyPond Music Expression: http://lilypond.org/doc/v2.19/Documentation/learning/music-expressions-explained
 
-   Some implementation details to help you debug your music expressions:
-   the music expression will be wrapped by a ``\score`` block before passing
-   to Lilypond.
+.. rst:directive:: lily
 
-   For example, ``:lily:`{c'}``` will be converted to ``\scores { {c'} }``.
+   Used to insert a complete LilyPond score as block level element.
 
+   .. example::
 
-.. _directives:
+      .. lily::
 
-Directives
-==========
+         \version "2.20.0"
+         \header {
+           title = "翼をください, Excerpts"
+         }
 
-.. _lily-directive:
+         \score {
+           <<
+             \new Staff \relative c' {
+                 \time 4/4
+                 \tempo 4 = 70
+                 r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
+                 c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
+                 d4 r r r
+           }
+           >>
 
-The ``lily`` directive
-----------------------
+           \layout {}
+           \midi {}
+         }
 
-The ``lily`` directive is used to insert a complete LilyPond score as
-block level element.
+   The directive supports the following options:
 
-.. example::
+   .. rst:directive:option:: nocrop
+      :type: no value
 
-   .. lily::
+      Set this option to have scores output to images with appropriate margins and preset size (A4), which is easy for printing. See :example:`Original paper size`.
 
-      \version "2.20.0"
-      \header {
-        title = "翼をください, Excerpts"
-      }
+      .. versionchanged:: 2.0.0
 
-      \score {
-        <<
-          \new Staff \relative c' {
-              \time 4/4
-              \tempo 4 = 70
-              r4 r r c8 d                  e8 e f16 e8 d16 (d4) e8 d
-              c8 c d16 c8 b16 (b4) b8 g    a4 c8 a g4 c4
-              d4 r r r
-        }
-        >>
+   .. rst:directive:option:: noaudio
+      :type: no value
 
-        \layout {}
-        \midi {}
-      }
+      If the score contains `MIDI block`_, Lilypond generates MIDI output files.
+      which are converted to audio files by this extension.
+      Use this option to disable audio, see :example:`Disable Audio`.
 
-The directive supports the following options:
+      .. versionchanged:: 2.0.0
 
-:nocrop: (flag)
-   Set this option to have scores output to images with appropriate margins and preset size (A4), which is easy for printing. See :example:`Original paper size`.
+      .. _MIDI block: https://lilypond.org/doc/v2.23/Documentation/notation/the-midi-block
 
-   .. versionchanged:: 2.0.0
+   .. rst:directive:option:: lopp
+      :type: no value
 
-:noaudio: (flag)
-   If the score contains `MIDI block`_, Lilypond generates MIDI output files.
-   which are converted to audio files by this extension.
-   Use this option to disable audio, see :example:`Disable Audio`.
+      Whethre audio player will automatically seek back to the start upon reaching
+      the end of the audio.
 
-   .. versionchanged:: 2.0.0
+      This conflicts with :rst:dir:`lily:noaudio`.
 
-   .. _MIDI block: https://lilypond.org/doc/v2.23/Documentation/notation/the-midi-block
+      Example: :example:`Loop`.
 
-:loop: (flag)
-   Whethre audio player will automatically seek back to the start upon reaching
-   the end of the audio.
-   This conflicts with ``noaudio``.
-   Example: :example:`Loop`.
+      .. versionadded:: 1.2
 
-   .. versionadded:: 1.2
+   .. rst:directive:option:: transpose
+      :type: text
 
-:transpose: (text)
-   Transposing the pitches of score from one to another.
-   Pitches are written in `LilyPond Notation`_ and separated in whitespace.
-   For example: ``:transpose: g c``, see :example:`Transposing`.
+      Transposing the pitches of score from one to another.
+      Pitches are written in `LilyPond Notation`_ and separated in whitespace.
+      For example: ``:transpose: g c``, see :example:`Transposing`.
 
-   .. versionadded:: 2.0.0
+      .. versionadded:: 2.0.0
 
-   .. _LilyPond Notation: http://lilypond.org/doc/Documentation/notation/writing-pitches
+      .. _LilyPond Notation: http://lilypond.org/doc/Documentation/notation/writing-pitches
 
-:controls: (text, one of the ``top`` or ``bottom``)
-   Specify the position of the control bar relative to the score.
-   This implies ``audio``. See example :example:`Control Bar at the Top`.
+   .. rst:directive:option:: controls
+      :type: text, one of the "top" or "bottom"
 
-   .. versionadded:: 1.3
+      Specify the position of the control bar relative to the score.
+      This conflicts with :rst:dir:`lily:noaudio`. See example :example:`Control Bar at the Top`.
 
-The ``lilyinclude`` directive
------------------------------
+      .. versionadded:: 1.3
 
-The ``lilyinclude`` directive is similar to :ref:`lily-directive`,
-except the source of LilyPond are read from file but not contents of directive.
+.. rst:directive:: lilyinclude
 
-.. example::
+   The directive is similar to :rst:dir:`lily`,
+   except the source of LilyPond are read from file but not contents of directive.
 
-   .. lilyinclude:: /_scores/witch-spring.ly
+   .. example::
 
-Options of the directive are same to :ref:`lily-directive`.
+      .. lilyinclude:: /_scores/witch-spring.ly
 
-.. seealso::
+   Options of the directive are same to :rst:dir:`lily`.
 
-    You and download the example LilyPond documentation from here:
-    :download:`/_scores/witch-spring.ly`.
+   .. seealso::
 
-.. _jianpu-directive:
+       You and download the example LilyPond documentation from here:
+       :download:`/_scores/witch-spring.ly`.
 
-The ``jianpu`` directive
-------------------------
+.. rst:directive:: jianpu
 
-.. versionadded:: 1.6
+   Used to insert a Jianpu_ (Numbered Musical Notation, 简谱) score as block
+   level element.
 
-The ``jianpu`` directive is used to insert a Jianpu_
-(Numbered Musical Notation, 简谱) score as block level element.
+   .. hint::
 
-.. hint::
+      The syntax of Jianpu is defined by `Silas S. Brown`_ and we use his
+      `jianpu-ly`_ script to convert Jianpu source code to Lilypond source
+      code, and finally engraving a music score.
 
-   The syntax of Jianpu is defined by `Silas S. Brown`_ and we use his
-   `jianpu-ly`_ script to convert Jianpu source code to Lilypond source
-   code, and finally engraving a music score.
+   .. _Jianpu: https://en.wikipedia.org/wiki/Numbered_musical_notation
+   .. _Silas S. Brown:  https://ssb22.user.srcf.net/
+   .. _jianpu-ly: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
+    
+   .. example::
 
-.. _Jianpu: https://en.wikipedia.org/wiki/Numbered_musical_notation
-.. _Silas S. Brown:  https://ssb22.user.srcf.net/
-.. _jianpu-ly: http://ssb22.user.srcf.net/mwrhome/jianpu-ly.html
- 
-.. example::
+      .. jianpu::
 
-   .. jianpu::
+         title=C Major Scale
+         1=C
+         2/4
+         4=60
 
-      title=C Major Scale
-      1=C
-      2/4
-      4=60
+         1 2 3 4 5 6 7 1'
 
-      1 2 3 4 5 6 7 1'
+   Options of the directive are same to :rst:dir:`lily`.
 
-Options of the directive are same to :ref:`lily-directive`.
+   .. versionadded:: 1.6
 
-The ``jianpuinclude`` directive
--------------------------------
+.. rst:directive:: jianpuinclude
 
-.. versionadded:: 1.6
+   The directive is similar to :rst:dir:`jianpu`,
+   except the source of Jianpu are read from file but not contents of directive.
 
-The ``jianpuinclude`` directive is similar to :ref:`jianpu-directive`,
-except the source of Jianpu are read from file but not contents of directive.
+   .. example::
 
-.. example::
+      .. jianpuinclude:: /_scores/songbie.jp
 
-   .. jianpuinclude:: /_scores/songbie.jp
+   .. seealso::
 
-.. seealso::
+       You and download the example LilyPond documentation from here:
+       :download:`/_scores/songbie.jp`.
 
-    You and download the example LilyPond documentation from here:
-    :download:`/_scores/songbie.jp`.
+   Options of the directive are same to :rst:dir:`lily`.
 
-Options of the directive are same to :ref:`lily-directive`.
+   .. versionadded:: 1.6
