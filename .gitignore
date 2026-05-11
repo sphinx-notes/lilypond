@@ -135,3 +135,5 @@ poetry.lock
 docs/_build/
 # sphinxnotes-any >= 2.5
 docs/.any*
+
+.worktrees/
