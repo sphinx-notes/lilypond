@@ -53,6 +53,23 @@ class lily_outline_node(nodes.Part, nodes.Element):
     pass
 
 
+def _make_sysmsg_node(
+    summary: str,
+    detail: Exception | str | None = None,
+    lilysrc: str | None = None,
+    location=None,
+) -> nodes.system_message:
+    node = nodes.system_message(summary + '.', type='ERROR', level=2, backrefs=[], source='')
+    if detail:
+        node += nodes.Text('Details:')
+        node += nodes.literal_block('', str(detail))
+    if lilysrc:
+        node += nodes.Text('LilyPond source:')
+        node += nodes.literal_block('', lilysrc)
+    logger.warning(f'{summary}: {detail}', location=location)
+    return node
+
+
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env  # type: ignore
 
@@ -77,9 +94,11 @@ def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     try:
         text = jianpu.to_lilypond(unescape(text, restore_backslashes=True))
     except jianpu.Error as e:
-        msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
-        logger.warning(msg, location=inliner.parent)
-        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
+        sm = _make_sysmsg_node(
+            'Failed to convert Jianpu source to LilyPond source',
+            detail=e,
+            location=inliner.parent,
+        )
         return [], [sm]
     return lily_role(role, rawtext, text, lineno, inliner, options, content)
 
@@ -105,17 +124,15 @@ class BaseLilyDirective(SphinxDirective):
         try:
             lilysrc = self.read_lily_source()
         except OSError as e:
-            msg = 'failed to read LilyPond source: %s' % e
-            logger.warning(msg, location=self.state.parent)
-            sm = nodes.system_message(
-                msg, type='WARNING', level=2, backrefs=[], source=''
+            sm = _make_sysmsg_node(
+                'Failed to read LilyPond source', detail=e, location=self.state.parent
             )
             return [sm]
         except jianpu.Error as e:
-            msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
-            logger.warning(msg, location=self.state.parent)
-            sm = nodes.system_message(
-                msg, type='WARNING', level=2, backrefs=[], source=''
+            sm = _make_sysmsg_node(
+                'Failed to convert Jianpu source to LilyPond source',
+                detail=e,
+                location=self.state.parent,
             )
             return [sm]
 
@@ -257,9 +274,11 @@ def get_lilypond_output(
                 doc.transpose(from_pitch, to_pitch)
             out = doc.output(builddir, node.get('crop'))
         except lilypond.Error as e:
-            logger.warning('failed to generate scores: %s' % e, location=node)
-            sm = nodes.system_message(
-                e, type='WARNING', level=2, backrefs=[], source=node['lilysrc']
+            sm = _make_sysmsg_node(
+                'Failed to generate scores',
+                detail=e,
+                lilysrc=node['lilysrc'],
+                location=node,
             )
             sm.walkabout(self)
             shutil.rmtree(builddir)  # cleanup lilypond builddir
@@ -424,11 +443,7 @@ def parse_html_size(sz: str) -> tuple[float, str]:
 
 
 def raise_no_score_message_and_skip(self, node):
-    msg = 'no score generated'
-    logger.warning(msg, location=node)
-    sm = nodes.system_message(
-        msg, type='WARNING', level=2, backrefs=[], source=node['lilysrc']
-    )
+    sm = _make_sysmsg_node('No score generated', lilysrc=node['lilysrc'], location=node)
     sm.walkabout(self)
     raise nodes.SkipNode
 
