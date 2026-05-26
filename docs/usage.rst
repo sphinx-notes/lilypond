@@ -80,7 +80,7 @@ Usage
 
       .. _MIDI block: https://lilypond.org/doc/v2.23/Documentation/notation/the-midi-block
 
-   .. rst:directive:option:: lopp
+   .. rst:directive:option:: loop
       :type: no value
 
       Whethre audio player will automatically seek back to the start upon reaching
