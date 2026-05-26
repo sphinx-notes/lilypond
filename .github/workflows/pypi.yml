@@ -1,3 +1,5 @@
+# This file is generated from sphinx-notes/cookiecutter.
+
 name: Publish package distributions to PyPI
 
 on:
@@ -14,8 +16,8 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
     - run: pip install build twine && make dist
     - uses: pypa/gh-action-pypi-publish@release/v1
       with:

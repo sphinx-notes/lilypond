@@ -1,5 +1,4 @@
 .. This file is generated from sphinx-notes/cookiecutter.
-   You need to consider modifying the TEMPLATE or modifying THIS FILE.
 
 ==========
 Change Log
@@ -59,8 +58,7 @@ Version 2.x
 
 .. version:: 2.0.0
    :date: 2023-08-18
-
-   .. warning:: This release introduces some BREAKING changes.
+   :break:
 
    - **BREAKING** changes:
 

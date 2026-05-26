@@ -489,19 +489,19 @@ def setup(app: Sphinx):
     app.add_directive('jianpu', JianpuDirective)
     app.add_directive('jianpuinclude', JianpuIncludeDirective)
 
-    app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env')
-    app.add_config_value('lilypond_timidity_args', ['timidity'], 'env')
-    app.add_config_value('lilypond_ffmpeg_args', ['ffmpeg'], 'env')
-    app.add_config_value('lilypond_builddir', None, 'env')
+    app.add_config_value('lilypond_lilypond_args', ['lilypond'], 'env', types=list)
+    app.add_config_value('lilypond_timidity_args', ['timidity'], 'env', types=list)
+    app.add_config_value('lilypond_ffmpeg_args', ['ffmpeg'], 'env', types=list)
+    app.add_config_value('lilypond_builddir', None, 'env', types=str)
 
-    app.add_config_value('lilypond_score_format', 'png', 'env')
-    app.add_config_value('lilypond_png_resolution', 300, 'env')
-    app.add_config_value('lilypond_inline_score_size', '2.5em', 'env')
-    app.add_config_value('lilypond_include_paths', [], 'env')
+    app.add_config_value('lilypond_score_format', 'png', 'env', types=str)
+    app.add_config_value('lilypond_png_resolution', 300, 'env', types=int)
+    app.add_config_value('lilypond_inline_score_size', '2.5em', 'env', types=str)
+    app.add_config_value('lilypond_include_paths', [], 'env', types=list)
     # TODO: Font size
 
-    app.add_config_value('lilypond_audio_format', 'wav', 'env')
-    app.add_config_value('lilypond_audio_volume', None, 'env')
+    app.add_config_value('lilypond_audio_format', 'wav', 'env', types=str)
+    app.add_config_value('lilypond_audio_volume', None, 'env', types=float)
 
     app.connect('config-inited', _config_inited)
     app.connect('html-page-context', _on_html_page_context)

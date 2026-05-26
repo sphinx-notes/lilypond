@@ -1,5 +1,4 @@
 # This file is generated from sphinx-notes/cookiecutter.
-# You need to consider modifying the TEMPLATE or modifying THIS FILE.
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -23,6 +22,8 @@ version = release = '2.5'
 # ones.
 extensions = [
     'sphinx.ext.githubpages',
+    'sphinx.ext.doctest',
+    'sphinx.ext.viewcode',
     'sphinx_design',
     'sphinx_copybutton',
     'sphinx_last_updated_by_git',
@@ -45,6 +46,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # produce any output in the built files.
 show_authors = True
 
+# Keep warnings as “system message” paragraphs in the rendered documents.
+keep_warnings = True
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -52,12 +56,6 @@ show_authors = True
 #
 html_theme = 'furo'
 
-html_theme_options = {}
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
 html_theme_options = {
     "source_repository": "https://github.com/sphinx-notes/lilypond/",
     "source_branch": "master",
@@ -69,6 +67,13 @@ html_theme_options = {
 html_baseurl = 'https://sphinx.silverrainz.me/lilypond'
 
 html_logo = html_favicon = '_static/sphinx-notes.png'
+
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ['_static']
+
+html_css_files = ['custom.css']
 
 # -- Extensions -------------------------------------------------------------
 
@@ -85,13 +90,12 @@ gtagjs_ids = ['G-E4SNX0WZYV']
 extensions.append('sphinx.ext.autodoc')
 autoclass_content = 'init'
 autodoc_typehints = 'description'
+autodoc_default_options = {
+    'member-order': 'bysource',
+}
 
 extensions.append('sphinx.ext.intersphinx')
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master', None),
-    'jinja': ('https://jinja.palletsprojects.com/en/latest/', None),
-}
+intersphinx_mapping = {}
 
 extensions.append('sphinx_sitemap')
 sitemap_filename = "sitemap.xml"
@@ -107,6 +111,7 @@ comboroles_roles = {
     'parsed_literal': (['literal'], True),
 }
 
+
 extensions.append('sphinxnotes.project')
 primary_domain = 'any'
 
@@ -117,20 +122,19 @@ primary_domain = 'any'
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/sphinxnotes'))
-extensions.append('lilypond')
+sys.path.insert(0, os.path.abspath('../src/'))
+extensions.append('sphinxnotes.lilypond')
 
 # CUSTOM CONFIGURATION
 
+lilypond_include_paths = ['/_scores']
+
 def _config_inited(_, config) -> None:
-    for s in config.any_schemas:
-        if s.objtype not in ['rst-example', 'example']:
+    for k, v in config.any_object_types.items():
+        if k not in ['rst-example', 'example']:
             continue
-        s.reference_template = '🎵 ' + s.reference_template[1:]
-        s.missing_reference_template = '🎵 ' + s.missing_reference_template[1:]
-        s.ambiguous_reference_template = '🎵 ' + s.ambiguous_reference_template[1:]
+        v['templates']['ref'] = '🎵 {{ name }}' 
         break
+
 def setup(app):
     app.connect('config-inited', _config_inited)
-
-lilypond_include_paths = ['/_scores']

@@ -1,3 +1,5 @@
+# This file is generated from sphinx-notes/cookiecutter.
+
 name: Deploy Sphinx documentation to Pages
 
 # Runs on pushes targeting the default branch
