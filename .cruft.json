@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/sphinx-notes/cookiecutter",
-  "commit": "4736b672023e3bf4bc80d0d51850d7bc45ca1e12",
+  "commit": "463b120aec3391878cf9453ca26280bf5258c08d",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -12,6 +12,8 @@
       "version": "2.5",
       "github_owner": "sphinx-notes",
       "github_repo": "lilypond",
+      "generated_file_header": "This file is generated from sphinx-notes/cookiecutter.",
+      "dont_edit_header": "DO NOT EDIT.",
       "pypi_name": "sphinxnotes-lilypond",
       "pypi_owner": "SilverRainZ",
       "is_python_project": true,
@@ -20,7 +22,7 @@
       "sphinx_version": "7.0",
       "development_status": "5 - Production/Stable",
       "_template": "https://github.com/sphinx-notes/cookiecutter",
-      "_commit": "4736b672023e3bf4bc80d0d51850d7bc45ca1e12"
+      "_commit": "233a8daa4e276a9559975a51178f29e7079dcafd"
     }
   },
   "directory": null

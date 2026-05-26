@@ -1,5 +1,4 @@
 # This file is generated from sphinx-notes/cookiecutter.
-# You need to consider modifying the TEMPLATE or modifying THIS FILE.
 
 LANG = en_US.UTF-8
 
@@ -23,11 +22,15 @@ clean:
 
 .PHONY: fmt
 fmt:
-	ruff format src/ && ruff check --fix src/
+	ruff format src/ tests/ && ruff check --fix src/ tests/
 
 .PHONY: test
 test:
-	$(PY) -m unittest discover -s tests -v
+	$(PY) -m pytest tests/ -v
+
+.PHONY: doctest
+doctest:
+	$(MAKE) doctest -C docs/
 
 ################################################################################
 # Distribution Package
@@ -36,7 +39,8 @@ test:
 # Build distribution package, for "install" or "upload".
 .PHONY: dist
 dist: pyproject.toml clean
-	$(PY) -m build
+	# Use ``--no-isolation`` to prevent network accessing when in local env.
+	$(PY) -m build $(if $(CI),,--no-isolation)
 
 # Install distribution package to user directory.
 #
