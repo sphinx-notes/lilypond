@@ -53,6 +53,26 @@ class lily_outline_node(nodes.Part, nodes.Element):
     pass
 
 
+def _make_sysmsg_node(
+    summary: str,
+    detail: Exception | str | None = None,
+    location: nodes.Node | None = None,
+) -> nodes.system_message:
+    summary = summary + ':' if detail else '.'
+    node = nodes.system_message(
+        summary,
+        type='ERROR',
+        level=2,
+        backrefs=[],
+        source=location.source if location else None,
+        line=location.line if location else None,
+    )
+    if detail:
+        node += nodes.literal_block('', str(detail))
+    logger.warning(f'{summary} {detail}', location=location)
+    return node
+
+
 def lily_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     env = inliner.document.settings.env  # type: ignore
 
@@ -77,10 +97,13 @@ def jianpu_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     try:
         text = jianpu.to_lilypond(unescape(text, restore_backslashes=True))
     except jianpu.Error as e:
-        msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
-        logger.warning(msg, location=inliner.parent)
-        sm = nodes.system_message(msg, type='WARNING', level=2, backrefs=[], source='')
-        return [], [sm]
+        sm = _make_sysmsg_node(
+            'Failed to convert Jianpu source to LilyPond source',
+            detail=e,
+            location=inliner.parent,
+        )
+        problematic = inliner.problematic(rawtext, text, sm)
+        return [problematic], [sm]
     return lily_role(role, rawtext, text, lineno, inliner, options, content)
 
 
@@ -105,19 +128,19 @@ class BaseLilyDirective(SphinxDirective):
         try:
             lilysrc = self.read_lily_source()
         except OSError as e:
-            msg = 'failed to read LilyPond source: %s' % e
-            logger.warning(msg, location=self.state.parent)
-            sm = nodes.system_message(
-                msg, type='WARNING', level=2, backrefs=[], source=''
+            lb = nodes.literal_block(self.block_text, self.block_text)
+            sm = _make_sysmsg_node(
+                'Failed to read LilyPond source', detail=e, location=self.state.parent
             )
-            return [sm]
+            return [lb, sm]
         except jianpu.Error as e:
-            msg = 'failed to convert Jianpu source to LilyPond source: %s' % e
-            logger.warning(msg, location=self.state.parent)
-            sm = nodes.system_message(
-                msg, type='WARNING', level=2, backrefs=[], source=''
+            lb = nodes.literal_block(self.block_text, self.block_text)
+            sm = _make_sysmsg_node(
+                'Failed to convert Jianpu source to LilyPond source',
+                detail=e,
+                location=self.state.parent,
             )
-            return [sm]
+            return [lb, sm]
 
         if not isinstance(self.env.app.builder, (StandaloneHTMLBuilder, LaTeXBuilder)):
             # Builder is not supported, fallback to literal_block.
@@ -257,9 +280,15 @@ def get_lilypond_output(
                 doc.transpose(from_pitch, to_pitch)
             out = doc.output(builddir, node.get('crop'))
         except lilypond.Error as e:
-            logger.warning('failed to generate scores: %s' % e, location=node)
-            sm = nodes.system_message(
-                e, type='WARNING', level=2, backrefs=[], source=node['lilysrc']
+            if isinstance(node, lily_outline_node):
+                lb = nodes.literal_block('', node['lilysrc'])
+            else:
+                lb = nodes.literal('', node['lilysrc'])
+            lb.walkabout(self)
+            sm = _make_sysmsg_node(
+                'Failed to generate scores',
+                detail=e,
+                location=node,
             )
             sm.walkabout(self)
             shutil.rmtree(builddir)  # cleanup lilypond builddir
@@ -424,11 +453,13 @@ def parse_html_size(sz: str) -> tuple[float, str]:
 
 
 def raise_no_score_message_and_skip(self, node):
-    msg = 'no score generated'
-    logger.warning(msg, location=node)
-    sm = nodes.system_message(
-        msg, type='WARNING', level=2, backrefs=[], source=node['lilysrc']
-    )
+    if isinstance(node, lily_outline_node):
+        lb = nodes.literal_block(node['rawtext'], node['rawtext'])
+    else:
+        lb = nodes.literal(node['rawtext'], node['rawtext'])
+        # TODO: Move sphinxnotes-render's problematic
+    lb.walkabout(self)
+    sm = _make_sysmsg_node('No score generated', location=node)
     sm.walkabout(self)
     raise nodes.SkipNode
 
