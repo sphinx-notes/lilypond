@@ -454,9 +454,10 @@ def parse_html_size(sz: str) -> tuple[float, str]:
 
 def raise_no_score_message_and_skip(self, node):
     if isinstance(node, lily_outline_node):
-        lb = nodes.literal_block('', node['lilysrc'])
+        lb = nodes.literal_block(node['rawtext'], node['rawtext'])
     else:
-        lb = nodes.literal('', node['lilysrc'])
+        lb = nodes.literal(node['rawtext'], node['rawtext'])
+        # TODO: Move sphinxnotes-render's problematic
     lb.walkabout(self)
     sm = _make_sysmsg_node('No score generated', location=node)
     sm.walkabout(self)
