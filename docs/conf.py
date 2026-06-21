@@ -49,6 +49,11 @@ show_authors = True
 # Keep warnings as “system message” paragraphs in the rendered documents.
 keep_warnings = True
 
+# A list of warning codes to suppress arbitrary warning messages.
+suppress_warnings = [
+    'misc.template_evaluation', # Writing evaluated template...
+]
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

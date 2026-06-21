@@ -47,16 +47,16 @@ Getting Started
 
 .. note::
 
-   We assume you already have a Sphinx documentation,
+   We assume you already have a Sphinx documentation project,
    if not, see `Getting Started with Sphinx`_.
 
-First, downloading extension from PyPI:
+First, download the extension from PyPI:
 
 .. code-block:: console
 
    $ pip install sphinxnotes-lilypond
 
-Then, add the extension name to ``extensions`` configuration item in your
+Then, add the extension name to ``extensions`` configuration option in your
 :parsed_literal:`conf.py_`:
 
 .. code-block:: python
